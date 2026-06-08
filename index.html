@@ -25,26 +25,24 @@
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
 button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 
-/* LAYOUT */
 .shell{display:flex;min-height:100vh;}
 .sidebar{width:240px;min-height:100vh;background:rgba(255,255,255,.85);backdrop-filter:blur(20px);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:10;}
 .main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
 
-/* SIDEBAR */
 .logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);}
 .logo-icon{font-size:28px;margin-bottom:6px;}
-.logo-text{font-size:17px;font-weight:600;color:var(--text);letter-spacing:-0.4px;}
+.logo-text{font-size:17px;font-weight:600;letter-spacing:-0.4px;}
 .logo-sub{font-size:11px;color:var(--text3);margin-top:2px;}
 .nav{padding:10px 0;flex:1;}
-.nav-section{padding:0 10px;margin-bottom:4px;}
+.nav-section{padding:0 10px;}
 .nav-label{font-size:10px;font-weight:600;letter-spacing:0.5px;color:var(--text3);padding:10px 10px 4px;text-transform:uppercase;}
 .nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);color:var(--text2);font-size:13px;cursor:pointer;transition:all .15s;}
-.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item:hover{background:var(--bg3);}
 .nav-item.active{background:var(--accent);color:#fff;}
 .nav-item .icon{width:16px;text-align:center;font-size:13px;}
 .sidebar-footer{padding:14px 16px;border-top:1px solid var(--border);}
-.sheet-status{font-size:11px;color:var(--text3);font-family:var(--mono);display:flex;align-items:center;gap:6px;}
-.sheet-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);flex-shrink:0;}
+.sheet-status{font-size:11px;color:var(--text3);font-family:var(--mono);display:flex;align-items:center;gap:6px;margin-top:6px;}
+.sheet-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--ok);}
 .sheet-dot.err{background:var(--danger);}
 .sheet-dot.loading{background:var(--warn);animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
@@ -52,7 +50,6 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .auth-btn:hover{background:var(--bg4);}
 .auth-btn.connected{border-color:var(--ok);color:var(--ok);background:var(--ok-light);}
 
-/* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.85);backdrop-filter:blur(20px);position:sticky;top:0;z-index:5;}
 .topbar-title{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
 .topbar-right{display:flex;align-items:center;gap:8px;}
@@ -61,41 +58,54 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
 .btn.primary:hover{background:var(--accent-dim);}
 
-/* CONTENT */
 .content{padding:24px;flex:1;}
 
 /* FORM CARD */
 .oferta-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px;margin-bottom:24px;box-shadow:var(--shadow);}
 .oferta-title{font-size:16px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
 .oferta-sub{font-size:12px;color:var(--text3);margin-bottom:20px;}
-.form-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;display:block;}
+.form-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;display:block;}
+.form-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
 
-/* MULTI-SELECT CHIPS */
-.chip-group{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px;}
-.chip{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none;}
+/* TIPO CHIPS */
+.chip-group{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{padding:7px 18px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none;}
 .chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
 .chip.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
-.chip.size-chip{font-family:var(--mono);font-size:12px;padding:6px 14px;}
-.chip.size-chip.selected{background:var(--text);border-color:var(--text);color:#fff;}
-.chip.size-chip:hover:not(.selected){border-color:var(--text);color:var(--text);}
 
-/* APTO EUROPA TOGGLE */
-.europa-toggle{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--radius-lg);border:2px solid var(--border);cursor:pointer;transition:all .15s;user-select:none;background:var(--bg3);margin-top:16px;}
+/* RANGE SLIDER */
+.slider-wrap{padding:8px 4px 4px;}
+.slider-track-wrap{position:relative;height:6px;background:var(--bg4);border-radius:3px;margin:0 10px;}
+.slider-fill{position:absolute;height:100%;background:var(--accent);border-radius:3px;pointer-events:none;}
+.slider-input{position:absolute;width:100%;height:100%;top:0;left:0;appearance:none;-webkit-appearance:none;background:transparent;pointer-events:none;margin:0;}
+.slider-input::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.15);cursor:pointer;pointer-events:all;transition:box-shadow .15s;}
+.slider-input::-webkit-slider-thumb:hover{box-shadow:0 0 0 4px rgba(212,137,26,.15);}
+.slider-input::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--accent);cursor:pointer;pointer-events:all;}
+.slider-labels{display:flex;justify-content:space-between;margin-top:10px;font-size:10px;font-family:var(--mono);color:var(--text3);}
+.slider-values{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.slider-val-badge{background:var(--accent);color:#fff;font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 14px;border-radius:20px;}
+.slider-val-sep{color:var(--text3);font-size:12px;}
+
+/* SPLIT TOGGLE */
+.split-toggle{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--radius-lg);border:2px solid var(--border);cursor:pointer;transition:all .15s;user-select:none;background:var(--bg3);margin-top:14px;}
+.split-toggle.active{border-color:var(--text);background:var(--bg4);}
+.split-toggle:hover{border-color:var(--border2);}
+.split-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;background:var(--bg2);}
+.split-toggle.active .split-check{background:var(--text);border-color:var(--text);}
+
+/* EUROPA TOGGLE */
+.europa-toggle{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--radius-lg);border:2px solid var(--border);cursor:pointer;transition:all .15s;user-select:none;background:var(--bg3);margin-top:12px;}
 .europa-toggle.active{border-color:var(--info);background:var(--info-light);}
 .toggle-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;background:var(--bg2);}
 .europa-toggle.active .toggle-check{background:var(--info);border-color:var(--info);}
 .toggle-label-main{font-size:13px;font-weight:500;}
 .toggle-label-sub{font-size:11px;color:var(--text3);margin-top:1px;}
 
-/* DIVIDER */
-.form-divider{border:none;border-top:1px solid var(--border);margin:18px 0;}
-
 /* FORM ACTIONS */
 .form-actions{display:flex;gap:10px;margin-top:18px;}
 .btn-search{flex:1;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-lg);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 8px rgba(212,137,26,.25);}
 .btn-search:hover{background:var(--accent-dim);}
-.btn-search:disabled{opacity:.4;cursor:not-allowed;}
-.btn-reset{padding:11px 18px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:var(--radius-lg);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn-reset{padding:11px 18px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:var(--radius-lg);font-size:13px;font-weight:500;cursor:pointer;}
 .btn-reset:hover{background:var(--bg3);}
 
 /* STATS */
@@ -109,14 +119,15 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
 .results-title{font-size:14px;font-weight:600;}
 .results-pills{display:flex;gap:5px;flex-wrap:wrap;}
-.result-pill{font-size:10px;font-family:var(--mono);padding:3px 10px;border-radius:20px;background:var(--bg3);color:var(--text3);border:1px solid var(--border);}
+.result-pill{font-size:10px;font-family:var(--mono);padding:3px 10px;border-radius:20px;border:1px solid;}
 .result-pill.accent{background:var(--accent-light);color:var(--accent);border-color:rgba(212,137,26,.2);}
-.result-pill.eu{background:var(--info-light);color:var(--info);border-color:rgba(0,113,227,.15);}
 .result-pill.dark{background:var(--text);color:#fff;border-color:var(--text);}
+.result-pill.eu{background:var(--info-light);color:var(--info);border-color:rgba(0,113,227,.15);}
+.result-pill.muted{background:var(--bg3);color:var(--text3);border-color:var(--border);}
 
 /* MATCH CARDS */
 .match-list{display:flex;flex-direction:column;gap:8px;}
-.match-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;display:flex;align-items:center;gap:14px;transition:all .15s;box-shadow:var(--shadow);}
+.match-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;display:flex;align-items:center;gap:14px;transition:all .15s;box-shadow:var(--shadow);animation:fadeIn .2s ease both;}
 .match-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px);border-color:var(--border2);}
 .match-avatar{width:38px;height:38px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--accent);flex-shrink:0;}
 .match-body{flex:1;min-width:0;}
@@ -128,14 +139,17 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .match-tag.size{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
 .match-tag.region{background:var(--info-light);color:var(--info);border:1px solid rgba(0,113,227,.15);}
 .match-tag.country{background:#f5f0ff;color:#6e3ab0;border:1px solid rgba(110,58,176,.15);}
-.match-right{text-align:right;flex-shrink:0;}
-.match-check{font-size:20px;color:var(--ok);}
+.match-tag.split{background:var(--bg4);color:var(--text2);border:1px solid var(--border2);font-weight:600;}
+.match-check{font-size:20px;color:var(--ok);flex-shrink:0;}
 
-/* EMPTY */
+/* EMPTY / SPINNER */
 .empty-state{padding:60px 24px;text-align:center;color:var(--text3);}
 .empty-icon{font-size:40px;margin-bottom:12px;opacity:.5;}
 .empty-title{font-size:15px;font-weight:500;color:var(--text2);margin-bottom:6px;}
 .empty-sub{font-size:12px;}
+.spinner{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--text3);font-size:12px;gap:10px;}
+.spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
 /* BANNER */
 .info-banner{background:var(--accent-light);border:1px solid rgba(212,137,26,.2);border-radius:var(--radius);padding:12px 16px;font-size:12px;color:var(--accent-dim);margin-bottom:24px;line-height:1.6;}
@@ -150,17 +164,12 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .config-input:focus{border-color:var(--accent);background:var(--bg2);}
 .config-save{display:flex;justify-content:flex-end;margin-top:10px;}
 
-/* SPINNER / TOAST / PROGRESS */
-.spinner{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--text3);font-size:12px;gap:10px;}
-.spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
 #toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 16px;border-radius:10px;font-weight:500;font-size:12px;z-index:999;transition:opacity .3s;pointer-events:none;box-shadow:var(--shadow-lg);opacity:0;}
 .progress-bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#e2a832);z-index:9999;transform-origin:left;transform:scaleX(0);}
 .progress-bar.active{animation:progress 1.5s ease-in-out infinite;}
 @keyframes progress{0%{transform:scaleX(0);opacity:1;}60%{transform:scaleX(.7);opacity:1;}100%{transform:scaleX(1);opacity:0;}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
-/* MOBILE */
 .mobile-toggle{display:none;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:15px;}
 .overlay-close{display:none;position:fixed;inset:0;z-index:9;background:rgba(0,0,0,.3);}
 @media(max-width:768px){
@@ -171,12 +180,10 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
   .content{padding:14px;}
   .topbar{padding:10px 14px;}
   .stats-row{grid-template-columns:1fr 1fr;}
-  .chip{font-size:12px;padding:6px 12px;}
 }
 </style>
 </head>
 <body>
-
 <div class="progress-bar" id="progress-bar"></div>
 <div id="toast"></div>
 
@@ -190,18 +197,14 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
   <nav class="nav">
     <div class="nav-section">
       <div class="nav-label">Herramientas</div>
-      <div class="nav-item active" onclick="showView('matcher')" id="nav-matcher">
-        <span class="icon">🔍</span> Buscar Matches
-      </div>
-      <div class="nav-item" onclick="showView('config')" id="nav-config">
-        <span class="icon">⚙</span> Configuración
-      </div>
+      <div class="nav-item active" onclick="showView('matcher')" id="nav-matcher"><span class="icon">🔍</span> Buscar Matches</div>
+      <div class="nav-item" onclick="showView('config')" id="nav-config"><span class="icon">⚙</span> Configuración</div>
     </div>
   </nav>
   <div class="sidebar-footer">
     <button id="auth-btn" class="auth-btn" onclick="handleAuth()">Conectar con Google</button>
-    <div style="margin-top:6px;font-size:10px;color:var(--text3);" id="auth-status-text"></div>
-    <div class="sheet-status" style="margin-top:6px;">
+    <div style="font-size:10px;color:var(--text3);margin-top:4px;" id="auth-status-text"></div>
+    <div class="sheet-status">
       <span class="sheet-dot err" id="sheet-dot"></span>
       <span id="sheet-status-text">Sin conectar</span>
     </div>
@@ -241,37 +244,58 @@ const COL = { CLIENT:1, REGION:2, COUNTRY:3, COMPANY:4, SIZE:28, TYPE:29 };
 const EUROPEAN_REGIONS = ['europe','europa','eu','emea','european union'];
 function isEuropean(v){ return EUROPEAN_REGIONS.includes((v||'').toLowerCase().trim()); }
 
-// ─── MAPEO DE TIPOS ───────────────────────────────────────────────────────────
+// ─── MAPEO TIPOS ──────────────────────────────────────────────────────────────
 const TYPE_MAP = {
-  'raw':                               ['Raw'],
-  'crudo':                             ['Raw'],
-  'blanched':                          ['Blanched'],
-  'blancheados':                       ['Blanched'],
-  'blanched g1/g2':                    ['Blanched'],
-  'horneado':                          ['Roasted'],
-  'tostado':                           ['Roasted'],
-  'blancheado / raw':                  ['Blanched','Raw'],
-  'blanched - raw':                    ['Blanched','Raw'],
-  'blanched / raw':                    ['Blanched','Raw'],
-  'raw - blanched':                    ['Blanched','Raw'],
-  'raw y blanched':                    ['Blanched','Raw'],
-  'crudo y bl':                        ['Blanched','Raw'],
-  'crudo y blanched bf':               ['Blanched','Raw'],
-  'blanceado, crudo y con cascara':    ['Blanched','Raw'],
-  'blancheado, crudo y con cascara':   ['Blanched','Raw'],
-  'tostado, crudo y blanhceado todo':  ['Blanched','Raw','Roasted'],
-  'tostado, crudo y blanheado todo':   ['Blanched','Raw','Roasted'],
+  'raw':['Raw'],'crudo':['Raw'],
+  'blanched':['Blanched'],'blancheados':['Blanched'],'blanched g1/g2':['Blanched'],
+  'horneado':['Roasted'],'tostado':['Roasted'],
+  'blancheado / raw':['Blanched','Raw'],'blanched - raw':['Blanched','Raw'],
+  'blanched / raw':['Blanched','Raw'],'raw - blanched':['Blanched','Raw'],
+  'raw y blanched':['Blanched','Raw'],'crudo y bl':['Blanched','Raw'],
+  'crudo y blanched bf':['Blanched','Raw'],
+  'blanceado, crudo y con cascara':['Blanched','Raw'],
+  'blancheado, crudo y con cascara':['Blanched','Raw'],
+  'tostado, crudo y blanhceado todo':['Blanched','Raw','Roasted'],
+  'tostado, crudo y blanheado todo':['Blanched','Raw','Roasted'],
 };
 
 function getCanonicalTypes(rawType){
   const key = (rawType||'').toLowerCase().trim();
   if(TYPE_MAP[key]) return TYPE_MAP[key];
-  // Heurística fallback
   const types = [];
   if(key.includes('raw')||key.includes('crudo')) types.push('Raw');
   if(key.includes('blanch')||key.includes('blanc')) types.push('Blanched');
   if(key.includes('roast')||key.includes('tost')||key.includes('horn')) types.push('Roasted');
   return types.length ? [...new Set(types)] : [];
+}
+
+// ─── MAPEO CALIBRES ───────────────────────────────────────────────────────────
+// Extrae todos los números de un string de calibre
+// Ej: "38/42 y 40/50" → [38, 42, 40, 50]
+// Detecta si tiene Split
+function parseSizeValue(raw){
+  const s = (raw||'').toLowerCase();
+  const hasSplit = s.includes('split');
+  const hasAny = s.includes('any') || s.includes('todo') || s.includes('cualquier') ||
+                 s.includes('todos') || s.includes('all') || s.includes('calibres medianos') ||
+                 s.includes('principalmente') || s.includes('runner');
+  // Extraer todos los números
+  const nums = [];
+  const matches = s.match(/\d+/g);
+  if(matches) matches.forEach(n => { const v = parseInt(n); if(v >= 20 && v <= 120) nums.push(v); });
+  return { nums, hasSplit, hasAny };
+}
+
+// Un calibre hace match si:
+// - hasAny → siempre
+// - hasSplit → si incluirSplit está activo
+// - algún número cae dentro del rango [minVal, maxVal]
+function sizeMatches(raw, minVal, maxVal, incluirSplit){
+  const { nums, hasSplit, hasAny } = parseSizeValue(raw);
+  if(hasAny) return true;
+  if(hasSplit && incluirSplit) return true;
+  // Verificar si algún número del calibre cae dentro del rango
+  return nums.some(n => n >= minVal && n <= maxVal);
 }
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -281,8 +305,12 @@ let allRows = [];
 let currentView = 'matcher';
 let lastSearch = null;
 let selectedTypes = new Set();
-let selectedSizes = new Set();
 let aptoEuropa = false;
+let incluirSplit = false;
+let rangeMin = 38;
+let rangeMax = 50;
+const SLIDER_MIN = 30;
+const SLIDER_MAX = 100;
 
 // ─── OAUTH ────────────────────────────────────────────────────────────────────
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly';
@@ -291,8 +319,7 @@ function initGoogleAuth(){
   if(!cfg.clientId) return;
   if(typeof google === 'undefined' || !google?.accounts?.oauth2){ setTimeout(initGoogleAuth,500); return; }
   tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: cfg.clientId,
-    scope: SCOPES,
+    client_id: cfg.clientId, scope: SCOPES,
     callback: (resp) => {
       if(resp.error){ console.error(resp); return; }
       accessToken = resp.access_token;
@@ -305,34 +332,26 @@ function initGoogleAuth(){
 function handleAuth(){
   if(accessToken){
     google.accounts.oauth2.revoke(accessToken, () => {
-      accessToken = null; allRows = [];
-      updateAuthUI(false);
-      setSheetStatus('err','Desconectado');
+      accessToken=null; allRows=[];
+      updateAuthUI(false); setSheetStatus('err','Desconectado');
     });
   } else {
     if(!cfg.clientId){ showView('config'); showToast('⚠ Configurá el Client ID primero'); return; }
-    if(!tokenClient){ initGoogleAuth(); setTimeout(() => tokenClient?.requestAccessToken(), 600); return; }
+    if(!tokenClient){ initGoogleAuth(); setTimeout(()=>tokenClient?.requestAccessToken(),600); return; }
     tokenClient.requestAccessToken();
   }
 }
 
 function updateAuthUI(connected){
-  const btn = document.getElementById('auth-btn');
-  const txt = document.getElementById('auth-status-text');
-  if(connected){
-    btn.textContent = 'Desconectar Google'; btn.className = 'auth-btn connected';
-    txt.textContent = '● Conectado'; txt.style.color = 'var(--ok)';
-  } else {
-    btn.textContent = 'Conectar con Google'; btn.className = 'auth-btn';
-    txt.textContent = '';
-  }
+  const btn=document.getElementById('auth-btn'), txt=document.getElementById('auth-status-text');
+  if(connected){ btn.textContent='Desconectar Google'; btn.className='auth-btn connected'; txt.textContent='● Conectado'; txt.style.color='var(--ok)'; }
+  else { btn.textContent='Conectar con Google'; btn.className='auth-btn'; txt.textContent=''; }
 }
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 async function loadSheetData(){
   if(!accessToken){ setSheetStatus('err','Sin autenticar'); return; }
-  setSheetStatus('loading','Cargando clientes...');
-  showProgress();
+  setSheetStatus('loading','Cargando clientes...'); showProgress();
   try {
     const range = encodeURIComponent(`${cfg.sheetName}!A2:AL2000`);
     const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sheetId}/values/${range}`,
@@ -340,34 +359,29 @@ async function loadSheetData(){
     if(!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
     allRows = (data.values||[]).filter(row => row[COL.TYPE]||row[COL.SIZE]||row[COL.CLIENT]||row[COL.COMPANY]);
-    setSheetStatus('ok', `${allRows.length} clientes cargados`);
-    document.getElementById('last-sync').textContent = 'Sync ' + new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    setSheetStatus('ok',`${allRows.length} clientes cargados`);
+    document.getElementById('last-sync').textContent = 'Sync '+new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
     hideProgress();
-    if(currentView === 'matcher') renderMatcher();
-  } catch(e) {
+    if(currentView==='matcher') renderMatcher();
+  } catch(e){
     setSheetStatus('err','Error al cargar'); hideProgress();
     showToast('⚠ Error al conectar con el Sheet'); console.error(e);
   }
 }
 
-function setSheetStatus(state, text){
-  const dot = document.getElementById('sheet-dot');
-  dot.className = 'sheet-dot' + (state==='err'?' err':state==='loading'?' loading':'');
-  document.getElementById('sheet-status-text').textContent = text;
+function setSheetStatus(state,text){
+  document.getElementById('sheet-dot').className='sheet-dot'+(state==='err'?' err':state==='loading'?' loading':'');
+  document.getElementById('sheet-status-text').textContent=text;
 }
 
 // ─── MATCH LOGIC ─────────────────────────────────────────────────────────────
-function getMatches(types, sizes, aptoEuropa){
-  // types y sizes son arrays de strings seleccionados
-  const typesLow = types.map(t => t.toLowerCase());
-  const sizesLow = sizes.map(s => s.toLowerCase().trim());
-
+function getMatches(){
+  const types = [...selectedTypes].map(t=>t.toLowerCase());
   return allRows.filter(row => {
     if(!aptoEuropa && isEuropean(row[COL.REGION]||'')) return false;
     const rowCanonical = getCanonicalTypes(row[COL.TYPE]||'').map(t=>t.toLowerCase());
-    const rowSize = (row[COL.SIZE]||'').toLowerCase().trim();
-    const typeMatch = typesLow.some(t => rowCanonical.includes(t));
-    const sizeMatch = sizesLow.includes(rowSize);
+    const typeMatch = types.length === 0 || types.some(t=>rowCanonical.includes(t));
+    const sizeMatch = sizeMatches(row[COL.SIZE]||'', rangeMin, rangeMax, incluirSplit);
     return typeMatch && sizeMatch;
   }).map(row => ({
     client:  (row[COL.CLIENT] ||'').trim(),
@@ -377,20 +391,38 @@ function getMatches(types, sizes, aptoEuropa){
     size:    (row[COL.SIZE]   ||'').trim(),
     type:    (row[COL.TYPE]   ||'').trim(),
     canonicalTypes: getCanonicalTypes(row[COL.TYPE]||''),
+    sizeInfo: parseSizeValue(row[COL.SIZE]||''),
   }));
 }
 
-function getUniqueSizes(){
-  return [...new Set(allRows.map(r=>(r[COL.SIZE]||'').trim()).filter(Boolean))].sort();
+// ─── SLIDER ───────────────────────────────────────────────────────────────────
+function updateSlider(){
+  const minInput = document.getElementById('range-min');
+  const maxInput = document.getElementById('range-max');
+  if(!minInput||!maxInput) return;
+  let minV = parseInt(minInput.value);
+  let maxV = parseInt(maxInput.value);
+  // Prevent crossing
+  if(minV > maxV){ minV = maxV; minInput.value = minV; }
+  rangeMin = minV; rangeMax = maxV;
+  // Update fill
+  const pMin = (minV - SLIDER_MIN) / (SLIDER_MAX - SLIDER_MIN) * 100;
+  const pMax = (maxV - SLIDER_MIN) / (SLIDER_MAX - SLIDER_MIN) * 100;
+  const fill = document.getElementById('slider-fill');
+  if(fill){ fill.style.left = pMin+'%'; fill.style.width = (pMax-pMin)+'%'; }
+  // Update badges
+  const bMin = document.getElementById('badge-min');
+  const bMax = document.getElementById('badge-max');
+  if(bMin) bMin.textContent = minV;
+  if(bMax) bMax.textContent = maxV;
 }
 
 // ─── VIEWS ────────────────────────────────────────────────────────────────────
 function showView(view){
-  currentView = view;
+  currentView=view;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-  const navEl = document.getElementById('nav-'+view);
-  if(navEl) navEl.classList.add('active');
-  document.getElementById('view-title').textContent = {matcher:'Buscar Matches',config:'Configuración'}[view]||view;
+  const el=document.getElementById('nav-'+view); if(el) el.classList.add('active');
+  document.getElementById('view-title').textContent={matcher:'Buscar Matches',config:'Configuración'}[view]||view;
   if(view==='matcher') renderMatcher();
   else if(view==='config') renderConfig();
   if(window.innerWidth<=768) closeSidebar();
@@ -399,63 +431,62 @@ function showView(view){
 function toggleType(type){
   if(selectedTypes.has(type)) selectedTypes.delete(type);
   else selectedTypes.add(type);
-  // Update chip UI sin re-renderizar todo
-  document.querySelectorAll('.type-chip').forEach(el => {
+  document.querySelectorAll('.type-chip').forEach(el=>{
     el.classList.toggle('selected', selectedTypes.has(el.dataset.val));
   });
 }
 
-function toggleSize(size){
-  if(selectedSizes.has(size)) selectedSizes.delete(size);
-  else selectedSizes.add(size);
-  document.querySelectorAll('.size-chip').forEach(el => {
-    el.classList.toggle('selected', selectedSizes.has(el.dataset.val));
-  });
+function toggleSplit(){
+  incluirSplit = !incluirSplit;
+  const el = document.getElementById('split-toggle');
+  const check = document.getElementById('split-check');
+  const sub = document.getElementById('split-sub');
+  if(!el) return;
+  el.classList.toggle('active', incluirSplit);
+  check.innerHTML = incluirSplit ? `<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : '';
+  sub.textContent = incluirSplit ? 'Incluye clientes que compran Split' : 'No incluye clientes de Split';
 }
 
 function toggleEuropa(){
   aptoEuropa = !aptoEuropa;
-  const toggle = document.getElementById('europa-toggle');
-  const check  = document.getElementById('toggle-check');
-  const sub    = document.getElementById('europa-sub');
-  if(!toggle) return;
-  toggle.classList.toggle('active', aptoEuropa);
-  check.innerHTML = aptoEuropa
-    ? `<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-    : '';
+  const el=document.getElementById('europa-toggle');
+  const check=document.getElementById('toggle-check');
+  const sub=document.getElementById('europa-sub');
+  if(!el) return;
+  el.classList.toggle('active', aptoEuropa);
+  check.innerHTML = aptoEuropa ? `<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : '';
   sub.textContent = aptoEuropa ? 'Incluye clientes europeos en el resultado' : 'Excluye clientes europeos del resultado';
 }
 
 function runSearch(){
-  if(!selectedTypes.size){ showToast('⚠ Seleccioná al menos un tipo'); return; }
-  if(!selectedSizes.size){ showToast('⚠ Seleccioná al menos un calibre'); return; }
+  if(selectedTypes.size === 0){ showToast('⚠ Seleccioná al menos un tipo'); return; }
   if(!allRows.length){ showToast('⚠ Primero sincronizá el Sheet'); return; }
-  const types = [...selectedTypes];
-  const sizes = [...selectedSizes];
-  const results = getMatches(types, sizes, aptoEuropa);
-  lastSearch = { types, sizes, aptoEuropa, results };
+  const results = getMatches();
+  lastSearch = { types:[...selectedTypes], rangeMin, rangeMax, incluirSplit, aptoEuropa, results };
   renderResults();
 }
 
 function clearSearch(){
-  lastSearch = null;
-  selectedTypes.clear();
-  selectedSizes.clear();
-  aptoEuropa = false;
+  lastSearch=null; selectedTypes.clear(); aptoEuropa=false; incluirSplit=false;
+  rangeMin=38; rangeMax=50;
   renderMatcher();
 }
 
 function renderMatcher(){
-  const sizes = allRows.length ? getUniqueSizes() : ['38/42','40/50','50/60','60/70','70/80','Split','Meal','Fine Meal'];
   const TYPES = ['Raw','Blanched','Roasted'];
-
-  const typeChips = TYPES.map(t =>
+  const typeChips = TYPES.map(t=>
     `<span class="chip type-chip ${selectedTypes.has(t)?'selected':''}" data-val="${t}" onclick="toggleType('${t}')">${t}</span>`
   ).join('');
 
-  const sizeChips = sizes.map(s =>
-    `<span class="chip size-chip ${selectedSizes.has(s)?'selected':''}" data-val="${s}" onclick="toggleSize('${s}')">${s}</span>`
-  ).join('');
+  const pMin = (rangeMin-SLIDER_MIN)/(SLIDER_MAX-SLIDER_MIN)*100;
+  const pMax = (rangeMax-SLIDER_MIN)/(SLIDER_MAX-SLIDER_MIN)*100;
+
+  // Tick marks for reference
+  const ticks = [30,38,40,42,50,60,70,100];
+  const ticksHtml = ticks.map(t => {
+    const p = (t-SLIDER_MIN)/(SLIDER_MAX-SLIDER_MIN)*100;
+    return `<span style="position:absolute;left:${p}%;transform:translateX(-50%);font-size:9px;color:var(--text3);font-family:var(--mono);">${t}</span>`;
+  }).join('');
 
   const hasData = allRows.length > 0;
   let bannerHtml = '';
@@ -469,15 +500,49 @@ function renderMatcher(){
     ${bannerHtml}
     <div class="oferta-card">
       <div class="oferta-title">🥜 Nueva Oferta</div>
-      <div class="oferta-sub">Seleccioná uno o varios tipos y calibres para encontrar los clientes que hacen match.</div>
+      <div class="oferta-sub">Seleccioná tipo, rango de calibre y si incluye Split para encontrar los matches.</div>
 
       <label class="form-label">Tipo de maní</label>
       <div class="chip-group">${typeChips}</div>
 
       <hr class="form-divider">
 
-      <label class="form-label">Calibre (Size)</label>
-      <div class="chip-group">${sizeChips}</div>
+      <label class="form-label">Rango de calibre</label>
+
+      <div class="slider-values">
+        <span class="slider-val-badge" id="badge-min">${rangeMin}</span>
+        <span class="slider-val-sep">→</span>
+        <span class="slider-val-badge" id="badge-max">${rangeMax}</span>
+        <span style="font-size:11px;color:var(--text3);margin-left:4px;">clientes con calibres en este rango</span>
+      </div>
+
+      <div class="slider-wrap">
+        <div class="slider-track-wrap">
+          <div id="slider-fill" class="slider-fill" style="left:${pMin}%;width:${pMax-pMin}%;"></div>
+          <input type="range" class="slider-input" id="range-min"
+            min="${SLIDER_MIN}" max="${SLIDER_MAX}" value="${rangeMin}" step="1"
+            style="z-index:3;"
+            oninput="updateSlider()">
+          <input type="range" class="slider-input" id="range-max"
+            min="${SLIDER_MIN}" max="${SLIDER_MAX}" value="${rangeMax}" step="1"
+            style="z-index:4;"
+            oninput="updateSlider()">
+        </div>
+        <div class="slider-labels" style="position:relative;height:16px;margin-top:8px;">
+          ${ticksHtml}
+        </div>
+      </div>
+
+      <div class="split-toggle ${incluirSplit?'active':''}" id="split-toggle" onclick="toggleSplit()">
+        <div class="split-check" id="split-check">
+          ${incluirSplit?`<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
+        </div>
+        <span style="font-size:16px;">✂️</span>
+        <div>
+          <div class="toggle-label-main">Incluir Split</div>
+          <div class="toggle-label-sub" id="split-sub">${incluirSplit?'Incluye clientes que compran Split':'No incluye clientes de Split'}</div>
+        </div>
+      </div>
 
       <div class="europa-toggle ${aptoEuropa?'active':''}" id="europa-toggle" onclick="toggleEuropa()">
         <div class="toggle-check" id="toggle-check">
@@ -492,7 +557,7 @@ function renderMatcher(){
 
       <div class="form-actions">
         <button class="btn-search" onclick="runSearch()">🔍 Buscar matches</button>
-        ${lastSearch ? `<button class="btn-reset" onclick="clearSearch()">Limpiar</button>` : ''}
+        ${lastSearch?`<button class="btn-reset" onclick="clearSearch()">Limpiar</button>`:''}
       </div>
     </div>
     <div id="results-area"></div>
@@ -504,7 +569,7 @@ function renderMatcher(){
 function renderResults(){
   const area = document.getElementById('results-area');
   if(!area || !lastSearch) return;
-  const { types, sizes, aptoEuropa, results } = lastSearch;
+  const { types, rangeMin, rangeMax, incluirSplit, aptoEuropa, results } = lastSearch;
   const uniqueCountries = [...new Set(results.map(r=>r.country).filter(Boolean))].length;
 
   const statsHtml = `<div class="stats-row">
@@ -526,15 +591,16 @@ function renderResults(){
   </div>`;
 
   const typePills = types.map(t=>`<span class="result-pill accent">${t}</span>`).join('');
-  const sizePills = sizes.map(s=>`<span class="result-pill dark">${s}</span>`).join('');
-  const euPill = aptoEuropa ? `<span class="result-pill eu">🇪🇺 Apto EU</span>` : '';
+  const rangePill = `<span class="result-pill dark">${rangeMin}–${rangeMax}</span>`;
+  const splitPill = incluirSplit ? `<span class="result-pill muted">✂️ Split</span>` : '';
+  const euPill    = aptoEuropa  ? `<span class="result-pill eu">🇪🇺 EU</span>` : '';
 
   let listHtml = '';
   if(results.length === 0){
     listHtml = `<div class="empty-state">
       <div class="empty-icon">🔍</div>
       <div class="empty-title">Sin matches</div>
-      <div class="empty-sub">No hay clientes que compren <strong>${types.join(' o ')}</strong> en calibre <strong>${sizes.join(' o ')}</strong>${!aptoEuropa?' fuera de Europa':''}.</div>
+      <div class="empty-sub">No hay clientes para <strong>${types.join(' o ')}</strong> en el rango <strong>${rangeMin}–${rangeMax}</strong>${incluirSplit?' o Split':''}${!aptoEuropa?' fuera de Europa':''}.</div>
     </div>`;
   } else {
     listHtml = `<div class="match-list">` +
@@ -542,20 +608,21 @@ function renderResults(){
         const initial = (m.company||m.client||'?')[0].toUpperCase();
         const name = m.company||m.client||'—';
         const meta = [m.country, m.region].filter(Boolean).join(' · ');
-        const matchedTypes = m.canonicalTypes.filter(t => types.includes(t));
-        return `<div class="match-card" style="animation:fadeIn .2s ease ${i*.04}s both;">
+        const matchedTypes = m.canonicalTypes.filter(t=>types.map(x=>x.toLowerCase()).includes(t.toLowerCase()));
+        const sizeLabel = m.sizeInfo.hasAny ? 'Any' : m.sizeInfo.hasSplit && m.sizeInfo.nums.length===0 ? 'Split' : m.size;
+        return `<div class="match-card" style="animation-delay:${i*.03}s">
           <div class="match-avatar">${initial}</div>
           <div class="match-body">
             <div class="match-name">${name}</div>
             ${meta?`<div class="match-meta">${meta}</div>`:''}
             <div class="match-tags">
               ${matchedTypes.map(t=>`<span class="match-tag type">${t}</span>`).join('')}
-              <span class="match-tag size">${m.size}</span>
+              <span class="match-tag ${m.sizeInfo.hasAny?'split':m.sizeInfo.hasSplit&&!m.sizeInfo.nums.length?'split':'size'}">${sizeLabel}</span>
               ${m.region?`<span class="match-tag region">${m.region}</span>`:''}
               ${m.country?`<span class="match-tag country">${m.country}</span>`:''}
             </div>
           </div>
-          <div class="match-right"><div class="match-check">✓</div></div>
+          <div class="match-check">✓</div>
         </div>`;
       }).join('') + `</div>`;
   }
@@ -564,7 +631,7 @@ function renderResults(){
     ${statsHtml}
     <div class="results-header">
       <div class="results-title">${results.length} match${results.length!==1?'es':''} encontrado${results.length!==1?'s':''}</div>
-      <div class="results-pills">${typePills}${sizePills}${euPill}</div>
+      <div class="results-pills">${typePills}${rangePill}${splitPill}${euPill}</div>
     </div>
     ${listHtml}
   `;
@@ -575,7 +642,7 @@ function renderConfig(){
   document.getElementById('content').innerHTML = `
   <div class="config-section">
     <div class="config-title">Conexión con Google</div>
-    <div class="config-desc">OAuth Client ID de Google Cloud para leer el Sheet privado.</div>
+    <div class="config-desc">OAuth Client ID para leer el Sheet privado.</div>
     <div class="config-field">
       <div class="config-label">Google OAuth Client ID</div>
       <input class="config-input" id="cfg-clientId" value="${cfg.clientId}" placeholder="1096062212521-xxx.apps.googleusercontent.com">
@@ -584,7 +651,6 @@ function renderConfig(){
   </div>
   <div class="config-section">
     <div class="config-title">Google Sheet de Clientes</div>
-    <div class="config-desc">Base de datos de demandas.</div>
     <div class="config-field">
       <div class="config-label">ID del Sheet</div>
       <input class="config-input" id="cfg-sheetId" value="${cfg.sheetId}">
@@ -594,22 +660,6 @@ function renderConfig(){
       <input class="config-input" id="cfg-sheetName" value="${cfg.sheetName}" placeholder="Sheet1">
     </div>
     <div class="config-save"><button class="btn primary" onclick="saveConfig()">Guardar y conectar</button></div>
-  </div>
-  <div class="config-section">
-    <div class="config-title">Mapeo de tipos</div>
-    <div class="config-desc">Cómo se traducen los valores del Sheet a los 3 tipos canónicos.</div>
-    <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono);">
-      <thead><tr style="border-bottom:1px solid var(--border);">
-        <th style="padding:6px 8px;text-align:left;color:var(--text3);">Valor en Sheet</th>
-        <th style="padding:6px 8px;text-align:left;color:var(--text3);">Aparece en</th>
-      </tr></thead>
-      <tbody>
-        ${Object.entries(TYPE_MAP).map(([k,v])=>`<tr style="border-bottom:1px solid var(--border);">
-          <td style="padding:6px 8px;color:var(--text2);">${k}</td>
-          <td style="padding:6px 8px;">${v.map(t=>`<span style="background:var(--accent-light);color:var(--accent);padding:1px 7px;border-radius:10px;font-size:10px;margin-right:4px;">${t}</span>`).join('')}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>
   </div>`;
 }
 
@@ -620,31 +670,20 @@ function saveConfig(){
   localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
   initGoogleAuth();
   showToast('✓ Configuración guardada');
-  setTimeout(() => showView('matcher'), 800);
+  setTimeout(()=>showView('matcher'),800);
 }
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.style.opacity='1';
-  clearTimeout(t._tid); t._tid=setTimeout(()=>t.style.opacity='0',2800);
-}
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.opacity='1'; clearTimeout(t._tid); t._tid=setTimeout(()=>t.style.opacity='0',2800); }
 function showProgress(){ document.getElementById('progress-bar').classList.add('active'); }
 function hideProgress(){ document.getElementById('progress-bar').classList.remove('active'); }
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('overlay-close').style.display=document.getElementById('sidebar').classList.contains('open')?'block':'none';
-}
-function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('overlay-close').style.display='none';
-}
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay-close').style.display=document.getElementById('sidebar').classList.contains('open')?'block':'none'; }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay-close').style.display='none'; }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
 window.onload = () => {
   if(cfg.clientId) initGoogleAuth();
   renderMatcher();
-  setSheetStatus('err', cfg.clientId ? 'Sin autenticar' : 'Sin configurar');
+  setSheetStatus('err', cfg.clientId?'Sin autenticar':'Sin configurar');
 };
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
