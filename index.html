@@ -7,55 +7,38 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🥜%3C/text%3E%3C/svg%3E">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
-
 :root {
-  --bg:#f5f5f7;
-  --bg2:#ffffff;
-  --bg3:#f0f0f2;
-  --bg4:#e8e8ed;
-  --border:#d2d2d7;
-  --border2:#c7c7cc;
-  --text:#1d1d1f;
-  --text2:#424245;
-  --text3:#86868b;
-  --accent:#d4891a;
-  --accent-dim:#b86a12;
-  --accent-light:#fdf3e3;
-  --ok:#34c759;
-  --ok-light:#edfaf1;
-  --danger:#ff3b30;
-  --danger-light:#fff0ef;
-  --warn:#ff9500;
-  --warn-light:#fff8ee;
-  --info:#0071e3;
-  --info-light:#e8f2fd;
-  --font:'Inter',sans-serif;
-  --mono:'DM Mono',monospace;
-  --radius:10px;
-  --radius-lg:14px;
-  --radius-xl:18px;
+  --bg:#f5f5f7;--bg2:#ffffff;--bg3:#f0f0f2;--bg4:#e8e8ed;
+  --border:#d2d2d7;--border2:#c7c7cc;
+  --text:#1d1d1f;--text2:#424245;--text3:#86868b;
+  --accent:#d4891a;--accent-dim:#b86a12;--accent-light:#fdf3e3;
+  --ok:#34c759;--ok-light:#edfaf1;
+  --danger:#ff3b30;--danger-light:#fff0ef;
+  --warn:#ff9500;--warn-light:#fff8ee;
+  --info:#0071e3;--info-light:#e8f2fd;
+  --font:'Inter',sans-serif;--mono:'DM Mono',monospace;
+  --radius:10px;--radius-lg:14px;--radius-xl:18px;
   --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06);
   --shadow-lg:0 4px 20px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.06);
 }
-
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
 button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 
 /* LAYOUT */
 .shell{display:flex;min-height:100vh;}
-.sidebar{width:240px;min-height:100vh;background:rgba(255,255,255,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:10;}
+.sidebar{width:240px;min-height:100vh;background:rgba(255,255,255,.85);backdrop-filter:blur(20px);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:10;}
 .main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
 
 /* SIDEBAR */
 .logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);}
 .logo-icon{font-size:28px;margin-bottom:6px;}
 .logo-text{font-size:17px;font-weight:600;color:var(--text);letter-spacing:-0.4px;}
-.logo-sub{font-size:11px;color:var(--text3);letter-spacing:0.2px;margin-top:2px;}
-.nav{padding:10px 0;flex:1;overflow-y:auto;}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.nav{padding:10px 0;flex:1;}
 .nav-section{padding:0 10px;margin-bottom:4px;}
 .nav-label{font-size:10px;font-weight:600;letter-spacing:0.5px;color:var(--text3);padding:10px 10px 4px;text-transform:uppercase;}
-.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);color:var(--text2);font-size:13px;font-weight:400;cursor:pointer;transition:all .15s;position:relative;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);color:var(--text2);font-size:13px;cursor:pointer;transition:all .15s;}
 .nav-item:hover{background:var(--bg3);color:var(--text);}
 .nav-item.active{background:var(--accent);color:#fff;}
 .nav-item .icon{width:16px;text-align:center;font-size:13px;}
@@ -66,60 +49,70 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .sheet-dot.loading{background:var(--warn);animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 .auth-btn{margin-top:8px;width:100%;padding:7px 12px;border-radius:var(--radius);font-size:12px;font-weight:500;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s;font-family:var(--font);}
-.auth-btn:hover{background:var(--bg4);color:var(--text);}
+.auth-btn:hover{background:var(--bg4);}
 .auth-btn.connected{border-color:var(--ok);color:var(--ok);background:var(--ok-light);}
 
 /* TOPBAR */
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:sticky;top:0;z-index:5;}
-.topbar-title{font-size:17px;font-weight:600;letter-spacing:-0.3px;color:var(--text);}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.85);backdrop-filter:blur(20px);position:sticky;top:0;z-index:5;}
+.topbar-title{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
 .topbar-right{display:flex;align-items:center;gap:8px;}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:var(--bg2);color:var(--text2);box-shadow:var(--shadow);}
 .btn:hover{background:var(--bg3);}
-.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 1px 3px rgba(212,137,26,.3);}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
 .btn.primary:hover{background:var(--accent-dim);}
-.btn:disabled{opacity:.4;cursor:not-allowed;}
 
 /* CONTENT */
 .content{padding:24px;flex:1;}
 
-/* OFERTA FORM */
+/* FORM CARD */
 .oferta-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px;margin-bottom:24px;box-shadow:var(--shadow);}
-.oferta-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.oferta-title{font-size:16px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
 .oferta-sub{font-size:12px;color:var(--text3);margin-bottom:20px;}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.form-field{display:flex;flex-direction:column;gap:5px;}
-.form-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;}
-.form-select,.form-input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 12px;outline:none;transition:all .15s;width:100%;appearance:none;-webkit-appearance:none;}
-.form-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2386868b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;}
-.form-select:focus,.form-input:focus{border-color:var(--accent);background:var(--bg2);}
-.form-select:focus{outline:none;}
+.form-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;display:block;}
+
+/* MULTI-SELECT CHIPS */
+.chip-group{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px;}
+.chip{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none;}
+.chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+.chip.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
+.chip.size-chip{font-family:var(--mono);font-size:12px;padding:6px 14px;}
+.chip.size-chip.selected{background:var(--text);border-color:var(--text);color:#fff;}
+.chip.size-chip:hover:not(.selected){border-color:var(--text);color:var(--text);}
 
 /* APTO EUROPA TOGGLE */
-.europa-toggle{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--radius-lg);border:2px solid var(--border);cursor:pointer;transition:all .15s;user-select:none;background:var(--bg3);}
+.europa-toggle{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--radius-lg);border:2px solid var(--border);cursor:pointer;transition:all .15s;user-select:none;background:var(--bg3);margin-top:16px;}
 .europa-toggle.active{border-color:var(--info);background:var(--info-light);}
-.europa-toggle:hover{border-color:var(--border2);}
-.europa-toggle.active:hover{border-color:var(--info);}
 .toggle-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;background:var(--bg2);}
 .europa-toggle.active .toggle-check{background:var(--info);border-color:var(--info);}
-.toggle-label-main{font-size:13px;font-weight:500;color:var(--text);}
+.toggle-label-main{font-size:13px;font-weight:500;}
 .toggle-label-sub{font-size:11px;color:var(--text3);margin-top:1px;}
-.europa-flag{font-size:18px;flex-shrink:0;}
+
+/* DIVIDER */
+.form-divider{border:none;border-top:1px solid var(--border);margin:18px 0;}
 
 /* FORM ACTIONS */
-.form-actions{grid-column:1/-1;display:flex;gap:10px;margin-top:4px;}
+.form-actions{display:flex;gap:10px;margin-top:18px;}
 .btn-search{flex:1;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-lg);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 8px rgba(212,137,26,.25);}
 .btn-search:hover{background:var(--accent-dim);}
 .btn-search:disabled{opacity:.4;cursor:not-allowed;}
 .btn-reset{padding:11px 18px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:var(--radius-lg);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
 .btn-reset:hover{background:var(--bg3);}
 
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow);}
+.stat-label{font-size:11px;font-weight:500;color:var(--text3);margin-bottom:6px;}
+.stat-value{font-size:28px;font-weight:600;font-family:var(--mono);line-height:1;letter-spacing:-1px;}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+
 /* RESULTS */
-.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.results-title{font-size:14px;font-weight:600;color:var(--text);}
-.results-meta{display:flex;align-items:center;gap:6px;}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.results-title{font-size:14px;font-weight:600;}
+.results-pills{display:flex;gap:5px;flex-wrap:wrap;}
 .result-pill{font-size:10px;font-family:var(--mono);padding:3px 10px;border-radius:20px;background:var(--bg3);color:var(--text3);border:1px solid var(--border);}
 .result-pill.accent{background:var(--accent-light);color:var(--accent);border-color:rgba(212,137,26,.2);}
 .result-pill.eu{background:var(--info-light);color:var(--info);border-color:rgba(0,113,227,.15);}
+.result-pill.dark{background:var(--text);color:#fff;border-color:var(--text);}
 
 /* MATCH CARDS */
 .match-list{display:flex;flex-direction:column;gap:8px;}
@@ -127,7 +120,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .match-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px);border-color:var(--border2);}
 .match-avatar{width:38px;height:38px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--accent);flex-shrink:0;}
 .match-body{flex:1;min-width:0;}
-.match-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.match-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .match-meta{font-size:11px;color:var(--text3);margin-top:2px;}
 .match-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
 .match-tag{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:20px;font-weight:500;}
@@ -135,54 +128,41 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .match-tag.size{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
 .match-tag.region{background:var(--info-light);color:var(--info);border:1px solid rgba(0,113,227,.15);}
 .match-tag.country{background:#f5f0ff;color:#6e3ab0;border:1px solid rgba(110,58,176,.15);}
-.match-score{text-align:right;flex-shrink:0;}
-.match-score-val{font-size:22px;font-weight:700;font-family:var(--mono);color:var(--ok);line-height:1;}
-.match-score-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-top:2px;}
+.match-right{text-align:right;flex-shrink:0;}
+.match-check{font-size:20px;color:var(--ok);}
 
-/* EMPTY / LOADING */
+/* EMPTY */
 .empty-state{padding:60px 24px;text-align:center;color:var(--text3);}
 .empty-icon{font-size:40px;margin-bottom:12px;opacity:.5;}
 .empty-title{font-size:15px;font-weight:500;color:var(--text2);margin-bottom:6px;}
-.empty-sub{font-size:12px;color:var(--text3);}
-.spinner{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--text3);font-size:12px;gap:10px;}
-.spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
+.empty-sub{font-size:12px;}
 
-/* STATS ROW */
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
-.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow);}
-.stat-label{font-size:11px;font-weight:500;color:var(--text3);margin-bottom:6px;}
-.stat-value{font-size:28px;font-weight:600;font-family:var(--mono);line-height:1;letter-spacing:-1px;}
-.stat-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+/* BANNER */
+.info-banner{background:var(--accent-light);border:1px solid rgba(212,137,26,.2);border-radius:var(--radius);padding:12px 16px;font-size:12px;color:var(--accent-dim);margin-bottom:24px;line-height:1.6;}
 
 /* CONFIG */
 .config-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;box-shadow:var(--shadow);}
-.config-title{font-size:13px;font-weight:600;margin-bottom:3px;color:var(--text);}
+.config-title{font-size:13px;font-weight:600;margin-bottom:3px;}
 .config-desc{font-size:11px;color:var(--text3);margin-bottom:14px;}
 .config-field{margin-bottom:10px;}
 .config-label{font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:500;}
-.config-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:11px;padding:7px 10px;transition:border-color .15s;outline:none;}
+.config-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:11px;padding:7px 10px;outline:none;transition:border-color .15s;}
 .config-input:focus{border-color:var(--accent);background:var(--bg2);}
 .config-save{display:flex;justify-content:flex-end;margin-top:10px;}
 
-/* TOAST */
+/* SPINNER / TOAST / PROGRESS */
+.spinner{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--text3);font-size:12px;gap:10px;}
+.spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 #toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 16px;border-radius:10px;font-weight:500;font-size:12px;z-index:999;transition:opacity .3s;pointer-events:none;box-shadow:var(--shadow-lg);opacity:0;}
-
-/* PROGRESS */
-.progress-bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#e2a832);z-index:9999;transform-origin:left;transform:scaleX(0);border-radius:0 2px 2px 0;}
+.progress-bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#e2a832);z-index:9999;transform-origin:left;transform:scaleX(0);}
 .progress-bar.active{animation:progress 1.5s ease-in-out infinite;}
 @keyframes progress{0%{transform:scaleX(0);opacity:1;}60%{transform:scaleX(.7);opacity:1;}100%{transform:scaleX(1);opacity:0;}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
-/* ERROR BANNER */
-.error-banner{background:var(--danger-light);border:1px solid rgba(255,59,48,.2);border-radius:var(--radius);padding:10px 14px;font-size:12px;color:var(--danger);margin-bottom:16px;}
-
-/* INFO BANNER */
-.info-banner{background:var(--accent-light);border:1px solid rgba(212,137,26,.2);border-radius:var(--radius);padding:12px 16px;font-size:12px;color:var(--accent-dim);margin-bottom:24px;line-height:1.5;}
-
-/* MOBILE TOGGLE */
-.mobile-toggle{display:none;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:15px;color:var(--text2);}
+/* MOBILE */
+.mobile-toggle{display:none;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:15px;}
 .overlay-close{display:none;position:fixed;inset:0;z-index:9;background:rgba(0,0,0,.3);}
-
 @media(max-width:768px){
   .mobile-toggle{display:flex;}
   .sidebar{transform:translateX(-240px);transition:transform .2s ease;}
@@ -190,9 +170,8 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
   .main{margin-left:0;}
   .content{padding:14px;}
   .topbar{padding:10px 14px;}
-  .form-grid{grid-template-columns:1fr;}
   .stats-row{grid-template-columns:1fr 1fr;}
-  .match-card{padding:12px 14px;}
+  .chip{font-size:12px;padding:6px 12px;}
 }
 </style>
 </head>
@@ -202,8 +181,6 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 <div id="toast"></div>
 
 <div class="shell">
-
-<!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="logo">
     <div class="logo-icon">🥜</div>
@@ -220,28 +197,20 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
         <span class="icon">⚙</span> Configuración
       </div>
     </div>
-    <div class="nav-section" style="margin-top:auto;">
-      <div class="nav-label">Acerca de</div>
-      <div class="nav-item" style="cursor:default;pointer-events:none;opacity:.6;">
-        <span class="icon">📋</span> v1.0 — Jun 2025
-      </div>
-    </div>
   </nav>
   <div class="sidebar-footer">
     <button id="auth-btn" class="auth-btn" onclick="handleAuth()">Conectar con Google</button>
     <div style="margin-top:6px;font-size:10px;color:var(--text3);" id="auth-status-text"></div>
     <div class="sheet-status" style="margin-top:6px;">
-      <span class="sheet-dot" id="sheet-dot"></span>
+      <span class="sheet-dot err" id="sheet-dot"></span>
       <span id="sheet-status-text">Sin conectar</span>
     </div>
   </div>
 </aside>
-
 <div class="overlay-close" id="overlay-close" onclick="closeSidebar()"></div>
 
-<!-- MAIN -->
 <main class="main">
-  <div class="topbar" id="topbar">
+  <div class="topbar">
     <div style="display:flex;align-items:center;gap:12px;">
       <span class="mobile-toggle" onclick="toggleSidebar()">☰</span>
       <span class="topbar-title" id="view-title">Buscar Matches</span>
@@ -255,7 +224,6 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     <div class="spinner"><div class="spin"></div> Iniciando...</div>
   </div>
 </main>
-
 </div>
 
 <script>
@@ -268,20 +236,43 @@ let cfg = {
   ...JSON.parse(localStorage.getItem(CFG_KEY) || '{}')
 };
 
-// ─── COLUMNAS DEL SHEET ──────────────────────────────────────────────────────
-// B=1 Client, C=2 Region, D=3 Country, E=4 Company
-// AC=28 Size, AD=29 Type
-const COL = {
-  CLIENT:  1,
-  REGION:  2,
-  COUNTRY: 3,
-  COMPANY: 4,
-  SIZE:    28,
-  TYPE:    29,
-};
-
+// ─── COLUMNAS ─────────────────────────────────────────────────────────────────
+const COL = { CLIENT:1, REGION:2, COUNTRY:3, COMPANY:4, SIZE:28, TYPE:29 };
 const EUROPEAN_REGIONS = ['europe','europa','eu','emea','european union'];
 function isEuropean(v){ return EUROPEAN_REGIONS.includes((v||'').toLowerCase().trim()); }
+
+// ─── MAPEO DE TIPOS ───────────────────────────────────────────────────────────
+const TYPE_MAP = {
+  'raw':                               ['Raw'],
+  'crudo':                             ['Raw'],
+  'blanched':                          ['Blanched'],
+  'blancheados':                       ['Blanched'],
+  'blanched g1/g2':                    ['Blanched'],
+  'horneado':                          ['Roasted'],
+  'tostado':                           ['Roasted'],
+  'blancheado / raw':                  ['Blanched','Raw'],
+  'blanched - raw':                    ['Blanched','Raw'],
+  'blanched / raw':                    ['Blanched','Raw'],
+  'raw - blanched':                    ['Blanched','Raw'],
+  'raw y blanched':                    ['Blanched','Raw'],
+  'crudo y bl':                        ['Blanched','Raw'],
+  'crudo y blanched bf':               ['Blanched','Raw'],
+  'blanceado, crudo y con cascara':    ['Blanched','Raw'],
+  'blancheado, crudo y con cascara':   ['Blanched','Raw'],
+  'tostado, crudo y blanhceado todo':  ['Blanched','Raw','Roasted'],
+  'tostado, crudo y blanheado todo':   ['Blanched','Raw','Roasted'],
+};
+
+function getCanonicalTypes(rawType){
+  const key = (rawType||'').toLowerCase().trim();
+  if(TYPE_MAP[key]) return TYPE_MAP[key];
+  // Heurística fallback
+  const types = [];
+  if(key.includes('raw')||key.includes('crudo')) types.push('Raw');
+  if(key.includes('blanch')||key.includes('blanc')) types.push('Blanched');
+  if(key.includes('roast')||key.includes('tost')||key.includes('horn')) types.push('Roasted');
+  return types.length ? [...new Set(types)] : [];
+}
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let accessToken = null;
@@ -289,15 +280,16 @@ let tokenClient = null;
 let allRows = [];
 let currentView = 'matcher';
 let lastSearch = null;
+let selectedTypes = new Set();
+let selectedSizes = new Set();
+let aptoEuropa = false;
 
 // ─── OAUTH ────────────────────────────────────────────────────────────────────
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly';
 
 function initGoogleAuth(){
   if(!cfg.clientId) return;
-  if(typeof google === 'undefined' || !google?.accounts?.oauth2){
-    setTimeout(initGoogleAuth, 500); return;
-  }
+  if(typeof google === 'undefined' || !google?.accounts?.oauth2){ setTimeout(initGoogleAuth,500); return; }
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: cfg.clientId,
     scope: SCOPES,
@@ -313,17 +305,12 @@ function initGoogleAuth(){
 function handleAuth(){
   if(accessToken){
     google.accounts.oauth2.revoke(accessToken, () => {
-      accessToken = null;
-      allRows = [];
+      accessToken = null; allRows = [];
       updateAuthUI(false);
-      setSheetStatus('err', 'Desconectado');
+      setSheetStatus('err','Desconectado');
     });
   } else {
-    if(!cfg.clientId){
-      showView('config');
-      showToast('⚠ Configurá el Client ID primero');
-      return;
-    }
+    if(!cfg.clientId){ showView('config'); showToast('⚠ Configurá el Client ID primero'); return; }
     if(!tokenClient){ initGoogleAuth(); setTimeout(() => tokenClient?.requestAccessToken(), 600); return; }
     tokenClient.requestAccessToken();
   }
@@ -333,13 +320,10 @@ function updateAuthUI(connected){
   const btn = document.getElementById('auth-btn');
   const txt = document.getElementById('auth-status-text');
   if(connected){
-    btn.textContent = 'Desconectar Google';
-    btn.className = 'auth-btn connected';
-    txt.textContent = '● Conectado';
-    txt.style.color = 'var(--ok)';
+    btn.textContent = 'Desconectar Google'; btn.className = 'auth-btn connected';
+    txt.textContent = '● Conectado'; txt.style.color = 'var(--ok)';
   } else {
-    btn.textContent = 'Conectar con Google';
-    btn.className = 'auth-btn';
+    btn.textContent = 'Conectar con Google'; btn.className = 'auth-btn';
     txt.textContent = '';
   }
 }
@@ -347,282 +331,263 @@ function updateAuthUI(connected){
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 async function loadSheetData(){
   if(!accessToken){ setSheetStatus('err','Sin autenticar'); return; }
-  setSheetStatus('loading', 'Cargando clientes...');
+  setSheetStatus('loading','Cargando clientes...');
   showProgress();
   try {
     const range = encodeURIComponent(`${cfg.sheetName}!A2:AL2000`);
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${cfg.sheetId}/values/${range}`;
-    const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sheetId}/values/${range}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } });
     if(!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
-    allRows = (data.values || []).filter(row =>
-      (row[COL.TYPE] || row[COL.SIZE] || row[COL.CLIENT] || row[COL.COMPANY])
-    );
+    allRows = (data.values||[]).filter(row => row[COL.TYPE]||row[COL.SIZE]||row[COL.CLIENT]||row[COL.COMPANY]);
     setSheetStatus('ok', `${allRows.length} clientes cargados`);
-    document.getElementById('last-sync').textContent = 'Sync ' + new Date().toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('last-sync').textContent = 'Sync ' + new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
     hideProgress();
-    renderMatcher();
+    if(currentView === 'matcher') renderMatcher();
   } catch(e) {
-    setSheetStatus('err', 'Error al cargar');
-    hideProgress();
-    console.error(e);
-    showToast('⚠ Error al conectar con el Sheet');
+    setSheetStatus('err','Error al cargar'); hideProgress();
+    showToast('⚠ Error al conectar con el Sheet'); console.error(e);
   }
 }
 
 function setSheetStatus(state, text){
   const dot = document.getElementById('sheet-dot');
-  dot.className = 'sheet-dot' + (state === 'err' ? ' err' : state === 'loading' ? ' loading' : '');
+  dot.className = 'sheet-dot' + (state==='err'?' err':state==='loading'?' loading':'');
   document.getElementById('sheet-status-text').textContent = text;
 }
 
 // ─── MATCH LOGIC ─────────────────────────────────────────────────────────────
-function getMatches(type, size, aptoEuropa){
-  const tLow = (type || '').toLowerCase().trim();
-  const sLow = (size || '').toLowerCase().trim();
+function getMatches(types, sizes, aptoEuropa){
+  // types y sizes son arrays de strings seleccionados
+  const typesLow = types.map(t => t.toLowerCase());
+  const sizesLow = sizes.map(s => s.toLowerCase().trim());
+
   return allRows.filter(row => {
-    const rowType   = (row[COL.TYPE]   || '').toLowerCase().trim();
-    const rowSize   = (row[COL.SIZE]   || '').toLowerCase().trim();
-    const rowRegion = (row[COL.REGION] || '');
-    if(!aptoEuropa && isEuropean(rowRegion)) return false;
-    return rowType === tLow && rowSize === sLow;
+    if(!aptoEuropa && isEuropean(row[COL.REGION]||'')) return false;
+    const rowCanonical = getCanonicalTypes(row[COL.TYPE]||'').map(t=>t.toLowerCase());
+    const rowSize = (row[COL.SIZE]||'').toLowerCase().trim();
+    const typeMatch = typesLow.some(t => rowCanonical.includes(t));
+    const sizeMatch = sizesLow.includes(rowSize);
+    return typeMatch && sizeMatch;
   }).map(row => ({
-    client:  (row[COL.CLIENT]  || '').trim(),
-    region:  (row[COL.REGION]  || '').trim(),
-    country: (row[COL.COUNTRY] || '').trim(),
-    company: (row[COL.COMPANY] || '').trim(),
-    size:    (row[COL.SIZE]    || '').trim(),
-    type:    (row[COL.TYPE]    || '').trim(),
+    client:  (row[COL.CLIENT] ||'').trim(),
+    region:  (row[COL.REGION] ||'').trim(),
+    country: (row[COL.COUNTRY]||'').trim(),
+    company: (row[COL.COMPANY]||'').trim(),
+    size:    (row[COL.SIZE]   ||'').trim(),
+    type:    (row[COL.TYPE]   ||'').trim(),
+    canonicalTypes: getCanonicalTypes(row[COL.TYPE]||''),
   }));
 }
 
-// Get unique values from sheet for dropdowns
-function getUniqueTypes(){
-  return [...new Set(allRows.map(r => (r[COL.TYPE]||'').trim()).filter(Boolean))].sort();
-}
 function getUniqueSizes(){
-  return [...new Set(allRows.map(r => (r[COL.SIZE]||'').trim()).filter(Boolean))].sort();
+  return [...new Set(allRows.map(r=>(r[COL.SIZE]||'').trim()).filter(Boolean))].sort();
 }
 
 // ─── VIEWS ────────────────────────────────────────────────────────────────────
 function showView(view){
   currentView = view;
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const navEl = document.getElementById('nav-' + view);
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const navEl = document.getElementById('nav-'+view);
   if(navEl) navEl.classList.add('active');
-  const titles = { matcher: 'Buscar Matches', config: 'Configuración' };
-  document.getElementById('view-title').textContent = titles[view] || view;
-  if(view === 'matcher') renderMatcher();
-  else if(view === 'config') renderConfig();
-  if(window.innerWidth <= 768) closeSidebar();
+  document.getElementById('view-title').textContent = {matcher:'Buscar Matches',config:'Configuración'}[view]||view;
+  if(view==='matcher') renderMatcher();
+  else if(view==='config') renderConfig();
+  if(window.innerWidth<=768) closeSidebar();
+}
+
+function toggleType(type){
+  if(selectedTypes.has(type)) selectedTypes.delete(type);
+  else selectedTypes.add(type);
+  // Update chip UI sin re-renderizar todo
+  document.querySelectorAll('.type-chip').forEach(el => {
+    el.classList.toggle('selected', selectedTypes.has(el.dataset.val));
+  });
+}
+
+function toggleSize(size){
+  if(selectedSizes.has(size)) selectedSizes.delete(size);
+  else selectedSizes.add(size);
+  document.querySelectorAll('.size-chip').forEach(el => {
+    el.classList.toggle('selected', selectedSizes.has(el.dataset.val));
+  });
+}
+
+function toggleEuropa(){
+  aptoEuropa = !aptoEuropa;
+  const toggle = document.getElementById('europa-toggle');
+  const check  = document.getElementById('toggle-check');
+  const sub    = document.getElementById('europa-sub');
+  if(!toggle) return;
+  toggle.classList.toggle('active', aptoEuropa);
+  check.innerHTML = aptoEuropa
+    ? `<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    : '';
+  sub.textContent = aptoEuropa ? 'Incluye clientes europeos en el resultado' : 'Excluye clientes europeos del resultado';
+}
+
+function runSearch(){
+  if(!selectedTypes.size){ showToast('⚠ Seleccioná al menos un tipo'); return; }
+  if(!selectedSizes.size){ showToast('⚠ Seleccioná al menos un calibre'); return; }
+  if(!allRows.length){ showToast('⚠ Primero sincronizá el Sheet'); return; }
+  const types = [...selectedTypes];
+  const sizes = [...selectedSizes];
+  const results = getMatches(types, sizes, aptoEuropa);
+  lastSearch = { types, sizes, aptoEuropa, results };
+  renderResults();
+}
+
+function clearSearch(){
+  lastSearch = null;
+  selectedTypes.clear();
+  selectedSizes.clear();
+  aptoEuropa = false;
+  renderMatcher();
 }
 
 function renderMatcher(){
-  const types = getUniqueTypes();
-  const sizes = getUniqueSizes();
+  const sizes = allRows.length ? getUniqueSizes() : ['38/42','40/50','50/60','60/70','70/80','Split','Meal','Fine Meal'];
+  const TYPES = ['Raw','Blanched','Roasted'];
+
+  const typeChips = TYPES.map(t =>
+    `<span class="chip type-chip ${selectedTypes.has(t)?'selected':''}" data-val="${t}" onclick="toggleType('${t}')">${t}</span>`
+  ).join('');
+
+  const sizeChips = sizes.map(s =>
+    `<span class="chip size-chip ${selectedSizes.has(s)?'selected':''}" data-val="${s}" onclick="toggleSize('${s}')">${s}</span>`
+  ).join('');
+
   const hasData = allRows.length > 0;
-
-  // Fallback lists if sheet not loaded yet
-  const fallbackTypes = ['Blanched','Raw','Roasted','Split','Blanched Split','Roasted Blanched','In Shell','Flour','Paste','Oil'];
-  const fallbackSizes = ['38/42','40/50','50/60','60/70','70/80','Split','Meal','Fine Meal','Bold'];
-  const typeOpts = (hasData ? types : fallbackTypes).map(t =>
-    `<option value="${t}" ${lastSearch?.type === t ? 'selected' : ''}>${t}</option>`
-  ).join('');
-  const sizeOpts = (hasData ? sizes : fallbackSizes).map(s =>
-    `<option value="${s}" ${lastSearch?.size === s ? 'selected' : ''}>${s}</option>`
-  ).join('');
-  const aptoEu = lastSearch?.aptoEuropa ?? false;
-
-  // Stats from last search
-  let statsHtml = '';
-  if(lastSearch && lastSearch.results !== null) {
-    const total = lastSearch.results.length;
-    const euCount = allRows.filter(r => isEuropean(r[COL.REGION]||'')).length;
-    const uniqueCountries = [...new Set(lastSearch.results.map(r=>r.country).filter(Boolean))].length;
-    statsHtml = `<div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">Matches encontrados</div>
-        <div class="stat-value" style="color:${total > 0 ? 'var(--ok)' : 'var(--text3)'};">${total}</div>
-        <div class="stat-sub">${lastSearch.type} · ${lastSearch.size}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Países distintos</div>
-        <div class="stat-value">${uniqueCountries || '—'}</div>
-        <div class="stat-sub">en el resultado</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Europa</div>
-        <div class="stat-value" style="color:${lastSearch.aptoEuropa ? 'var(--info)' : 'var(--text3)'};">${lastSearch.aptoEuropa ? 'Incluida' : 'Excluida'}</div>
-        <div class="stat-sub">${euCount} clientes EU en DB</div>
-      </div>
-    </div>`;
-  }
-
   let bannerHtml = '';
   if(!accessToken){
-    bannerHtml = `<div class="info-banner">
-      🔐 <strong>Conectate con Google</strong> para cargar los clientes desde el Sheet en tiempo real.<br>
-      Hacé click en <em>"Conectar con Google"</em> en la barra lateral.
-    </div>`;
-  } else if(!hasData) {
-    bannerHtml = `<div class="info-banner">
-      📋 Sheet conectado. Hacé click en <strong>↻ Sincronizar</strong> para cargar los clientes.
-    </div>`;
-  }
-
-  let resultsHtml = '';
-  if(lastSearch && lastSearch.results !== null){
-    const matches = lastSearch.results;
-    if(matches.length === 0){
-      resultsHtml = `<div class="empty-state">
-        <div class="empty-icon">🔍</div>
-        <div class="empty-title">Sin matches</div>
-        <div class="empty-sub">No hay clientes que compren <strong>${lastSearch.type}</strong> en calibre <strong>${lastSearch.size}</strong>${!lastSearch.aptoEuropa ? ' fuera de Europa' : ''}.</div>
-      </div>`;
-    } else {
-      const pills = `
-        <span class="result-pill accent">${lastSearch.type}</span>
-        <span class="result-pill accent">${lastSearch.size}</span>
-        ${lastSearch.aptoEuropa ? '<span class="result-pill eu">🇪🇺 Apto EU</span>' : ''}
-      `;
-      resultsHtml = `
-        <div class="results-header">
-          <div class="results-title">${matches.length} match${matches.length !== 1 ? 'es' : ''} encontrado${matches.length !== 1 ? 's' : ''}</div>
-          <div class="results-meta">${pills}</div>
-        </div>
-        <div class="match-list">
-          ${matches.map((m, i) => {
-            const initial = (m.company || m.client || '?')[0].toUpperCase();
-            const name = m.company || m.client || '—';
-            const meta = [m.country, m.region].filter(Boolean).join(' · ');
-            return `<div class="match-card" style="animation:fadeIn .2s ease ${i * 0.04}s both;">
-              <div class="match-avatar">${initial}</div>
-              <div class="match-body">
-                <div class="match-name">${name}</div>
-                ${meta ? `<div class="match-meta">${meta}</div>` : ''}
-                <div class="match-tags">
-                  <span class="match-tag type">${m.type}</span>
-                  <span class="match-tag size">${m.size}</span>
-                  ${m.region ? `<span class="match-tag region">${m.region}</span>` : ''}
-                  ${m.country ? `<span class="match-tag country">${m.country}</span>` : ''}
-                </div>
-              </div>
-              <div class="match-score">
-                <div class="match-score-val">✓</div>
-                <div class="match-score-label">Match</div>
-              </div>
-            </div>`;
-          }).join('')}
-        </div>`;
-    }
+    bannerHtml = `<div class="info-banner">🔐 <strong>Conectate con Google</strong> para cargar los clientes desde el Sheet.<br>Hacé click en <em>"Conectar con Google"</em> en la barra lateral.</div>`;
+  } else if(!hasData){
+    bannerHtml = `<div class="info-banner">📋 Conectado. Hacé click en <strong>↻ Sincronizar</strong> para cargar los clientes.</div>`;
   }
 
   document.getElementById('content').innerHTML = `
     ${bannerHtml}
     <div class="oferta-card">
       <div class="oferta-title">🥜 Nueva Oferta</div>
-      <div class="oferta-sub">Ingresá los datos de la oferta de la planta para encontrar los clientes que hacen match.</div>
-      <div class="form-grid">
-        <div class="form-field">
-          <label class="form-label">Tipo de maní (Type)</label>
-          <select class="form-select" id="f-type">
-            <option value="">— Seleccioná —</option>
-            ${typeOpts}
-          </select>
+      <div class="oferta-sub">Seleccioná uno o varios tipos y calibres para encontrar los clientes que hacen match.</div>
+
+      <label class="form-label">Tipo de maní</label>
+      <div class="chip-group">${typeChips}</div>
+
+      <hr class="form-divider">
+
+      <label class="form-label">Calibre (Size)</label>
+      <div class="chip-group">${sizeChips}</div>
+
+      <div class="europa-toggle ${aptoEuropa?'active':''}" id="europa-toggle" onclick="toggleEuropa()">
+        <div class="toggle-check" id="toggle-check">
+          ${aptoEuropa?`<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
         </div>
-        <div class="form-field">
-          <label class="form-label">Calibre (Size)</label>
-          <select class="form-select" id="f-size">
-            <option value="">— Seleccioná —</option>
-            ${sizeOpts}
-          </select>
-        </div>
-        <div class="europa-toggle ${aptoEu ? 'active' : ''}" id="europa-toggle" onclick="toggleEuropa()">
-          <div class="toggle-check" id="toggle-check">
-            ${aptoEu ? `<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ''}
-          </div>
-          <span class="europa-flag">🇪🇺</span>
-          <div>
-            <div class="toggle-label-main">Apto Europa</div>
-            <div class="toggle-label-sub" id="europa-sub">${aptoEu ? 'Incluye clientes europeos en el resultado' : 'Excluye clientes europeos del resultado'}</div>
-          </div>
-        </div>
-        <div class="form-actions">
-          <button class="btn-search" id="btn-search" onclick="runSearch()" ${!hasData && !accessToken ? 'disabled' : ''}>
-            🔍 Buscar matches
-          </button>
-          ${lastSearch ? `<button class="btn-reset" onclick="clearSearch()">Limpiar</button>` : ''}
+        <span style="font-size:18px;">🇪🇺</span>
+        <div>
+          <div class="toggle-label-main">Apto Europa</div>
+          <div class="toggle-label-sub" id="europa-sub">${aptoEuropa?'Incluye clientes europeos en el resultado':'Excluye clientes europeos del resultado'}</div>
         </div>
       </div>
+
+      <div class="form-actions">
+        <button class="btn-search" onclick="runSearch()">🔍 Buscar matches</button>
+        ${lastSearch ? `<button class="btn-reset" onclick="clearSearch()">Limpiar</button>` : ''}
+      </div>
     </div>
-    ${statsHtml}
-    ${resultsHtml}
+    <div id="results-area"></div>
   `;
 
-  // Inject fadeIn animation
-  if(!document.getElementById('match-anim-style')){
-    const s = document.createElement('style');
-    s.id = 'match-anim-style';
-    s.textContent = `@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}`;
-    document.head.appendChild(s);
+  if(lastSearch) renderResults();
+}
+
+function renderResults(){
+  const area = document.getElementById('results-area');
+  if(!area || !lastSearch) return;
+  const { types, sizes, aptoEuropa, results } = lastSearch;
+  const uniqueCountries = [...new Set(results.map(r=>r.country).filter(Boolean))].length;
+
+  const statsHtml = `<div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Matches encontrados</div>
+      <div class="stat-value" style="color:${results.length>0?'var(--ok)':'var(--text3)'}">${results.length}</div>
+      <div class="stat-sub">${types.join(' + ')}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Países distintos</div>
+      <div class="stat-value">${uniqueCountries||'—'}</div>
+      <div class="stat-sub">en el resultado</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Europa</div>
+      <div class="stat-value" style="color:${aptoEuropa?'var(--info)':'var(--text3)'};font-size:18px;">${aptoEuropa?'Incluida':'Excluida'}</div>
+      <div class="stat-sub">filtro aplicado</div>
+    </div>
+  </div>`;
+
+  const typePills = types.map(t=>`<span class="result-pill accent">${t}</span>`).join('');
+  const sizePills = sizes.map(s=>`<span class="result-pill dark">${s}</span>`).join('');
+  const euPill = aptoEuropa ? `<span class="result-pill eu">🇪🇺 Apto EU</span>` : '';
+
+  let listHtml = '';
+  if(results.length === 0){
+    listHtml = `<div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <div class="empty-title">Sin matches</div>
+      <div class="empty-sub">No hay clientes que compren <strong>${types.join(' o ')}</strong> en calibre <strong>${sizes.join(' o ')}</strong>${!aptoEuropa?' fuera de Europa':''}.</div>
+    </div>`;
+  } else {
+    listHtml = `<div class="match-list">` +
+      results.map((m,i) => {
+        const initial = (m.company||m.client||'?')[0].toUpperCase();
+        const name = m.company||m.client||'—';
+        const meta = [m.country, m.region].filter(Boolean).join(' · ');
+        const matchedTypes = m.canonicalTypes.filter(t => types.includes(t));
+        return `<div class="match-card" style="animation:fadeIn .2s ease ${i*.04}s both;">
+          <div class="match-avatar">${initial}</div>
+          <div class="match-body">
+            <div class="match-name">${name}</div>
+            ${meta?`<div class="match-meta">${meta}</div>`:''}
+            <div class="match-tags">
+              ${matchedTypes.map(t=>`<span class="match-tag type">${t}</span>`).join('')}
+              <span class="match-tag size">${m.size}</span>
+              ${m.region?`<span class="match-tag region">${m.region}</span>`:''}
+              ${m.country?`<span class="match-tag country">${m.country}</span>`:''}
+            </div>
+          </div>
+          <div class="match-right"><div class="match-check">✓</div></div>
+        </div>`;
+      }).join('') + `</div>`;
   }
+
+  area.innerHTML = `
+    ${statsHtml}
+    <div class="results-header">
+      <div class="results-title">${results.length} match${results.length!==1?'es':''} encontrado${results.length!==1?'s':''}</div>
+      <div class="results-pills">${typePills}${sizePills}${euPill}</div>
+    </div>
+    ${listHtml}
+  `;
 }
 
-let aptoEuropa = false;
-function toggleEuropa(){
-  aptoEuropa = !aptoEuropa;
-  const toggle = document.getElementById('europa-toggle');
-  const check = document.getElementById('toggle-check');
-  const sub = document.getElementById('europa-sub');
-  toggle.classList.toggle('active', aptoEuropa);
-  check.innerHTML = aptoEuropa
-    ? `<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-    : '';
-  sub.textContent = aptoEuropa ? 'Incluye clientes europeos en el resultado' : 'Excluye clientes europeos del resultado';
-  if(lastSearch) lastSearch.aptoEuropa = aptoEuropa;
-}
-
-function runSearch(){
-  const type = document.getElementById('f-type')?.value?.trim();
-  const size = document.getElementById('f-size')?.value?.trim();
-  if(!type || !size){
-    showToast('⚠ Seleccioná tipo y calibre');
-    return;
-  }
-  if(!allRows.length){
-    showToast('⚠ Primero sincronizá el Sheet');
-    return;
-  }
-  const results = getMatches(type, size, aptoEuropa);
-  lastSearch = { type, size, aptoEuropa, results };
-  renderMatcher();
-}
-
-function clearSearch(){
-  lastSearch = null;
-  aptoEuropa = false;
-  renderMatcher();
-}
-
-// ─── CONFIG VIEW ──────────────────────────────────────────────────────────────
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
 function renderConfig(){
   document.getElementById('content').innerHTML = `
   <div class="config-section">
     <div class="config-title">Conexión con Google</div>
-    <div class="config-desc">Necesitás un OAuth Client ID de Google Cloud para autenticarte y leer el Sheet privado.</div>
+    <div class="config-desc">OAuth Client ID de Google Cloud para leer el Sheet privado.</div>
     <div class="config-field">
       <div class="config-label">Google OAuth Client ID</div>
-      <input class="config-input" id="cfg-clientId" value="${cfg.clientId}" placeholder="309220748877-xxxxx.apps.googleusercontent.com">
-      <div style="font-size:10px;color:var(--text3);margin-top:4px;font-family:var(--mono)">Desde console.cloud.google.com → APIs → Credentials → OAuth 2.0 Client ID</div>
+      <input class="config-input" id="cfg-clientId" value="${cfg.clientId}" placeholder="1096062212521-xxx.apps.googleusercontent.com">
     </div>
     <div class="config-save"><button class="btn primary" onclick="saveConfig()">Guardar</button></div>
   </div>
   <div class="config-section">
     <div class="config-title">Google Sheet de Clientes</div>
-    <div class="config-desc">El Sheet con la base de datos de demandas de clientes.</div>
+    <div class="config-desc">Base de datos de demandas.</div>
     <div class="config-field">
       <div class="config-label">ID del Sheet</div>
-      <input class="config-input" id="cfg-sheetId" value="${cfg.sheetId}" placeholder="10KFlKkOIKz-l6_wXHiHM_9WL-u97AtDM3MtXmHNI5OQ">
+      <input class="config-input" id="cfg-sheetId" value="${cfg.sheetId}">
     </div>
     <div class="config-field">
       <div class="config-label">Nombre de la pestaña</div>
@@ -631,32 +596,20 @@ function renderConfig(){
     <div class="config-save"><button class="btn primary" onclick="saveConfig()">Guardar y conectar</button></div>
   </div>
   <div class="config-section">
-    <div class="config-title">Columnas utilizadas</div>
-    <div class="config-desc">La app lee estas columnas del Sheet para hacer el match.</div>
+    <div class="config-title">Mapeo de tipos</div>
+    <div class="config-desc">Cómo se traducen los valores del Sheet a los 3 tipos canónicos.</div>
     <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono);">
       <thead><tr style="border-bottom:1px solid var(--border);">
-        <th style="padding:6px 8px;text-align:left;color:var(--text3);">Columna</th>
-        <th style="padding:6px 8px;text-align:left;color:var(--text3);">Letra</th>
-        <th style="padding:6px 8px;text-align:left;color:var(--text3);">Uso</th>
+        <th style="padding:6px 8px;text-align:left;color:var(--text3);">Valor en Sheet</th>
+        <th style="padding:6px 8px;text-align:left;color:var(--text3);">Aparece en</th>
       </tr></thead>
       <tbody>
-        ${[
-          ['Client','B','Nombre del cliente'],
-          ['Region','C','Región (filtra Europa)'],
-          ['Country','D','País del cliente'],
-          ['Company','E','Nombre de la empresa'],
-          ['Size','AC','Calibre — match principal'],
-          ['Type','AD','Tipo de maní — match principal'],
-        ].map(([name, col, uso]) => `<tr style="border-bottom:1px solid var(--border);">
-          <td style="padding:7px 8px;color:var(--accent);font-weight:500;">${name}</td>
-          <td style="padding:7px 8px;color:var(--text2);">${col}</td>
-          <td style="padding:7px 8px;color:var(--text3);">${uso}</td>
+        ${Object.entries(TYPE_MAP).map(([k,v])=>`<tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:6px 8px;color:var(--text2);">${k}</td>
+          <td style="padding:6px 8px;">${v.map(t=>`<span style="background:var(--accent-light);color:var(--accent);padding:1px 7px;border-radius:10px;font-size:10px;margin-right:4px;">${t}</span>`).join('')}</td>
         </tr>`).join('')}
       </tbody>
     </table>
-    <div style="margin-top:12px;font-size:11px;color:var(--text3);padding:10px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);">
-      <strong>Filtro Europa:</strong> Si la oferta NO es apto europa, se excluyen las filas donde la columna <code style="font-family:var(--mono);background:var(--bg4);padding:1px 4px;border-radius:3px;">Region</code> contenga: europe, europa, eu, emea.
-    </div>
   </div>`;
 }
 
@@ -672,21 +625,19 @@ function saveConfig(){
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 function showToast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.opacity = '1';
-  clearTimeout(t._tid);
-  t._tid = setTimeout(() => t.style.opacity = '0', 2800);
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._tid); t._tid=setTimeout(()=>t.style.opacity='0',2800);
 }
 function showProgress(){ document.getElementById('progress-bar').classList.add('active'); }
 function hideProgress(){ document.getElementById('progress-bar').classList.remove('active'); }
 function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('overlay-close').style.display = document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
+  document.getElementById('overlay-close').style.display=document.getElementById('sidebar').classList.contains('open')?'block':'none';
 }
 function closeSidebar(){
   document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('overlay-close').style.display = 'none';
+  document.getElementById('overlay-close').style.display='none';
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
@@ -696,8 +647,6 @@ window.onload = () => {
   setSheetStatus('err', cfg.clientId ? 'Sin autenticar' : 'Sin configurar');
 };
 </script>
-
-<!-- Google Identity Services -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </body>
 </html>
