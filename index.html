@@ -311,7 +311,7 @@ function parseSizeValue(raw){
                  s.includes('principalmente') || s.includes('runner');
   // Extraer todos los números
   const nums = [];
-  const matches = s.match(/\d+/g);
+  const matches = s.match(/[0-9]+/g);
   if(matches) matches.forEach(n => { const v = parseInt(n); if(v >= 20 && v <= 120) nums.push(v); });
   return { nums, hasSplit, hasAny };
 }
@@ -415,7 +415,7 @@ function normalizeFUSize(raw){
 
   // Extraer números del string
   const nums = [];
-  const matches = s.match(/\d+/g);
+  const matches = s.match(/[0-9]+/g);
   if(matches) matches.forEach(n=>{ const v=parseInt(n); if(v>=20&&v<=120) nums.push(v); });
 
   const hasSplit = s.includes('split');
