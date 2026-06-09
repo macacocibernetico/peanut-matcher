@@ -497,7 +497,7 @@ function onCompanyInput(){
     // Find DB row for subtitle
     var dbRow=allRows.find(function(r){return(r[COL.COMPANY]||r[COL.CLIENT]||'').trim()===n;});
     var sub=dbRow?[dbRow[COL.COUNTRY],dbRow[COL.REGION]].filter(Boolean).join(' · '):'';
-    return '<div class="autocomplete-item" data-val="'+n+'" onmousedown="selectCompany(\''+n.replace(/'/g,"\\'")+'\')">'+'<div>'+n+'</div>'+(sub?'<div class="ac-sub">'+sub+'</div>':'')+'</div>';
+    return '<div class="autocomplete-item" onmousedown="selectCompanyIdx('+i+')"><div>'+n+'</div>'+(sub?'<div class="ac-sub">'+sub+'</div>':'')+'</div>';
   }).join('');
   list.classList.remove('hidden');
 }
@@ -508,10 +508,14 @@ function onCompanyKeydown(e){
   if(!items.length)return;
   if(e.key==='ArrowDown'){e.preventDefault();acSelectedIndex=Math.min(acSelectedIndex+1,items.length-1);items.forEach(function(el,i){el.classList.toggle('active',i===acSelectedIndex);});}
   else if(e.key==='ArrowUp'){e.preventDefault();acSelectedIndex=Math.max(acSelectedIndex-1,0);items.forEach(function(el,i){el.classList.toggle('active',i===acSelectedIndex);});}
-  else if(e.key==='Enter'&&acSelectedIndex>=0){e.preventDefault();selectCompany(items[acSelectedIndex].dataset.val);}
+  else if(e.key==='Enter'&&acSelectedIndex>=0){e.preventDefault();selectCompanyIdx(acSelectedIndex);}
   else if(e.key==='Escape'){list.classList.add('hidden');}
 }
 
+function selectCompanyIdx(idx){
+  var name=window._acNames&&window._acNames[idx];
+  if(name)selectCompany(name);
+}
 function selectCompany(name){
   document.getElementById('fu-company').value=name;
   document.getElementById('ac-list').classList.add('hidden');
@@ -822,8 +826,8 @@ function renderEmpresas(){
 }
 
 var empAcIdx=-1;
+var empAllNames=[];
 
-// Deduplica nombres ignorando mayusculas, prefiere el nombre de DB
 function deduplicateNames(dbNames,fuNames){
   var seen={};var result=[];
   dbNames.forEach(function(n){var k=n.toLowerCase().trim();if(!seen[k]){seen[k]=n;result.push(n);}});
@@ -836,22 +840,29 @@ function deduplicateNames(dbNames,fuNames){
   return result.sort();
 }
 
+function selectEmpresaByIndex(idx){
+  var name=empAllNames[idx];
+  if(!name)return;
+  selectEmpresa(name);
+}
+
 function onEmpSearch(val){
   empresasQuery=val;empAcIdx=-1;
   var list=document.getElementById('emp-ac-list');
   if(val.length<2){list.classList.add('hidden');document.getElementById('emp-results').innerHTML='';return;}
   var dbNames=getCompanyNames();
   var fuNames=[...new Set(followUpRows.map(function(r){return(r[1]||'').trim();}).filter(Boolean))];
-  var allNames=deduplicateNames(dbNames,fuNames);
+  empAllNames=deduplicateNames(dbNames,fuNames);
   var valLow=val.toLowerCase();
-  var matches=allNames.filter(function(n){
+  var matches=empAllNames.filter(function(n){
     return n.toLowerCase().includes(valLow)||similarity(n.toLowerCase(),valLow)>=0.8;
   }).slice(0,10);
   if(!matches.length){list.classList.add('hidden');renderEmpresaResults(val);return;}
   list.innerHTML=matches.map(function(n){
     var dbRow=allRows.find(function(r){return(r[COL.COMPANY]||r[COL.CLIENT]||'').trim().toLowerCase()===n.toLowerCase();});
     var sub=dbRow?[dbRow[COL.COUNTRY],dbRow[COL.REGION]].filter(Boolean).join(' · '):'Solo en Follow Up';
-    return '<div class="autocomplete-item" data-val="'+n+'" onmousedown="selectEmpresa(''+n.replace(/'/g,"\'")+'')"><div>'+n+'</div><div class="ac-sub">'+sub+'</div></div>';
+    var idx=empAllNames.indexOf(n);
+    return '<div class="autocomplete-item" onmousedown="selectEmpresaByIndex('+idx+')"><div>'+n+'</div><div class="ac-sub">'+sub+'</div></div>';
   }).join('');
   list.classList.remove('hidden');
 }
