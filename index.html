@@ -174,6 +174,26 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .filter-reset:hover{background:#ffd9d7;}
 .filter-count{font-size:11px;color:var(--text3);font-family:var(--mono);margin-left:auto;white-space:nowrap;}
 .eu-first-badge{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:var(--info-light);color:var(--info);border:1px solid rgba(0,113,227,.15);font-weight:600;}
+/* FOLLOW UP CARD */
+.fu-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;letter-spacing:.3px;}
+.fu-panel{margin-top:10px;background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:10px 12px;}
+.fu-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.fu-panel-title{font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.4px;}
+.fu-panel-count{font-size:10px;font-family:var(--mono);color:#b45309;background:rgba(180,83,9,.1);padding:1px 7px;border-radius:10px;}
+.fu-record{padding:7px 0;border-bottom:1px solid rgba(245,158,11,.15);display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start;}
+.fu-record:last-child{border-bottom:none;padding-bottom:0;}
+.fu-date{font-size:10px;font-family:var(--mono);color:#b45309;font-weight:600;white-space:nowrap;}
+.fu-details{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+.fu-tag{font-size:10px;font-family:var(--mono);padding:1px 7px;border-radius:10px;font-weight:500;}
+.fu-tag.size{background:rgba(180,83,9,.1);color:#92400e;}
+.fu-tag.type{background:rgba(217,119,6,.15);color:#78350f;}
+.fu-tag.price{background:rgba(16,185,129,.1);color:#065f46;}
+.fu-tag.tns{background:rgba(59,130,246,.1);color:#1e40af;}
+.fu-tag.supplier{background:rgba(139,92,246,.1);color:#5b21b6;}
+.fu-comment{font-size:11px;color:#78350f;margin-top:4px;line-height:1.4;font-style:italic;grid-column:1/-1;}
+.match-card.has-fu{border-color:rgba(245,158,11,.3);background:linear-gradient(135deg,#ffffff,#fffdf7);}
+.match-card.has-fu:hover{border-color:rgba(245,158,11,.5);}
+
 #toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 16px;border-radius:10px;font-weight:500;font-size:12px;z-index:999;transition:opacity .3s;pointer-events:none;box-shadow:var(--shadow-lg);opacity:0;}
 .progress-bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#e2a832);z-index:9999;transform-origin:left;transform:scaleX(0);}
 .progress-bar.active{animation:progress 1.5s ease-in-out infinite;}
@@ -312,6 +332,7 @@ function sizeMatches(raw, minVal, maxVal, incluirSplit){
 let accessToken = null;
 let tokenClient = null;
 let allRows = [];
+let followUpRows = [];
 let currentView = 'matcher';
 let lastSearch = null;
 let resultFilters = { region: '', country: '', type: '' };
@@ -360,17 +381,103 @@ function updateAuthUI(connected){
 }
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
+// ─── LEVENSHTEIN SIMILARITY ──────────────────────────────────────────────────
+function similarity(a, b){
+  a = (a||'').toLowerCase().trim().replace(/[^a-z0-9]/g,' ').replace(/\s+/g,' ');
+  b = (b||'').toLowerCase().trim().replace(/[^a-z0-9]/g,' ').replace(/\s+/g,' ');
+  if(a===b) return 1;
+  if(!a||!b) return 0;
+  const m=a.length, n=b.length;
+  const dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i===0?j:j===0?i:0));
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+    dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return 1 - dp[m][n]/Math.max(m,n);
+}
+
+function findFollowUp(companyName){
+  if(!followUpRows.length||!companyName) return [];
+  return followUpRows.filter(row => {
+    const fuName = (row[1]||'').trim(); // Col B = index 1
+    return similarity(companyName, fuName) >= 0.8;
+  });
+}
+
+// ─── NORMALIZAR SIZE DE FOLLOW UP ────────────────────────────────────────────
+// Mapea los valores crudos de Follow up al mismo sistema que Database (slider numérico + split)
+function normalizeFUSize(raw){
+  const s = (raw||'').toLowerCase().trim();
+  if(!s) return '—';
+
+  // "All", "todos", "all", "small sizes", "wholes", etc → Any
+  if(['all','todos','any','small sizes','wholes','wholes and splits',
+      'wholes & splits','sortex','sortex reject','chopped','pasta',
+      '2 - 4 mm','2-4mm'].some(k=>s===k||s.includes(k))) return 'Any';
+
+  // Extraer números del string
+  const nums = [];
+  const matches = s.match(/\d+/g);
+  if(matches) matches.forEach(n=>{ const v=parseInt(n); if(v>=20&&v<=120) nums.push(v); });
+
+  const hasSplit = s.includes('split');
+
+  // Construir label normalizado
+  const parts = [];
+
+  // Detectar calibres conocidos en los números
+  const KNOWN = [[28,32],[30,36],[30,37],[32,38],[34,38],[35,40],[38,42],[40,50],[50,60],[60,70],[70,80],[80,100],[70,100]];
+  const found = new Set();
+  KNOWN.forEach(([a,b]) => {
+    if(nums.includes(a) && nums.includes(b)) found.add(a+'/'+b);
+  });
+
+  if(found.size) parts.push(...found);
+  else if(nums.length) {
+    // Rangos sueltos tipo "30/50"
+    const sorted = [...new Set(nums)].sort((a,b)=>a-b);
+    if(sorted.length>=2) parts.push(sorted[0]+'/'+sorted[sorted.length-1]);
+    else parts.push(sorted[0]+'');
+  }
+
+  if(hasSplit) parts.push('Split');
+
+  return parts.length ? parts.join(' · ') : raw;
+}
+
+// ─── NORMALIZAR TYPE DE FOLLOW UP ────────────────────────────────────────────
+function normalizeFUType(raw){
+  const s = (raw||'').toLowerCase().trim();
+  if(!s) return '—';
+  if(s.includes('roast')||s.includes('tost')||s.includes('horn')) return 'Roasted';
+  if(s.includes('blanch')||s.includes('blanc')||s==='bf'||s.includes('blanched g')) return 'Blanched';
+  if(s.includes('raw')||s.includes('crudo')||s==='bf') return 'Raw';
+  return raw; // fallback: mostrar tal cual
+}
+
 async function loadSheetData(){
   if(!accessToken){ setSheetStatus('err','Sin autenticar'); return; }
-  setSheetStatus('loading','Cargando clientes...'); showProgress();
+  setSheetStatus('loading','Cargando datos...'); showProgress();
   try {
+    // Load Database
     const range = encodeURIComponent(`${cfg.sheetName}!A2:AL2000`);
     const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sheetId}/values/${range}`,
       { headers: { Authorization: `Bearer ${accessToken}` } });
     if(!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
     allRows = (data.values||[]).filter(row => row[COL.TYPE]||row[COL.SIZE]||row[COL.CLIENT]||row[COL.COMPANY]);
-    setSheetStatus('ok',`${allRows.length} clientes cargados`);
+
+    // Load Follow Up
+    try {
+      const fuRange = encodeURIComponent(`Follow up!A2:O2000`);
+      const fuR = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sheetId}/values/${fuRange}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } });
+      if(fuR.ok){
+        const fuData = await fuR.json();
+        followUpRows = (fuData.values||[]).filter(row => row[1]); // must have customer
+        console.log(`Follow up: ${followUpRows.length} registros`);
+      }
+    } catch(e){ console.warn('Follow up no disponible:', e); }
+
+    setSheetStatus('ok',`${allRows.length} clientes · ${followUpRows.length} follow ups`);
     document.getElementById('last-sync').textContent = 'Sync '+new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
     hideProgress();
     if(currentView==='matcher') renderMatcher();
@@ -388,22 +495,44 @@ function setSheetStatus(state,text){
 // ─── MATCH LOGIC ─────────────────────────────────────────────────────────────
 function getMatches(){
   const types = [...selectedTypes].map(t=>t.toLowerCase());
-  return allRows.filter(row => {
+  const results = allRows.filter(row => {
     if(!aptoEuropa && isEuropean(row[COL.REGION]||'')) return false;
     const rowCanonical = getCanonicalTypes(row[COL.TYPE]||'').map(t=>t.toLowerCase());
     const typeMatch = types.length === 0 || types.some(t=>rowCanonical.includes(t));
     const sizeMatch = sizeMatches(row[COL.SIZE]||'', rangeMin, rangeMax, incluirSplit);
     return typeMatch && sizeMatch;
-  }).map(row => ({
-    client:  (row[COL.CLIENT] ||'').trim(),
-    region:  (row[COL.REGION] ||'').trim(),
-    country: (row[COL.COUNTRY]||'').trim(),
-    company: (row[COL.COMPANY]||'').trim(),
-    size:    (row[COL.SIZE]   ||'').trim(),
-    type:    (row[COL.TYPE]   ||'').trim(),
-    canonicalTypes: getCanonicalTypes(row[COL.TYPE]||''),
-    sizeInfo: parseSizeValue(row[COL.SIZE]||''),
-  }));
+  }).map(row => {
+    const company = (row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
+    const fuRecords = findFollowUp(company);
+    const isEu = isEuropean(row[COL.REGION]||'');
+    // Priority: 0=EU+FU, 1=FU only, 2=EU only, 3=rest (when aptoEuropa)
+    //           0=FU, 1=rest (when not aptoEuropa)
+    let priority;
+    if(aptoEuropa){
+      if(isEu && fuRecords.length) priority = 0;
+      else if(fuRecords.length)    priority = 1;
+      else if(isEu)                priority = 2;
+      else                         priority = 3;
+    } else {
+      priority = fuRecords.length ? 0 : 1;
+    }
+    return {
+      client:  (row[COL.CLIENT] ||'').trim(),
+      region:  (row[COL.REGION] ||'').trim(),
+      country: (row[COL.COUNTRY]||'').trim(),
+      company,
+      size:    (row[COL.SIZE]   ||'').trim(),
+      type:    (row[COL.TYPE]   ||'').trim(),
+      canonicalTypes: getCanonicalTypes(row[COL.TYPE]||''),
+      sizeInfo: parseSizeValue(row[COL.SIZE]||''),
+      fuRecords,
+      hasFU: fuRecords.length > 0,
+      isEu,
+      priority,
+    };
+  });
+  // Sort by priority
+  return results.sort((a,b) => a.priority - b.priority);
 }
 
 // ─── SLIDER ───────────────────────────────────────────────────────────────────
@@ -598,38 +727,24 @@ function renderResults(){
   if(resultFilters.country) filtered = filtered.filter(r => r.country.toLowerCase() === resultFilters.country.toLowerCase());
   if(resultFilters.type)    filtered = filtered.filter(r => r.canonicalTypes.map(t=>t.toLowerCase()).includes(resultFilters.type.toLowerCase()));
 
-  // If apto europa, sort europeans first
-  if(aptoEuropa){
-    filtered.sort((a,b) => {
-      const aEu = isEuropean(a.region) ? 0 : 1;
-      const bEu = isEuropean(b.region) ? 0 : 1;
-      return aEu - bEu;
-    });
-  }
-
-  // Build unique options for filters
-  const uniqueRegions  = [...new Set(results.map(r=>r.region).filter(Boolean))].sort();
-  const uniqueCountries = [...new Set(results.map(r=>r.country).filter(Boolean))].sort();
-  const uniqueTypes    = [...new Set(results.flatMap(r=>r.canonicalTypes))].sort();
   const uniqueCountriesFiltered = [...new Set(filtered.map(r=>r.country).filter(Boolean))].length;
-
-  const hasFilters = resultFilters.region || resultFilters.country || resultFilters.type;
+  const fuCount = results.filter(r=>r.hasFU).length;
 
   const statsHtml = `<div class="stats-row">
     <div class="stat-card">
       <div class="stat-label">Matches encontrados</div>
       <div class="stat-value" style="color:${results.length>0?'var(--ok)':'var(--text3)'}">${results.length}</div>
-      <div class="stat-sub">${hasFilters?`<span style="color:var(--accent);">${filtered.length} tras filtros</span>`:types.join(' + ')}</div>
+      <div class="stat-sub">${resultFilters.region||resultFilters.country||resultFilters.type?`<span style="color:var(--accent)">${filtered.length} tras filtros</span>`:types.join(' + ')}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Países distintos</div>
-      <div class="stat-value">${uniqueCountriesFiltered||'—'}</div>
-      <div class="stat-sub">en el resultado</div>
+      <div class="stat-label">Con Follow Up</div>
+      <div class="stat-value" style="color:${fuCount>0?'#d97706':'var(--text3)'}">${fuCount}</div>
+      <div class="stat-sub">historial de contacto</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Europa</div>
       <div class="stat-value" style="color:${aptoEuropa?'var(--info)':'var(--text3)'};font-size:18px;">${aptoEuropa?'Incluida':'Excluida'}</div>
-      <div class="stat-sub">${aptoEuropa?'Primeros en la lista':''}</div>
+      <div class="stat-sub">${aptoEuropa?'Primeros en lista':''}</div>
     </div>
   </div>`;
 
@@ -638,86 +753,138 @@ function renderResults(){
   const splitPill = incluirSplit ? `<span class="result-pill muted">✂️ Split</span>` : '';
   const euPill    = aptoEuropa  ? `<span class="result-pill eu">🇪🇺 EU</span>` : '';
 
-  // Filter bar — solo si hay resultados
+  // Build unique filter options
+  const uniqueRegions   = [...new Set(results.map(r=>r.region).filter(Boolean))].sort();
+  const uniqueCountries = [...new Set(results.map(r=>r.country).filter(Boolean))].sort();
+  const uniqueTypes     = [...new Set(results.flatMap(r=>r.canonicalTypes))].sort();
+  const hasFilters = resultFilters.region||resultFilters.country||resultFilters.type;
+
   let filterBarHtml = '';
   if(results.length > 0){
-    const selStyle = (key, val) => resultFilters[key] === val && val ? 'active' : '';
     filterBarHtml = `<div class="filter-bar">
       <span class="filter-bar-label">Filtrar:</span>
-      ${aptoEuropa ? `<select class="filter-select ${selStyle('region','europe')||selStyle('region','europa')}" onchange="setResultFilter('region',this.value)">
+      <select class="filter-select ${resultFilters.region?'active':''}" onchange="setResultFilter('region',this.value)">
         <option value="">Todas las regiones</option>
         ${uniqueRegions.map(r=>`<option value="${r}" ${resultFilters.region===r?'selected':''}>${r}${isEuropean(r)?' 🇪🇺':''}</option>`).join('')}
-      </select>` : `<select class="filter-select ${resultFilters.region?'active':''}" onchange="setResultFilter('region',this.value)">
-        <option value="">Todas las regiones</option>
-        ${uniqueRegions.map(r=>`<option value="${r}" ${resultFilters.region===r?'selected':''}>${r}</option>`).join('')}
-      </select>`}
+      </select>
       <select class="filter-select ${resultFilters.country?'active':''}" onchange="setResultFilter('country',this.value)">
         <option value="">Todos los países</option>
         ${uniqueCountries.map(c=>`<option value="${c}" ${resultFilters.country===c?'selected':''}>${c}</option>`).join('')}
       </select>
-      ${uniqueTypes.length > 1 ? `<select class="filter-select ${resultFilters.type?'active':''}" onchange="setResultFilter('type',this.value)">
+      ${uniqueTypes.length>1?`<select class="filter-select ${resultFilters.type?'active':''}" onchange="setResultFilter('type',this.value)">
         <option value="">Todos los tipos</option>
         ${uniqueTypes.map(t=>`<option value="${t}" ${resultFilters.type===t?'selected':''}>${t}</option>`).join('')}
-      </select>` : ''}
-      ${hasFilters ? `<button class="filter-reset" onclick="clearResultFilters()">✕ Limpiar filtros</button>` : ''}
+      </select>`:''}
+      ${hasFilters?`<button class="filter-reset" onclick="clearResultFilters()">✕ Limpiar</button>`:''}
       <span class="filter-count">${filtered.length} de ${results.length}</span>
     </div>`;
   }
+
+  // Section labels per priority
+  const SECTION_LABELS = {
+    0: aptoEuropa ? '⭐ Follow Up · Europa'    : '⭐ Follow Up',
+    1: aptoEuropa ? '⭐ Follow Up · Resto'      : '🌍 Resto del mundo',
+    2: '🇪🇺 Europa',
+    3: '🌍 Resto del mundo',
+  };
+  const SECTION_COLORS = {
+    0: 'linear-gradient(90deg,#d97706,#f59e0b)',
+    1: aptoEuropa ? 'linear-gradient(90deg,#d97706,#f59e0b)' : 'var(--border)',
+    2: 'linear-gradient(90deg,var(--info),#60a5fa)',
+    3: 'var(--border)',
+  };
 
   let listHtml = '';
   if(filtered.length === 0){
     listHtml = `<div class="empty-state">
       <div class="empty-icon">🔍</div>
-      <div class="empty-title">${results.length > 0 ? 'Sin resultados con estos filtros' : 'Sin matches'}</div>
-      <div class="empty-sub">${results.length > 0 ? 'Probá cambiando los filtros de arriba.' : 'No hay clientes para los criterios seleccionados.'}</div>
+      <div class="empty-title">${results.length>0?'Sin resultados con estos filtros':'Sin matches'}</div>
+      <div class="empty-sub">${results.length>0?'Probá cambiando los filtros.':'No hay clientes para los criterios seleccionados.'}</div>
     </div>`;
   } else {
-    // Track if we already showed the EU divider
-    let shownEuDivider = false;
-    let shownOtherDivider = false;
-    listHtml = `<div class="match-list">`;
+    let lastPriority = -1;
+    listHtml = '<div class="match-list">';
     filtered.forEach((m, i) => {
+      // Section divider (only when no filters active)
+      if(!hasFilters && m.priority !== lastPriority){
+        const label = SECTION_LABELS[m.priority] || '';
+        const color = SECTION_COLORS[m.priority] || 'var(--border)';
+        if(label) listHtml += `<div style="display:flex;align-items:center;gap:10px;margin:${i>0?'12px':'0'} 0 8px;">
+          <span style="font-size:11px;font-weight:700;font-family:var(--mono);white-space:nowrap;background:${color};-webkit-background-clip:text;-webkit-text-fill-color:${m.priority<=1?'transparent':m.priority===2?'var(--info)':'var(--text3)'};color:${m.priority<=1?'#d97706':m.priority===2?'var(--info)':'var(--text3)'};">${label}</span>
+          <div style="flex:1;height:1px;background:${color};opacity:.3;"></div>
+        </div>`;
+        lastPriority = m.priority;
+      }
+
       const initial = (m.company||m.client||'?')[0].toUpperCase();
       const name = m.company||m.client||'—';
       const meta = [m.country, m.region].filter(Boolean).join(' · ');
       const matchedTypes = m.canonicalTypes.filter(t=>types.map(x=>x.toLowerCase()).includes(t.toLowerCase()));
-      const sizeLabel = m.sizeInfo.hasAny ? 'Any' : m.sizeInfo.hasSplit && m.sizeInfo.nums.length===0 ? 'Split' : m.size;
-      const isEu = isEuropean(m.region);
+      const sizeLabel = m.sizeInfo.hasAny?'Any':m.sizeInfo.hasSplit&&!m.sizeInfo.nums.length?'Split':m.size;
 
-      // Section dividers when apto europa
-      let divider = '';
-      if(aptoEuropa && !hasFilters){
-        if(isEu && !shownEuDivider){
-          divider = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;${i>0?'margin-top:4px':''}">
-            <span style="font-size:11px;font-weight:600;color:var(--info);font-family:var(--mono);">🇪🇺 EUROPA</span>
-            <div style="flex:1;height:1px;background:var(--info-light);"></div>
+      // Follow Up panel
+      let fuHtml = '';
+      if(m.hasFU){
+        // Sort by date desc (col A = index 0)
+        const sorted = [...m.fuRecords].sort((a,b)=>{
+          const da = new Date((a[0]||'').split('/').reverse().join('-'));
+          const db = new Date((b[0]||'').split('/').reverse().join('-'));
+          return db-da;
+        });
+        const records = sorted.slice(0,3).map(row => {
+          const date     = (row[0]||'').trim();
+          const sizeRaw  = (row[3]||'').trim();   // D
+          const typeRaw  = (row[4]||'').trim();   // E
+          const tns      = (row[8]||'').trim();   // I
+          const price    = (row[9]||'').trim();   // J
+          const supplier = (row[13]||'').trim();  // N
+          const comment  = (row[14]||'').trim();  // O
+          const size     = normalizeFUSize(sizeRaw);
+          const type     = normalizeFUType(typeRaw);
+          return `<div class="fu-record">
+            <span class="fu-date">${date||'—'}</span>
+            <div class="fu-details">
+              ${size&&size!=='—'?`<span class="fu-tag size">${size}</span>`:''}
+              ${type&&type!=='—'?`<span class="fu-tag type">${type}</span>`:''}
+              ${tns?`<span class="fu-tag tns">${tns} tn</span>`:''}
+              ${price?`<span class="fu-tag price">USD ${price}</span>`:''}
+              ${supplier?`<span class="fu-tag supplier">🏭 ${supplier}</span>`:''}
+            </div>
+            ${comment?`<div class="fu-comment">"${comment}"</div>`:''}
           </div>`;
-          shownEuDivider = true;
-        } else if(!isEu && shownEuDivider && !shownOtherDivider){
-          divider = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;margin-top:4px;">
-            <span style="font-size:11px;font-weight:600;color:var(--text3);font-family:var(--mono);">🌍 RESTO DEL MUNDO</span>
-            <div style="flex:1;height:1px;background:var(--border);"></div>
-          </div>`;
-          shownOtherDivider = true;
-        }
+        }).join('');
+        fuHtml = `<div class="fu-panel">
+          <div class="fu-panel-header">
+            <span class="fu-panel-title">📋 Follow Up</span>
+            <span class="fu-panel-count">${m.fuRecords.length} registro${m.fuRecords.length>1?'s':''}</span>
+          </div>
+          ${records}
+          ${m.fuRecords.length>3?`<div style="font-size:10px;color:#b45309;margin-top:6px;font-family:var(--mono);">+ ${m.fuRecords.length-3} registros más</div>`:''}
+        </div>`;
       }
 
-      listHtml += divider + `<div class="match-card" style="animation-delay:${i*.03}s">
-        <div class="match-avatar">${initial}</div>
-        <div class="match-body">
-          <div class="match-name">${name}</div>
-          ${meta?`<div class="match-meta">${meta}</div>`:''}
-          <div class="match-tags">
-            ${matchedTypes.map(t=>`<span class="match-tag type">${t}</span>`).join('')}
-            <span class="match-tag ${m.sizeInfo.hasAny?'split':m.sizeInfo.hasSplit&&!m.sizeInfo.nums.length?'split':'size'}">${sizeLabel}</span>
-            ${m.region?`<span class="match-tag region">${isEu?'🇪🇺 ':''  }${m.region}</span>`:''}
-            ${m.country?`<span class="match-tag country">${m.country}</span>`:''}
+      listHtml += `<div class="match-card ${m.hasFU?'has-fu':''}" style="flex-direction:column;align-items:stretch;animation-delay:${i*.03}s">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="match-avatar" style="${m.hasFU?'background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;':''}">${initial}</div>
+          <div class="match-body">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="match-name">${name}</div>
+              ${m.hasFU?`<span class="fu-badge">⭐ Follow Up</span>`:''}
+            </div>
+            ${meta?`<div class="match-meta">${meta}</div>`:''}
+            <div class="match-tags">
+              ${matchedTypes.map(t=>`<span class="match-tag type">${t}</span>`).join('')}
+              <span class="match-tag ${m.sizeInfo.hasAny?'split':m.sizeInfo.hasSplit&&!m.sizeInfo.nums.length?'split':'size'}">${sizeLabel}</span>
+              ${m.region?`<span class="match-tag region">${m.isEu?'🇪🇺 ':''}${m.region}</span>`:''}
+              ${m.country?`<span class="match-tag country">${m.country}</span>`:''}
+            </div>
           </div>
+          <div class="match-check">✓</div>
         </div>
-        <div class="match-check">✓</div>
+        ${fuHtml}
       </div>`;
     });
-    listHtml += `</div>`;
+    listHtml += '</div>';
   }
 
   area.innerHTML = `
@@ -729,6 +896,8 @@ function renderResults(){
     ${filterBarHtml}
     ${listHtml}
   `;
+}
+
 }
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
