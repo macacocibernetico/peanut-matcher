@@ -823,20 +823,36 @@ function renderEmpresas(){
 }
 
 var empAcIdx=-1;
+
+// Deduplica nombres ignorando mayusculas, prefiere el nombre de DB
+function deduplicateNames(dbNames,fuNames){
+  var seen={};var result=[];
+  dbNames.forEach(function(n){var k=n.toLowerCase().trim();if(!seen[k]){seen[k]=n;result.push(n);}});
+  fuNames.forEach(function(n){
+    var k=n.toLowerCase().trim();
+    if(seen[k])return;
+    var isSim=Object.keys(seen).some(function(s){return similarity(s,k)>=0.8;});
+    if(!isSim){seen[k]=n;result.push(n);}
+  });
+  return result.sort();
+}
+
 function onEmpSearch(val){
   empresasQuery=val;empAcIdx=-1;
   var list=document.getElementById('emp-ac-list');
   if(val.length<2){list.classList.add('hidden');document.getElementById('emp-results').innerHTML='';return;}
-  var names=getCompanyNames();
-  // Also include companies only in FU
+  var dbNames=getCompanyNames();
   var fuNames=[...new Set(followUpRows.map(function(r){return(r[1]||'').trim();}).filter(Boolean))];
-  var allNames=[...new Set([...names,...fuNames])].sort();
-  var matches=allNames.filter(function(n){return n.toLowerCase().includes(val.toLowerCase())||similarity(n,val)>=0.45;}).slice(0,10);
+  var allNames=deduplicateNames(dbNames,fuNames);
+  var valLow=val.toLowerCase();
+  var matches=allNames.filter(function(n){
+    return n.toLowerCase().includes(valLow)||similarity(n.toLowerCase(),valLow)>=0.8;
+  }).slice(0,10);
   if(!matches.length){list.classList.add('hidden');renderEmpresaResults(val);return;}
-  list.innerHTML=matches.map(function(n,i){
-    var dbRow=allRows.find(function(r){return(r[COL.COMPANY]||r[COL.CLIENT]||'').trim()===n;});
+  list.innerHTML=matches.map(function(n){
+    var dbRow=allRows.find(function(r){return(r[COL.COMPANY]||r[COL.CLIENT]||'').trim().toLowerCase()===n.toLowerCase();});
     var sub=dbRow?[dbRow[COL.COUNTRY],dbRow[COL.REGION]].filter(Boolean).join(' · '):'Solo en Follow Up';
-    return '<div class="autocomplete-item" data-val="'+n+'" onmousedown="selectEmpresa(\''+n.replace(/'/g,"\\'")+'\')">'+'<div>'+n+'</div><div class="ac-sub">'+sub+'</div></div>';
+    return '<div class="autocomplete-item" data-val="'+n+'" onmousedown="selectEmpresa(''+n.replace(/'/g,"\'")+'')"><div>'+n+'</div><div class="ac-sub">'+sub+'</div></div>';
   }).join('');
   list.classList.remove('hidden');
 }
@@ -867,10 +883,11 @@ function renderEmpresaResults(query){
     return n.toLowerCase().includes(query.toLowerCase())||similarity(n,query)>=0.6;
   });
 
-  // Find FU records
+  // Find FU records — case-insensitive + 80% similarity
+  var qLow=query.toLowerCase();
   var fuMatches=followUpRows.filter(function(r){
     var n=(r[1]||'').trim();
-    return n.toLowerCase().includes(query.toLowerCase())||similarity(n,query)>=0.6;
+    return n.toLowerCase().includes(qLow)||similarity(n.toLowerCase(),qLow)>=0.8;
   });
 
   if(!dbMatches.length&&!fuMatches.length){
@@ -878,12 +895,20 @@ function renderEmpresaResults(query){
     return;
   }
 
-  // Group FU by company name
-  var fuByCompany={};
+  // Group FU by canonical key (lowercase) so Stockinvest & STOCKINVEST merge
+  var fuByKey={};
   fuMatches.forEach(function(r){
     var n=(r[1]||'').trim();
-    if(!fuByCompany[n])fuByCompany[n]=[];
-    fuByCompany[n].push(r);
+    var k=n.toLowerCase();
+    if(!fuByKey[k])fuByKey[k]=[];
+    fuByKey[k].push(r);
+  });
+  // For display, prefer DB name; fallback to FU name
+  var fuByCompany={};
+  Object.keys(fuByKey).forEach(function(k){
+    var dbRow=dbMatches.find(function(r){return(r[COL.COMPANY]||r[COL.CLIENT]||'').trim().toLowerCase()===k;});
+    var displayName=dbRow?(dbRow[COL.COMPANY]||dbRow[COL.CLIENT]||'').trim():fuByKey[k][0][1].trim();
+    fuByCompany[displayName]=fuByKey[k];
   });
 
   var html='';
