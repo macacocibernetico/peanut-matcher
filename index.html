@@ -164,6 +164,16 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .config-input:focus{border-color:var(--accent);background:var(--bg2);}
 .config-save{display:flex;justify-content:flex-end;margin-top:10px;}
 
+/* RESULT FILTERS */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:16px;box-shadow:var(--shadow);}
+.filter-bar-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-right:4px;white-space:nowrap;}
+.filter-select{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:var(--mono);font-size:11px;padding:5px 28px 5px 10px;outline:none;transition:all .15s;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%2386868b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+.filter-select:focus{border-color:var(--accent);background-color:var(--bg2);}
+.filter-select.active{border-color:var(--accent);background-color:var(--accent-light);color:var(--accent);}
+.filter-reset{font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid var(--danger);color:var(--danger);background:var(--danger-light);cursor:pointer;font-family:var(--font);transition:all .15s;white-space:nowrap;}
+.filter-reset:hover{background:#ffd9d7;}
+.filter-count{font-size:11px;color:var(--text3);font-family:var(--mono);margin-left:auto;white-space:nowrap;}
+.eu-first-badge{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:var(--info-light);color:var(--info);border:1px solid rgba(0,113,227,.15);font-weight:600;}
 #toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 16px;border-radius:10px;font-weight:500;font-size:12px;z-index:999;transition:opacity .3s;pointer-events:none;box-shadow:var(--shadow-lg);opacity:0;}
 .progress-bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#e2a832);z-index:9999;transform-origin:left;transform:scaleX(0);}
 .progress-bar.active{animation:progress 1.5s ease-in-out infinite;}
@@ -304,6 +314,7 @@ let tokenClient = null;
 let allRows = [];
 let currentView = 'matcher';
 let lastSearch = null;
+let resultFilters = { region: '', country: '', type: '' };
 let selectedTypes = new Set();
 let aptoEuropa = false;
 let incluirSplit = false;
@@ -566,27 +577,59 @@ function renderMatcher(){
   if(lastSearch) renderResults();
 }
 
+function setResultFilter(key, value){
+  resultFilters[key] = value;
+  renderResults();
+}
+
+function clearResultFilters(){
+  resultFilters = { region:'', country:'', type:'' };
+  renderResults();
+}
+
 function renderResults(){
   const area = document.getElementById('results-area');
   if(!area || !lastSearch) return;
   const { types, rangeMin, rangeMax, incluirSplit, aptoEuropa, results } = lastSearch;
-  const uniqueCountries = [...new Set(results.map(r=>r.country).filter(Boolean))].length;
+
+  // Apply result filters
+  let filtered = [...results];
+  if(resultFilters.region)  filtered = filtered.filter(r => r.region.toLowerCase()  === resultFilters.region.toLowerCase());
+  if(resultFilters.country) filtered = filtered.filter(r => r.country.toLowerCase() === resultFilters.country.toLowerCase());
+  if(resultFilters.type)    filtered = filtered.filter(r => r.canonicalTypes.map(t=>t.toLowerCase()).includes(resultFilters.type.toLowerCase()));
+
+  // If apto europa, sort europeans first
+  if(aptoEuropa){
+    filtered.sort((a,b) => {
+      const aEu = isEuropean(a.region) ? 0 : 1;
+      const bEu = isEuropean(b.region) ? 0 : 1;
+      return aEu - bEu;
+    });
+  }
+
+  // Build unique options for filters
+  const uniqueRegions  = [...new Set(results.map(r=>r.region).filter(Boolean))].sort();
+  const uniqueCountries = [...new Set(results.map(r=>r.country).filter(Boolean))].sort();
+  const uniqueTypes    = [...new Set(results.flatMap(r=>r.canonicalTypes))].sort();
+  const uniqueCountriesFiltered = [...new Set(filtered.map(r=>r.country).filter(Boolean))].length;
+
+  const hasFilters = resultFilters.region || resultFilters.country || resultFilters.type;
 
   const statsHtml = `<div class="stats-row">
     <div class="stat-card">
       <div class="stat-label">Matches encontrados</div>
       <div class="stat-value" style="color:${results.length>0?'var(--ok)':'var(--text3)'}">${results.length}</div>
-      <div class="stat-sub">${types.join(' + ')}</div>
+      <div class="stat-sub">${hasFilters?`<span style="color:var(--accent);">${filtered.length} tras filtros</span>`:types.join(' + ')}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Países distintos</div>
-      <div class="stat-value">${uniqueCountries||'—'}</div>
+      <div class="stat-value">${uniqueCountriesFiltered||'—'}</div>
       <div class="stat-sub">en el resultado</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Europa</div>
       <div class="stat-value" style="color:${aptoEuropa?'var(--info)':'var(--text3)'};font-size:18px;">${aptoEuropa?'Incluida':'Excluida'}</div>
-      <div class="stat-sub">filtro aplicado</div>
+      <div class="stat-sub">${aptoEuropa?'Primeros en la lista':''}</div>
     </div>
   </div>`;
 
@@ -595,44 +638,95 @@ function renderResults(){
   const splitPill = incluirSplit ? `<span class="result-pill muted">✂️ Split</span>` : '';
   const euPill    = aptoEuropa  ? `<span class="result-pill eu">🇪🇺 EU</span>` : '';
 
+  // Filter bar — solo si hay resultados
+  let filterBarHtml = '';
+  if(results.length > 0){
+    const selStyle = (key, val) => resultFilters[key] === val && val ? 'active' : '';
+    filterBarHtml = `<div class="filter-bar">
+      <span class="filter-bar-label">Filtrar:</span>
+      ${aptoEuropa ? `<select class="filter-select ${selStyle('region','europe')||selStyle('region','europa')}" onchange="setResultFilter('region',this.value)">
+        <option value="">Todas las regiones</option>
+        ${uniqueRegions.map(r=>`<option value="${r}" ${resultFilters.region===r?'selected':''}>${r}${isEuropean(r)?' 🇪🇺':''}</option>`).join('')}
+      </select>` : `<select class="filter-select ${resultFilters.region?'active':''}" onchange="setResultFilter('region',this.value)">
+        <option value="">Todas las regiones</option>
+        ${uniqueRegions.map(r=>`<option value="${r}" ${resultFilters.region===r?'selected':''}>${r}</option>`).join('')}
+      </select>`}
+      <select class="filter-select ${resultFilters.country?'active':''}" onchange="setResultFilter('country',this.value)">
+        <option value="">Todos los países</option>
+        ${uniqueCountries.map(c=>`<option value="${c}" ${resultFilters.country===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+      ${uniqueTypes.length > 1 ? `<select class="filter-select ${resultFilters.type?'active':''}" onchange="setResultFilter('type',this.value)">
+        <option value="">Todos los tipos</option>
+        ${uniqueTypes.map(t=>`<option value="${t}" ${resultFilters.type===t?'selected':''}>${t}</option>`).join('')}
+      </select>` : ''}
+      ${hasFilters ? `<button class="filter-reset" onclick="clearResultFilters()">✕ Limpiar filtros</button>` : ''}
+      <span class="filter-count">${filtered.length} de ${results.length}</span>
+    </div>`;
+  }
+
   let listHtml = '';
-  if(results.length === 0){
+  if(filtered.length === 0){
     listHtml = `<div class="empty-state">
       <div class="empty-icon">🔍</div>
-      <div class="empty-title">Sin matches</div>
-      <div class="empty-sub">No hay clientes para <strong>${types.join(' o ')}</strong> en el rango <strong>${rangeMin}–${rangeMax}</strong>${incluirSplit?' o Split':''}${!aptoEuropa?' fuera de Europa':''}.</div>
+      <div class="empty-title">${results.length > 0 ? 'Sin resultados con estos filtros' : 'Sin matches'}</div>
+      <div class="empty-sub">${results.length > 0 ? 'Probá cambiando los filtros de arriba.' : 'No hay clientes para los criterios seleccionados.'}</div>
     </div>`;
   } else {
-    listHtml = `<div class="match-list">` +
-      results.map((m,i) => {
-        const initial = (m.company||m.client||'?')[0].toUpperCase();
-        const name = m.company||m.client||'—';
-        const meta = [m.country, m.region].filter(Boolean).join(' · ');
-        const matchedTypes = m.canonicalTypes.filter(t=>types.map(x=>x.toLowerCase()).includes(t.toLowerCase()));
-        const sizeLabel = m.sizeInfo.hasAny ? 'Any' : m.sizeInfo.hasSplit && m.sizeInfo.nums.length===0 ? 'Split' : m.size;
-        return `<div class="match-card" style="animation-delay:${i*.03}s">
-          <div class="match-avatar">${initial}</div>
-          <div class="match-body">
-            <div class="match-name">${name}</div>
-            ${meta?`<div class="match-meta">${meta}</div>`:''}
-            <div class="match-tags">
-              ${matchedTypes.map(t=>`<span class="match-tag type">${t}</span>`).join('')}
-              <span class="match-tag ${m.sizeInfo.hasAny?'split':m.sizeInfo.hasSplit&&!m.sizeInfo.nums.length?'split':'size'}">${sizeLabel}</span>
-              ${m.region?`<span class="match-tag region">${m.region}</span>`:''}
-              ${m.country?`<span class="match-tag country">${m.country}</span>`:''}
-            </div>
+    // Track if we already showed the EU divider
+    let shownEuDivider = false;
+    let shownOtherDivider = false;
+    listHtml = `<div class="match-list">`;
+    filtered.forEach((m, i) => {
+      const initial = (m.company||m.client||'?')[0].toUpperCase();
+      const name = m.company||m.client||'—';
+      const meta = [m.country, m.region].filter(Boolean).join(' · ');
+      const matchedTypes = m.canonicalTypes.filter(t=>types.map(x=>x.toLowerCase()).includes(t.toLowerCase()));
+      const sizeLabel = m.sizeInfo.hasAny ? 'Any' : m.sizeInfo.hasSplit && m.sizeInfo.nums.length===0 ? 'Split' : m.size;
+      const isEu = isEuropean(m.region);
+
+      // Section dividers when apto europa
+      let divider = '';
+      if(aptoEuropa && !hasFilters){
+        if(isEu && !shownEuDivider){
+          divider = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;${i>0?'margin-top:4px':''}">
+            <span style="font-size:11px;font-weight:600;color:var(--info);font-family:var(--mono);">🇪🇺 EUROPA</span>
+            <div style="flex:1;height:1px;background:var(--info-light);"></div>
+          </div>`;
+          shownEuDivider = true;
+        } else if(!isEu && shownEuDivider && !shownOtherDivider){
+          divider = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;margin-top:4px;">
+            <span style="font-size:11px;font-weight:600;color:var(--text3);font-family:var(--mono);">🌍 RESTO DEL MUNDO</span>
+            <div style="flex:1;height:1px;background:var(--border);"></div>
+          </div>`;
+          shownOtherDivider = true;
+        }
+      }
+
+      listHtml += divider + `<div class="match-card" style="animation-delay:${i*.03}s">
+        <div class="match-avatar">${initial}</div>
+        <div class="match-body">
+          <div class="match-name">${name}</div>
+          ${meta?`<div class="match-meta">${meta}</div>`:''}
+          <div class="match-tags">
+            ${matchedTypes.map(t=>`<span class="match-tag type">${t}</span>`).join('')}
+            <span class="match-tag ${m.sizeInfo.hasAny?'split':m.sizeInfo.hasSplit&&!m.sizeInfo.nums.length?'split':'size'}">${sizeLabel}</span>
+            ${m.region?`<span class="match-tag region">${isEu?'🇪🇺 ':''  }${m.region}</span>`:''}
+            ${m.country?`<span class="match-tag country">${m.country}</span>`:''}
           </div>
-          <div class="match-check">✓</div>
-        </div>`;
-      }).join('') + `</div>`;
+        </div>
+        <div class="match-check">✓</div>
+      </div>`;
+    });
+    listHtml += `</div>`;
   }
 
   area.innerHTML = `
     ${statsHtml}
     <div class="results-header">
-      <div class="results-title">${results.length} match${results.length!==1?'es':''} encontrado${results.length!==1?'s':''}</div>
+      <div class="results-title">${filtered.length} match${filtered.length!==1?'es':''} encontrado${filtered.length!==1?'s':''}</div>
       <div class="results-pills">${typePills}${rangePill}${splitPill}${euPill}</div>
     </div>
+    ${filterBarHtml}
     ${listHtml}
   `;
 }
