@@ -25,7 +25,7 @@
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
 button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .shell{display:flex;min-height:100vh;}
-.sidebar{width:240px;min-height:100vh;background:rgba(255,255,255,.85);backdrop-filter:blur(20px);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:10;}
+.sidebar{width:240px;min-height:100vh;background:rgba(255,255,255,.85);backdrop-filter:blur(20px);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:200;}
 .main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
 .logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);}
 .logo-icon{font-size:28px;margin-bottom:6px;}
@@ -168,7 +168,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 
 /* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;}
-.modal-overlay.hidden{display:none;}
+.modal-overlay.hidden{display:none !important;pointer-events:none;}
 .modal{background:var(--bg2);border-radius:var(--radius-xl);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
 .modal-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:2;}
 .modal-title{font-size:15px;font-weight:700;}
@@ -203,7 +203,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 
 /* PROGRESS / TOAST */
 #toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 16px;border-radius:10px;font-weight:500;font-size:12px;z-index:999;transition:opacity .3s;pointer-events:none;box-shadow:var(--shadow-lg);opacity:0;}
-.progress-bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#e2a832);z-index:9999;transform-origin:left;transform:scaleX(0);}
+.progress-bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#e2a832);z-index:9999;transform-origin:left;transform:scaleX(0);pointer-events:none;}
 .progress-bar.active{animation:progress 1.5s ease-in-out infinite;}
 @keyframes progress{0%{transform:scaleX(0);opacity:1;}60%{transform:scaleX(.7);opacity:1;}100%{transform:scaleX(1);opacity:0;}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
@@ -386,8 +386,8 @@ var acSelectedIndex=-1;
 
 // OAUTH — scope now includes write
 var SCOPES='https://www.googleapis.com/auth/spreadsheets';
-function initGoogleAuth(){if(!cfg.clientId)return;if(typeof google==='undefined'||!google.accounts||!google.accounts.oauth2){setTimeout(initGoogleAuth,500);return;}tokenClient=google.accounts.oauth2.initTokenClient({client_id:cfg.clientId,scope:SCOPES,callback:function(resp){if(resp.error){console.error(resp);return;}accessToken=resp.access_token;updateAuthUI(true);loadSheetData();}});}
-function handleAuth(){if(accessToken){google.accounts.oauth2.revoke(accessToken,function(){accessToken=null;allRows=[];followUpRows=[];updateAuthUI(false);setSheetStatus('err','Desconectado');});}else{if(!cfg.clientId){showView('config');showToast('Configurá el Client ID primero');return;}if(!tokenClient){initGoogleAuth();setTimeout(function(){if(tokenClient)tokenClient.requestAccessToken();},600);return;}tokenClient.requestAccessToken();}}
+function initGoogleAuth(){if(!cfg.clientId)return;if(typeof google==='undefined'||!google.accounts||!google.accounts.oauth2){setTimeout(initGoogleAuth,500);return;}tokenClient=google.accounts.oauth2.initTokenClient({client_id:cfg.clientId,scope:SCOPES,prompt:'',callback:function(resp){if(resp.error){console.error(resp);return;}accessToken=resp.access_token;updateAuthUI(true);loadSheetData();}});}
+function handleAuth(){if(accessToken){google.accounts.oauth2.revoke(accessToken,function(){accessToken=null;allRows=[];followUpRows=[];updateAuthUI(false);setSheetStatus('err','Desconectado');});}else{if(!cfg.clientId){showView('config');showToast('Configurá el Client ID primero');return;}if(!tokenClient){initGoogleAuth();setTimeout(function(){if(tokenClient)tokenClient.requestAccessToken();},600);return;}tokenClient.requestAccessToken({prompt:''});}}
 function updateAuthUI(connected){var btn=document.getElementById('auth-btn'),txt=document.getElementById('auth-status-text');if(connected){btn.textContent='Desconectar Google';btn.className='auth-btn connected';txt.textContent='● Conectado';txt.style.color='var(--ok)';}else{btn.textContent='Conectar con Google';btn.className='auth-btn';txt.textContent='';}if(currentView==='config')renderConfig();}
 
 // DATA
