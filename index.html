@@ -214,6 +214,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 @media(max-width:768px){
   .mobile-toggle{display:flex;}
   .sidebar{transform:translateX(-240px);transition:transform .25s ease;z-index:20;}
+  .modal-overlay{z-index:300;}
   .sidebar.open{transform:translateX(0);}
   .overlay-close.show{display:block;}
   .main{margin-left:0;}
@@ -386,8 +387,8 @@ var acSelectedIndex=-1;
 
 // OAUTH — scope now includes write
 var SCOPES='https://www.googleapis.com/auth/spreadsheets';
-function initGoogleAuth(){if(!cfg.clientId)return;if(typeof google==='undefined'||!google.accounts||!google.accounts.oauth2){setTimeout(initGoogleAuth,500);return;}tokenClient=google.accounts.oauth2.initTokenClient({client_id:cfg.clientId,scope:SCOPES,prompt:'',callback:function(resp){if(resp.error){console.error(resp);return;}accessToken=resp.access_token;updateAuthUI(true);loadSheetData();}});}
-function handleAuth(){if(accessToken){google.accounts.oauth2.revoke(accessToken,function(){accessToken=null;allRows=[];followUpRows=[];updateAuthUI(false);setSheetStatus('err','Desconectado');});}else{if(!cfg.clientId){showView('config');showToast('Configurá el Client ID primero');return;}if(!tokenClient){initGoogleAuth();setTimeout(function(){if(tokenClient)tokenClient.requestAccessToken();},600);return;}tokenClient.requestAccessToken({prompt:''});}}
+function initGoogleAuth(){if(!cfg.clientId)return;if(typeof google==='undefined'||!google.accounts||!google.accounts.oauth2){setTimeout(initGoogleAuth,500);return;}tokenClient=google.accounts.oauth2.initTokenClient({client_id:cfg.clientId,scope:SCOPES,callback:function(resp){if(resp.error){console.error(resp);return;}accessToken=resp.access_token;updateAuthUI(true);loadSheetData();}});}
+function handleAuth(){if(accessToken){google.accounts.oauth2.revoke(accessToken,function(){accessToken=null;allRows=[];followUpRows=[];updateAuthUI(false);setSheetStatus('err','Desconectado');});}else{if(!cfg.clientId){showView('config');showToast('Configurá el Client ID primero');return;}if(!tokenClient){initGoogleAuth();setTimeout(function(){if(tokenClient)tokenClient.requestAccessToken();},600);return;}tokenClient.requestAccessToken();}}
 function updateAuthUI(connected){var btn=document.getElementById('auth-btn'),txt=document.getElementById('auth-status-text');if(connected){btn.textContent='Desconectar Google';btn.className='auth-btn connected';txt.textContent='● Conectado';txt.style.color='var(--ok)';}else{btn.textContent='Conectar con Google';btn.className='auth-btn';txt.textContent='';}if(currentView==='config')renderConfig();}
 
 // DATA
@@ -492,9 +493,9 @@ function onCompanyInput(){
     return;
   }
   notFound.classList.add('hidden');
+  window._acNames=matches;
   var list=document.getElementById('ac-list');
   list.innerHTML=matches.map(function(n,i){
-    // Find DB row for subtitle
     var dbRow=allRows.find(function(r){return(r[COL.COMPANY]||r[COL.CLIENT]||'').trim()===n;});
     var sub=dbRow?[dbRow[COL.COUNTRY],dbRow[COL.REGION]].filter(Boolean).join(' · '):'';
     return '<div class="autocomplete-item" onmousedown="selectCompanyIdx('+i+')"><div>'+n+'</div>'+(sub?'<div class="ac-sub">'+sub+'</div>':'')+'</div>';
