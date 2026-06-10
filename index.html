@@ -263,9 +263,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
         <input class="minput" id="fu-company" placeholder="Escribí para buscar..." autocomplete="off"
           oninput="onCompanyInputIfNotPrefilled()" onkeydown="onCompanyKeydown(event)">
         <div class="autocomplete-list hidden" id="ac-list"></div>
-        <div class="not-found-banner hidden" id="ac-notfound">
-          ⚠️ Esta empresa no está en Database. Verificá el nombre antes de guardar.
-        </div>
+<div id="ac-notfound" style="display:none;"></div>
       </div>
       <div class="mform-grid">
         <div class="mfield">
@@ -453,7 +451,7 @@ function openFUModal(prefilledCompany, editRowIndex){
   document.getElementById('fu-supplier').value = '';
   document.getElementById('fu-comment').value = '';
   document.getElementById('ac-list').classList.add('hidden');
-  document.getElementById('ac-notfound').classList.add('hidden');
+  // notfound hidden
 
   if(fuModalMode==='edit' && editRowIndex!==undefined){
     var row=followUpRows[editRowIndex];
@@ -476,7 +474,7 @@ function openFUModal(prefilledCompany, editRowIndex){
   }
 
   // Always hide warning when opening - it will only show after manual typing
-  document.getElementById('ac-notfound').classList.add('hidden');
+  // notfound hidden
   document.getElementById('ac-list').classList.add('hidden');
   document.getElementById('fu-modal').classList.remove('hidden');
   setTimeout(function(){if(!fuPrefilledCompany)document.getElementById('fu-company').focus();},100);
@@ -496,7 +494,7 @@ function onCompanyInput(){
   var val=document.getElementById('fu-company').value.trim();
   var notFound=document.getElementById('ac-notfound');
   acSelectedIndex=-1;
-  if(val.length<2){document.getElementById('ac-list').classList.add('hidden');notFound.classList.add('hidden');return;}
+  if(val.length<2){document.getElementById('ac-list').classList.add('hidden');// notfound hiddenreturn;}
   var names=getCompanyNames();
   var matches=names.filter(function(n){return n.toLowerCase().includes(val.toLowerCase())||similarity(n.toLowerCase(),val.toLowerCase())>=0.5;}).slice(0,8);
   if(!matches.length){
@@ -506,13 +504,13 @@ function onCompanyInput(){
     var isPrefilled=inp.dataset.fromDb==='true'||inp.disabled;
     if(!isPrefilled){
       var anyMatch=names.some(function(n){return similarity(n.toLowerCase(),val.toLowerCase())>=0.75;});
-      notFound.classList.toggle('hidden',anyMatch);
+      // warning disabled
     } else {
-      notFound.classList.add('hidden');
+      // notfound hidden
     }
     return;
   }
-  notFound.classList.add('hidden');
+  // notfound hidden
   window._acNames=matches;
   var list=document.getElementById('ac-list');
   list.innerHTML=matches.map(function(n,i){
@@ -542,7 +540,7 @@ function selectCompany(name){
   inp.value=name;
   inp.dataset.fromDb='true';
   document.getElementById('ac-list').classList.add('hidden');
-  document.getElementById('ac-notfound').classList.add('hidden');
+  // notfound hidden
   acSelectedIndex=-1;
 }
 
@@ -551,6 +549,12 @@ async function saveFURecord(){
   if(!accessToken){showToast('Conectate con Google primero');return;}
   var company=document.getElementById('fu-company').value.trim();
   if(!company){showToast('Ingresá el nombre de la empresa');document.getElementById('fu-company').focus();return;}
+  // Soft warning at save time if not in DB (non-blocking)
+  var inDb=allRows.some(function(r){return similarity((r[COL.COMPANY]||r[COL.CLIENT]||'').trim().toLowerCase(),company.toLowerCase())>=0.8;});
+  if(!inDb&&fuModalMode==='new'){
+    // just log, don't block
+    console.warn('Company not found in DB:',company);
+  }
 
   var size=document.getElementById('fu-size').value.trim();
   var type=document.getElementById('fu-type').value.trim();
