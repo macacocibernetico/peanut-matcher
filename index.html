@@ -451,7 +451,7 @@ function openFUModal(prefilledCompany, editRowIndex){
   document.getElementById('fu-supplier').value = '';
   document.getElementById('fu-comment').value = '';
   document.getElementById('ac-list').classList.add('hidden');
-  // notfound hidden
+  ;
 
   if(fuModalMode==='edit' && editRowIndex!==undefined){
     var row=followUpRows[editRowIndex];
@@ -474,7 +474,7 @@ function openFUModal(prefilledCompany, editRowIndex){
   }
 
   // Always hide warning when opening - it will only show after manual typing
-  // notfound hidden
+  ;
   document.getElementById('ac-list').classList.add('hidden');
   document.getElementById('fu-modal').classList.remove('hidden');
   setTimeout(function(){if(!fuPrefilledCompany)document.getElementById('fu-company').focus();},100);
@@ -494,7 +494,7 @@ function onCompanyInput(){
   var val=document.getElementById('fu-company').value.trim();
   var notFound=document.getElementById('ac-notfound');
   acSelectedIndex=-1;
-  if(val.length<2){document.getElementById('ac-list').classList.add('hidden');// notfound hiddenreturn;}
+  if(val.length<2){document.getElementById('ac-list').classList.add('hidden');return;}
   var names=getCompanyNames();
   var matches=names.filter(function(n){return n.toLowerCase().includes(val.toLowerCase())||similarity(n.toLowerCase(),val.toLowerCase())>=0.5;}).slice(0,8);
   if(!matches.length){
@@ -504,13 +504,13 @@ function onCompanyInput(){
     var isPrefilled=inp.dataset.fromDb==='true'||inp.disabled;
     if(!isPrefilled){
       var anyMatch=names.some(function(n){return similarity(n.toLowerCase(),val.toLowerCase())>=0.75;});
-      // warning disabled
+      ;
     } else {
-      // notfound hidden
+      ;
     }
     return;
   }
-  // notfound hidden
+  ;
   window._acNames=matches;
   var list=document.getElementById('ac-list');
   list.innerHTML=matches.map(function(n,i){
@@ -540,7 +540,7 @@ function selectCompany(name){
   inp.value=name;
   inp.dataset.fromDb='true';
   document.getElementById('ac-list').classList.add('hidden');
-  // notfound hidden
+  ;
   acSelectedIndex=-1;
 }
 
