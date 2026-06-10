@@ -458,8 +458,10 @@ function openFUModal(prefilledCompany, editRowIndex){
   if(fuModalMode==='edit' && editRowIndex!==undefined){
     var row=followUpRows[editRowIndex];
     document.getElementById('fu-modal-title').textContent='Editar Follow Up';
-    document.getElementById('fu-company').value=(row[1]||'').trim();
-    document.getElementById('fu-company').disabled=true;
+    var editCompanyInput=document.getElementById('fu-company');
+    editCompanyInput.value=(row[1]||'').trim();
+    editCompanyInput.dataset.fromDb='true';
+    editCompanyInput.disabled=true;
     document.getElementById('fu-size').value=(row[3]||'').trim();
     document.getElementById('fu-type').value=(row[4]||'').trim();
     document.getElementById('fu-tns').value=(row[8]||'').trim();
@@ -490,11 +492,14 @@ function onCompanyInput(){
   var matches=names.filter(function(n){return n.toLowerCase().includes(val.toLowerCase())||similarity(n.toLowerCase(),val.toLowerCase())>=0.5;}).slice(0,8);
   if(!matches.length){
     document.getElementById('ac-list').classList.add('hidden');
-    // Only warn if the field was manually typed (not prefilled from DB)
-    var isPrefilled=document.getElementById('fu-company').dataset.fromDb==='true';
+    // Only warn if manually typed (not prefilled/selected from DB, not disabled)
+    var inp=document.getElementById('fu-company');
+    var isPrefilled=inp.dataset.fromDb==='true'||inp.disabled;
     if(!isPrefilled){
       var anyMatch=names.some(function(n){return similarity(n.toLowerCase(),val.toLowerCase())>=0.75;});
       notFound.classList.toggle('hidden',anyMatch);
+    } else {
+      notFound.classList.add('hidden');
     }
     return;
   }
