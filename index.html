@@ -443,7 +443,9 @@ function openFUModal(prefilledCompany, editRowIndex){
   acSelectedIndex = -1;
 
   // Reset fields
-  document.getElementById('fu-company').value = fuPrefilledCompany;
+  var companyInput=document.getElementById('fu-company');
+  companyInput.value = fuPrefilledCompany;
+  companyInput.dataset.fromDb = fuPrefilledCompany ? 'true' : 'false';
   document.getElementById('fu-size').value = '';
   document.getElementById('fu-type').value = '';
   document.getElementById('fu-tns').value = '';
@@ -479,17 +481,21 @@ function closeFUModal(){document.getElementById('fu-modal').classList.add('hidde
 
 // AUTOCOMPLETE
 function onCompanyInput(){
+  document.getElementById('fu-company').dataset.fromDb='false';
   var val=document.getElementById('fu-company').value.trim();
   var notFound=document.getElementById('ac-notfound');
   acSelectedIndex=-1;
   if(val.length<2){document.getElementById('ac-list').classList.add('hidden');notFound.classList.add('hidden');return;}
   var names=getCompanyNames();
-  var matches=names.filter(function(n){return n.toLowerCase().includes(val.toLowerCase())||similarity(n,val)>=0.5;}).slice(0,8);
+  var matches=names.filter(function(n){return n.toLowerCase().includes(val.toLowerCase())||similarity(n.toLowerCase(),val.toLowerCase())>=0.5;}).slice(0,8);
   if(!matches.length){
     document.getElementById('ac-list').classList.add('hidden');
-    // Check if typed value matches anything with 80%
-    var anyMatch=names.some(function(n){return similarity(n,val)>=0.8;});
-    notFound.classList.toggle('hidden',anyMatch);
+    // Only warn if the field was manually typed (not prefilled from DB)
+    var isPrefilled=document.getElementById('fu-company').dataset.fromDb==='true';
+    if(!isPrefilled){
+      var anyMatch=names.some(function(n){return similarity(n.toLowerCase(),val.toLowerCase())>=0.75;});
+      notFound.classList.toggle('hidden',anyMatch);
+    }
     return;
   }
   notFound.classList.add('hidden');
@@ -518,7 +524,9 @@ function selectCompanyIdx(idx){
   if(name)selectCompany(name);
 }
 function selectCompany(name){
-  document.getElementById('fu-company').value=name;
+  var inp=document.getElementById('fu-company');
+  inp.value=name;
+  inp.dataset.fromDb='true';
   document.getElementById('ac-list').classList.add('hidden');
   document.getElementById('ac-notfound').classList.add('hidden');
   acSelectedIndex=-1;
