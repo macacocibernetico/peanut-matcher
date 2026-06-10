@@ -261,7 +261,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
       <div class="mfield company-field">
         <label class="mfield-label">Empresa</label>
         <input class="minput" id="fu-company" placeholder="Escribí para buscar..." autocomplete="off"
-          oninput="onCompanyInput()" onkeydown="onCompanyKeydown(event)">
+          oninput="onCompanyInputIfNotPrefilled()" onkeydown="onCompanyKeydown(event)">
         <div class="autocomplete-list hidden" id="ac-list"></div>
         <div class="not-found-banner hidden" id="ac-notfound">
           ⚠️ Esta empresa no está en Database. Verificá el nombre antes de guardar.
@@ -475,6 +475,9 @@ function openFUModal(prefilledCompany, editRowIndex){
     document.getElementById('fu-date-display').textContent='Fecha: '+todayStr();
   }
 
+  // Always hide warning when opening - it will only show after manual typing
+  document.getElementById('ac-notfound').classList.add('hidden');
+  document.getElementById('ac-list').classList.add('hidden');
   document.getElementById('fu-modal').classList.remove('hidden');
   setTimeout(function(){if(!fuPrefilledCompany)document.getElementById('fu-company').focus();},100);
 }
@@ -482,6 +485,12 @@ function openFUModal(prefilledCompany, editRowIndex){
 function closeFUModal(){document.getElementById('fu-modal').classList.add('hidden');}
 
 // AUTOCOMPLETE
+function onCompanyInputIfNotPrefilled(){
+  var inp=document.getElementById('fu-company');
+  // If this is the first trigger after prefill, skip it
+  if(inp.dataset.fromDb==='true'){return;}
+  onCompanyInput();
+}
 function onCompanyInput(){
   document.getElementById('fu-company').dataset.fromDb='false';
   var val=document.getElementById('fu-company').value.trim();
