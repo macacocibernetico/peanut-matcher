@@ -620,7 +620,16 @@ function getMatches(){
     if(!aptoEuropa&&isEU(row[COL.REGION]||''))return false;
     var canon=getCanonicalTypes(row[COL.TYPE]||'').map(function(t){return t.toLowerCase();});
     var typeOk=types.length===0||types.some(function(t){return canon.includes(t);});
-    var sizeOk=sizeMatches(row[COL.SIZE]||'',rangeMin,rangeMax,incluirSplit);
+    var dbSize=(row[COL.SIZE]||'').trim();
+    var sizeOk=sizeMatches(dbSize,rangeMin,rangeMax,incluirSplit);
+    // Fallback: if DB has no size, check Follow Up records for size match
+    if(!sizeOk&&!dbSize){
+      var co=(row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
+      var fuRecs=findFollowUp(co);
+      sizeOk=fuRecs.some(function(fuRow){
+        return sizeMatches((fuRow[3]||'').trim(),rangeMin,rangeMax,incluirSplit);
+      });
+    }
     return typeOk&&sizeOk;
   }).map(function(row){
     var company=(row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
