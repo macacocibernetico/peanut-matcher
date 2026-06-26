@@ -799,7 +799,7 @@ function renderResults(){
       var mTypes=m.types.filter(function(t){return types.map(function(x){return x.toLowerCase();}).indexOf(t.toLowerCase())>=0;});
       var szl=m.szInfo.hasAny?'Any':(m.szInfo.hasSplit&&!m.szInfo.nums.length?'Split':m.size)||'—';
       // Use idx-based onclick for edit button - store idx in window._matchFU
-      if(!window._matchFU)window._matchFU=[];
+      if(i===0)window._matchFU=[];
       var fuIdx=window._matchFU.length;
       window._matchFU.push(name);
       list+='<div class="mcard'+(m.hasFU?' has-fu':'')+'" style="animation-delay:'+(i*.03)+'s">'+
@@ -913,7 +913,7 @@ function renderEmpResults(query){
   var fuByKey={};
   fuMatches.forEach(function(r){var k=(r[1]||'').trim().toLowerCase();if(!fuByKey[k])fuByKey[k]=[];fuByKey[k].push(r);});
   var html='';
-  if(!window._empFU)window._empFU=[];
+  window._empFU=[];
   if(dbMatches.length){
     dbMatches.forEach(function(row){
       var company=(row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
