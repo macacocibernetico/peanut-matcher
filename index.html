@@ -7,8 +7,8 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🥜%3C/text%3E%3C/svg%3E">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
-:root {
-  --bg:#f5f5f7;--bg2:#ffffff;--bg3:#f0f0f2;--bg4:#e8e8ed;
+:root{
+  --bg:#f5f5f7;--bg2:#fff;--bg3:#f0f0f2;--bg4:#e8e8ed;
   --border:#d2d2d7;--border2:#c7c7cc;
   --text:#1d1d1f;--text2:#424245;--text3:#86868b;
   --accent:#d4891a;--accent-dim:#b86a12;--accent-light:#fdf3e3;
@@ -17,9 +17,9 @@
   --warn:#ff9500;--warn-light:#fff8ee;
   --info:#0071e3;--info-light:#e8f2fd;
   --font:'Inter',sans-serif;--mono:'DM Mono',monospace;
-  --radius:10px;--radius-lg:14px;--radius-xl:18px;
-  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06);
-  --shadow-lg:0 4px 20px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.06);
+  --r:10px;--rl:14px;--rxl:18px;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06);
+  --shl:0 4px 20px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.06);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
@@ -29,102 +29,99 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
 .logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);}
 .logo-icon{font-size:28px;margin-bottom:6px;}
-.logo-text{font-size:17px;font-weight:600;letter-spacing:-0.4px;}
+.logo-text{font-size:17px;font-weight:600;letter-spacing:-.4px;}
 .logo-sub{font-size:11px;color:var(--text3);margin-top:2px;}
 .nav{padding:10px 0;flex:1;}
-.nav-section{padding:0 10px;}
-.nav-label{font-size:10px;font-weight:600;letter-spacing:0.5px;color:var(--text3);padding:10px 10px 4px;text-transform:uppercase;}
-.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);color:var(--text2);font-size:13px;cursor:pointer;transition:all .15s;}
+.nav-sec{padding:0 10px;}
+.nav-lbl{font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--text3);padding:10px 10px 4px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);color:var(--text2);font-size:13px;cursor:pointer;transition:all .15s;}
 .nav-item:hover{background:var(--bg3);}
 .nav-item.active{background:var(--accent);color:#fff;}
-.nav-item .icon{width:16px;text-align:center;font-size:13px;}
-.sidebar-footer{padding:14px 16px;border-top:1px solid var(--border);}
-.sheet-status{font-size:11px;color:var(--text3);font-family:var(--mono);display:flex;align-items:center;gap:6px;margin-top:6px;}
-.sheet-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--ok);}
-.sheet-dot.err{background:var(--danger);}
-.sheet-dot.loading{background:var(--warn);animation:pulse 1s infinite;}
+.sb-foot{padding:14px 16px;border-top:1px solid var(--border);}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--ok);}
+.sdot.err{background:var(--danger);}
+.sdot.loading{background:var(--warn);animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
-.auth-btn{margin-top:8px;width:100%;padding:7px 12px;border-radius:var(--radius);font-size:12px;font-weight:500;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s;font-family:var(--font);}
+.stext{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.auth-btn{margin-top:8px;width:100%;padding:7px 12px;border-radius:var(--r);font-size:12px;font-weight:500;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s;font-family:var(--font);}
 .auth-btn:hover{background:var(--bg4);}
 .auth-btn.connected{border-color:var(--ok);color:var(--ok);background:var(--ok-light);}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.85);backdrop-filter:blur(20px);position:sticky;top:0;z-index:5;}
-.topbar-title{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
+.topbar-title{font-size:17px;font-weight:600;letter-spacing:-.3px;}
 .topbar-right{display:flex;align-items:center;gap:8px;}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:var(--bg2);color:var(--text2);box-shadow:var(--shadow);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:var(--bg2);color:var(--text2);box-shadow:var(--sh);}
 .btn:hover{background:var(--bg3);}
 .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
 .btn.primary:hover{background:var(--accent-dim);}
 .content{padding:24px;flex:1;}
-.oferta-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px;margin-bottom:24px;box-shadow:var(--shadow);}
-.oferta-title{font-size:16px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
-.oferta-sub{font-size:12px;color:var(--text3);margin-bottom:20px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rxl);padding:24px;margin-bottom:24px;box-shadow:var(--sh);}
+.card-title{font-size:16px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.card-sub{font-size:12px;color:var(--text3);margin-bottom:20px;}
 .form-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;display:block;}
 .form-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
 .chip-group{display:flex;flex-wrap:wrap;gap:7px;}
 .chip{padding:7px 18px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none;}
 .chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
 .chip.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
-.slider-wrap{padding:8px 4px 4px;}
-.slider-track-wrap{position:relative;height:6px;background:var(--bg4);border-radius:3px;margin:0 10px;}
-.slider-fill{position:absolute;height:100%;background:var(--accent);border-radius:3px;pointer-events:none;}
-.slider-input{position:absolute;width:100%;height:100%;top:0;left:0;appearance:none;-webkit-appearance:none;background:transparent;pointer-events:none;margin:0;}
-.slider-input::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.15);cursor:pointer;pointer-events:all;transition:box-shadow .15s;}
-.slider-input::-webkit-slider-thumb:hover{box-shadow:0 0 0 5px rgba(212,137,26,.15);}
-.slider-input::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--accent);cursor:pointer;pointer-events:all;}
-.slider-values{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.slider-val-badge{background:var(--accent);color:#fff;font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 14px;border-radius:20px;}
-.slider-val-sep{color:var(--text3);font-size:12px;}
-.toggle-row{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--radius-lg);border:2px solid var(--border);cursor:pointer;transition:all .15s;user-select:none;background:var(--bg3);margin-top:12px;}
-.toggle-row.split-active{border-color:var(--text);background:var(--bg4);}
-.toggle-row.eu-active{border-color:var(--info);background:var(--info-light);}
-.toggle-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;background:var(--bg2);}
-.toggle-row.split-active .toggle-check{background:var(--text);border-color:var(--text);}
-.toggle-row.eu-active .toggle-check{background:var(--info);border-color:var(--info);}
-.toggle-label-main{font-size:13px;font-weight:500;}
-.toggle-label-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.sl-wrap{padding:8px 4px 4px;}
+.sl-track{position:relative;height:6px;background:var(--bg4);border-radius:3px;margin:0 10px;}
+.sl-fill{position:absolute;height:100%;background:var(--accent);border-radius:3px;pointer-events:none;}
+.sl-inp{position:absolute;width:100%;height:100%;top:0;left:0;appearance:none;-webkit-appearance:none;background:transparent;pointer-events:none;margin:0;}
+.sl-inp::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.15);cursor:pointer;pointer-events:all;}
+.sl-inp::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--accent);cursor:pointer;pointer-events:all;}
+.sl-vals{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.sl-badge{background:var(--accent);color:#fff;font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 14px;border-radius:20px;}
+.tog{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--rl);border:2px solid var(--border);cursor:pointer;transition:all .15s;user-select:none;background:var(--bg3);margin-top:12px;}
+.tog.split-on{border-color:var(--text);background:var(--bg4);}
+.tog.eu-on{border-color:var(--info);background:var(--info-light);}
+.tog-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;background:var(--bg2);}
+.tog.split-on .tog-check{background:var(--text);border-color:var(--text);}
+.tog.eu-on .tog-check{background:var(--info);border-color:var(--info);}
+.tog-main{font-size:13px;font-weight:500;}
+.tog-sub{font-size:11px;color:var(--text3);margin-top:1px;}
 .form-actions{display:flex;gap:10px;margin-top:18px;}
-.btn-search{flex:1;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-lg);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-search{flex:1;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:var(--rl);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
 .btn-search:hover{background:var(--accent-dim);}
-.btn-reset{padding:11px 18px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:var(--radius-lg);font-size:13px;font-weight:500;cursor:pointer;}
+.btn-reset{padding:11px 18px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:var(--rl);font-size:13px;font-weight:500;cursor:pointer;}
 .btn-reset:hover{background:var(--bg3);}
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
-.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow);}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px 18px;box-shadow:var(--sh);}
 .stat-label{font-size:11px;font-weight:500;color:var(--text3);margin-bottom:6px;}
 .stat-value{font-size:28px;font-weight:600;font-family:var(--mono);line-height:1;letter-spacing:-1px;}
 .stat-sub{font-size:11px;color:var(--text3);margin-top:4px;}
-.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
-.results-title{font-size:14px;font-weight:600;}
-.results-pills{display:flex;gap:5px;flex-wrap:wrap;}
+.res-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.res-title{font-size:14px;font-weight:600;}
+.res-pills{display:flex;gap:5px;flex-wrap:wrap;}
 .rpill{font-size:10px;font-family:var(--mono);padding:3px 10px;border-radius:20px;border:1px solid;}
-.rpill.accent{background:var(--accent-light);color:var(--accent);border-color:rgba(212,137,26,.2);}
-.rpill.dark{background:var(--text);color:#fff;border-color:var(--text);}
+.rpill.ac{background:var(--accent-light);color:var(--accent);border-color:rgba(212,137,26,.2);}
+.rpill.dk{background:var(--text);color:#fff;border-color:var(--text);}
 .rpill.eu{background:var(--info-light);color:var(--info);border-color:rgba(0,113,227,.15);}
-.rpill.muted{background:var(--bg3);color:var(--text3);border-color:var(--border);}
-.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:16px;box-shadow:var(--shadow);}
+.rpill.mu{background:var(--bg3);color:var(--text3);border-color:var(--border);}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:16px;box-shadow:var(--sh);}
 .filter-bar-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
 .fsel{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:var(--mono);font-size:11px;padding:5px 10px;outline:none;cursor:pointer;}
 .fsel.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent);}
 .filter-reset{font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid var(--danger);color:var(--danger);background:var(--danger-light);cursor:pointer;font-family:var(--font);}
 .filter-count{font-size:11px;color:var(--text3);font-family:var(--mono);margin-left:auto;}
 .match-list{display:flex;flex-direction:column;gap:8px;}
-.match-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;transition:all .15s;box-shadow:var(--shadow);animation:fadeIn .2s ease both;}
-.match-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px);border-color:var(--border2);}
-.match-card.has-fu{border-color:rgba(245,158,11,.3);background:linear-gradient(135deg,#ffffff,#fffdf7);}
-.match-card.has-fu:hover{border-color:rgba(245,158,11,.5);}
-.match-top{display:flex;align-items:center;gap:14px;}
-.match-avatar{width:38px;height:38px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--accent);flex-shrink:0;}
-.match-avatar.fu{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;}
-.match-body{flex:1;min-width:0;}
-.match-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.match-name{font-size:14px;font-weight:600;}
-.match-meta{font-size:11px;color:var(--text3);margin-top:2px;}
-.match-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+.mcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px 16px;transition:all .15s;box-shadow:var(--sh);animation:fadeIn .2s ease both;}
+.mcard:hover{box-shadow:var(--shl);transform:translateY(-1px);border-color:var(--border2);}
+.mcard.has-fu{border-color:rgba(245,158,11,.3);background:linear-gradient(135deg,#fff,#fffdf7);}
+.mcard.has-fu:hover{border-color:rgba(245,158,11,.5);}
+.mcard-top{display:flex;align-items:center;gap:14px;}
+.mavatar{width:38px;height:38px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--accent);flex-shrink:0;}
+.mavatar.fu{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;}
+.mbody{flex:1;min-width:0;}
+.mname-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.mname{font-size:14px;font-weight:600;}
+.mmeta{font-size:11px;color:var(--text3);margin-top:2px;}
+.mtags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
 .mtag{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:20px;font-weight:500;}
-.mtag.type{background:var(--accent-light);color:var(--accent);border:1px solid rgba(212,137,26,.2);}
-.mtag.size{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
-.mtag.region{background:var(--info-light);color:var(--info);border:1px solid rgba(0,113,227,.15);}
-.mtag.country{background:#f5f0ff;color:#6e3ab0;border:1px solid rgba(110,58,176,.15);}
-.match-check{font-size:20px;color:var(--ok);flex-shrink:0;}
+.mtag.ty{background:var(--accent-light);color:var(--accent);border:1px solid rgba(212,137,26,.2);}
+.mtag.sz{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.mtag.rg{background:var(--info-light);color:var(--info);border:1px solid rgba(0,113,227,.15);}
+.mtag.ct{background:#f5f0ff;color:#6e3ab0;border:1px solid rgba(110,58,176,.15);}
+.mcheck{font-size:20px;color:var(--ok);flex-shrink:0;}
 .edit-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text3);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;}
 .edit-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
 .fu-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;}
@@ -132,44 +129,44 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .fu-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 .fu-panel-title{font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.4px;}
 .fu-panel-count{font-size:10px;font-family:var(--mono);color:#b45309;background:rgba(180,83,9,.1);padding:1px 7px;border-radius:10px;}
-.fu-record{padding:7px 0;border-bottom:1px solid rgba(245,158,11,.15);display:flex;align-items:flex-start;gap:8px;}
-.fu-record:last-child{border-bottom:none;padding-bottom:0;}
-.fu-record-body{flex:1;min-width:0;}
+.fu-rec{padding:7px 0;border-bottom:1px solid rgba(245,158,11,.15);display:flex;align-items:flex-start;gap:8px;}
+.fu-rec:last-child{border-bottom:none;padding-bottom:0;}
+.fu-rec-body{flex:1;min-width:0;}
 .fu-date{font-size:10px;font-family:var(--mono);color:#b45309;font-weight:600;margin-bottom:4px;}
 .fu-details{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
-.futag{font-size:10px;font-family:var(--mono);padding:1px 7px;border-radius:10px;font-weight:500;}
-.futag.size{background:rgba(180,83,9,.1);color:#92400e;}
-.futag.type{background:rgba(217,119,6,.15);color:#78350f;}
-.futag.price{background:rgba(16,185,129,.1);color:#065f46;}
-.futag.tns{background:rgba(59,130,246,.1);color:#1e40af;}
-.futag.supplier{background:rgba(139,92,246,.1);color:#5b21b6;}
+.ftag{font-size:10px;font-family:var(--mono);padding:1px 7px;border-radius:10px;font-weight:500;}
+.ftag.sz{background:rgba(180,83,9,.1);color:#92400e;}
+.ftag.ty{background:rgba(217,119,6,.15);color:#78350f;}
+.ftag.pr{background:rgba(16,185,129,.1);color:#065f46;}
+.ftag.tn{background:rgba(59,130,246,.1);color:#1e40af;}
+.ftag.sp{background:rgba(139,92,246,.1);color:#5b21b6;}
 .fu-comment{font-size:11px;color:#78350f;margin-top:6px;line-height:1.4;font-style:italic;}
 .fu-edit-btn{width:24px;height:24px;border-radius:6px;border:1px solid rgba(180,83,9,.2);background:rgba(180,83,9,.06);color:#b45309;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s;}
 .fu-edit-btn:hover{background:rgba(180,83,9,.15);}
-.section-divider{display:flex;align-items:center;gap:10px;margin:12px 0 8px;}
-.section-divider-label{font-size:11px;font-weight:700;font-family:var(--mono);white-space:nowrap;}
-.section-divider-line{flex:1;height:1px;background:var(--border);}
-.empty-state{padding:60px 24px;text-align:center;color:var(--text3);}
+.fu-more-btn{font-size:11px;color:#b45309;margin-top:6px;font-family:var(--mono);cursor:pointer;text-decoration:underline;display:inline-block;}
+.sec-div{display:flex;align-items:center;gap:10px;margin:12px 0 8px;}
+.sec-div-lbl{font-size:11px;font-weight:700;font-family:var(--mono);white-space:nowrap;}
+.sec-div-line{flex:1;height:1px;background:var(--border);}
+.empty{padding:60px 24px;text-align:center;color:var(--text3);}
 .empty-icon{font-size:40px;margin-bottom:12px;opacity:.5;}
 .empty-title{font-size:15px;font-weight:500;color:var(--text2);margin-bottom:6px;}
 .empty-sub{font-size:12px;}
 .spinner{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--text3);font-size:12px;gap:10px;}
 .spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.info-banner{background:var(--accent-light);border:1px solid rgba(212,137,26,.2);border-radius:var(--radius);padding:12px 16px;font-size:12px;color:var(--accent-dim);margin-bottom:24px;line-height:1.6;}
-.config-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;box-shadow:var(--shadow);}
-.config-title{font-size:13px;font-weight:600;margin-bottom:3px;}
-.config-desc{font-size:11px;color:var(--text3);margin-bottom:14px;}
-.config-field{margin-bottom:10px;}
-.config-label{font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:500;}
-.config-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:11px;padding:7px 10px;outline:none;transition:border-color .15s;}
-.config-input:focus{border-color:var(--accent);background:var(--bg2);}
-.config-save{display:flex;justify-content:flex-end;margin-top:10px;}
-
-/* ── MODAL ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;}
-.modal-overlay.hidden{display:none !important;pointer-events:none;}
-.modal{background:var(--bg2);border-radius:var(--radius-xl);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.info-banner{background:var(--accent-light);border:1px solid rgba(212,137,26,.2);border-radius:var(--r);padding:12px 16px;font-size:12px;color:var(--accent-dim);margin-bottom:24px;line-height:1.6;}
+.cfg-sec{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:18px;margin-bottom:12px;box-shadow:var(--sh);}
+.cfg-title{font-size:13px;font-weight:600;margin-bottom:3px;}
+.cfg-desc{font-size:11px;color:var(--text3);margin-bottom:14px;}
+.cfg-field{margin-bottom:10px;}
+.cfg-label{font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:500;}
+.cfg-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:11px;padding:7px 10px;outline:none;transition:border-color .15s;}
+.cfg-input:focus{border-color:var(--accent);background:var(--bg2);}
+.cfg-save{display:flex;justify-content:flex-end;margin-top:10px;}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.hidden{display:none !important;}
+.modal{background:var(--bg2);border-radius:var(--rxl);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
 .modal-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:2;}
 .modal-title{font-size:15px;font-weight:700;}
 .modal-close{width:28px;height:28px;border-radius:50%;background:var(--bg3);color:var(--text3);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1;}
@@ -179,63 +176,58 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .mfield{margin-bottom:14px;}
 .mfield-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;display:flex;align-items:center;gap:6px;}
 .mfield-opt{font-size:10px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;}
-.minput{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 12px;outline:none;transition:border-color .15s;}
+.minput{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 12px;outline:none;transition:border-color .15s;}
 .minput:focus{border-color:var(--accent);background:var(--bg2);}
-.mselect{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 12px;outline:none;cursor:pointer;appearance:none;}
+.mselect{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 12px;outline:none;cursor:pointer;appearance:none;}
 .mselect:focus{border-color:var(--accent);}
-.mtextarea{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 12px;outline:none;resize:vertical;min-height:80px;transition:border-color .15s;}
+.mtextarea{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 12px;outline:none;resize:vertical;min-height:80px;transition:border-color .15s;}
 .mtextarea:focus{border-color:var(--accent);background:var(--bg2);}
 .mform-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
 .company-field{position:relative;}
-.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1.5px solid var(--accent);border-top:none;border-radius:0 0 var(--radius) var(--radius);box-shadow:var(--shadow-lg);z-index:10;max-height:200px;overflow-y:auto;}
-.autocomplete-item{padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);transition:background .1s;}
-.autocomplete-item:last-child{border-bottom:none;}
-.autocomplete-item:hover,.autocomplete-item.active{background:var(--accent-light);color:var(--accent);}
-.autocomplete-item .ac-sub{font-size:11px;color:var(--text3);margin-top:1px;}
-.not-found-banner{background:var(--warn-light);border:1px solid rgba(255,149,0,.2);border-radius:var(--radius);padding:10px 14px;font-size:12px;color:#92400e;margin-top:6px;}
-
-/* ── EMPRESAS VIEW ── */
-.empresa-search-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-xl);padding:20px;margin-bottom:20px;box-shadow:var(--shadow);}
-.empresa-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;box-shadow:var(--shadow);}
-.empresa-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.empresa-name{font-size:15px;font-weight:700;}
-.empresa-meta{font-size:12px;color:var(--text3);margin-top:2px;}
-
+.ac-list{position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1.5px solid var(--accent);border-top:none;border-radius:0 0 var(--r) var(--r);box-shadow:var(--shl);z-index:10;max-height:200px;overflow-y:auto;}
+.ac-list.hidden{display:none;}
+.ac-item{padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);transition:background .1s;}
+.ac-item:last-child{border-bottom:none;}
+.ac-item:hover,.ac-item.active{background:var(--accent-light);color:var(--accent);}
+.ac-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+/* EMPRESAS */
+.emp-search-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rxl);padding:20px;margin-bottom:20px;box-shadow:var(--sh);}
+.emp-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px;margin-bottom:10px;box-shadow:var(--sh);}
+.emp-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.emp-name{font-size:15px;font-weight:700;}
+.emp-meta{font-size:12px;color:var(--text3);margin-top:2px;}
 /* PROGRESS / TOAST */
-#toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 16px;border-radius:10px;font-weight:500;font-size:12px;z-index:999;transition:opacity .3s;pointer-events:none;box-shadow:var(--shadow-lg);opacity:0;}
-.progress-bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#e2a832);z-index:9999;transform-origin:left;transform:scaleX(0);pointer-events:none;}
-.progress-bar.active{animation:progress 1.5s ease-in-out infinite;}
-@keyframes progress{0%{transform:scaleX(0);opacity:1;}60%{transform:scaleX(.7);opacity:1;}100%{transform:scaleX(1);opacity:0;}}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 16px;border-radius:10px;font-weight:500;font-size:12px;z-index:999;transition:opacity .3s;pointer-events:none;box-shadow:var(--shl);opacity:0;}
+.pbar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#e2a832);z-index:9999;transform-origin:left;transform:scaleX(0);pointer-events:none;}
+.pbar.go{animation:pg 1.5s ease-in-out infinite;}
+@keyframes pg{0%{transform:scaleX(0);opacity:1;}60%{transform:scaleX(.7);opacity:1;}100%{transform:scaleX(1);opacity:0;}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-.mobile-toggle{display:none;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:15px;}
-.overlay-close{display:none;position:fixed;inset:0;z-index:9;background:rgba(0,0,0,.35);}
-
-/* ── MOBILE ── */
+.ham{display:none;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-size:15px;}
+.overlay{display:none;position:fixed;inset:0;z-index:9;background:rgba(0,0,0,.35);}
 @media(max-width:768px){
-  .mobile-toggle{display:flex;}
+  .ham{display:flex;}
   .sidebar{transform:translateX(-240px);transition:transform .25s ease;z-index:20;}
-  .modal-overlay{z-index:300;}
   .sidebar.open{transform:translateX(0);}
-  .overlay-close.show{display:block;}
+  .overlay.show{display:block;}
   .main{margin-left:0;}
   .topbar{padding:10px 14px;}
   .topbar-title{font-size:15px;}
   .content{padding:14px;}
   .chip{padding:10px 16px;font-size:14px;}
-  .toggle-row{padding:15px 16px;}
-  .toggle-check{width:24px;height:24px;}
-  .toggle-label-main{font-size:14px;}
-  .toggle-label-sub{font-size:12px;}
+  .tog{padding:15px 16px;}
+  .tog-check{width:24px;height:24px;}
+  .tog-main{font-size:14px;}
+  .tog-sub{font-size:12px;}
   .btn-search{padding:14px;font-size:15px;}
   .btn-reset{padding:14px 18px;font-size:14px;}
-  .slider-input::-webkit-slider-thumb{width:26px;height:26px;border-width:3px;}
-  .slider-input::-moz-range-thumb{width:26px;height:26px;border-width:3px;}
-  .slider-track-wrap{height:8px;}
+  .sl-inp::-webkit-slider-thumb{width:26px;height:26px;border-width:3px;}
+  .sl-inp::-moz-range-thumb{width:26px;height:26px;border-width:3px;}
+  .sl-track{height:8px;}
   .stats-row{grid-template-columns:1fr 1fr;}
   .stat-value{font-size:24px;}
-  .match-card{padding:14px;}
-  .match-name{font-size:15px;}
-  .match-avatar{width:42px;height:42px;font-size:17px;}
+  .mcard{padding:14px;}
+  .mname{font-size:15px;}
+  .mavatar{width:42px;height:42px;font-size:17px;}
   .mtag{font-size:11px;padding:3px 9px;}
   .filter-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px 12px;gap:6px;}
   .filter-bar::-webkit-scrollbar{display:none;}
@@ -243,27 +235,28 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
   .filter-count{margin-left:0;flex-shrink:0;}
   .mform-grid{grid-template-columns:1fr;}
   #toast{left:14px;right:14px;bottom:14px;text-align:center;}
+  .modal-overlay{z-index:600;}
 }
 </style>
 </head>
 <body>
-<div class="progress-bar" id="progress-bar"></div>
+<div class="pbar" id="pbar"></div>
 <div id="toast"></div>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
 <!-- FU MODAL -->
 <div class="modal-overlay hidden" id="fu-modal">
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title" id="fu-modal-title">Agregar Follow Up</span>
-      <span class="modal-close" onclick="closeFUModal()">×</span>
+      <span class="modal-close" onclick="closeFUModal()">&#215;</span>
     </div>
     <div class="modal-body">
       <div class="mfield company-field">
         <label class="mfield-label">Empresa</label>
-        <input class="minput" id="fu-company" placeholder="Escribí para buscar..." autocomplete="off"
-          oninput="onCompanyInputIfNotPrefilled()" onkeydown="onCompanyKeydown(event)">
-        <div class="autocomplete-list hidden" id="ac-list"></div>
-<div id="ac-notfound" style="display:none;"></div>
+        <input class="minput" id="fu-company" placeholder="Escribi para buscar..." autocomplete="off"
+          oninput="onCompanyInput()" onkeydown="onCompanyKeydown(event)">
+        <div class="ac-list hidden" id="ac-list"></div>
       </div>
       <div class="mform-grid">
         <div class="mfield">
@@ -273,10 +266,8 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
         <div class="mfield">
           <label class="mfield-label">Type <span class="mfield-opt">opcional</span></label>
           <select class="mselect" id="fu-type">
-            <option value="">— Seleccioná —</option>
-            <option>Raw</option>
-            <option>Blanched</option>
-            <option>Roasted</option>
+            <option value="">— Selecciona —</option>
+            <option>Raw</option><option>Blanched</option><option>Roasted</option>
           </select>
         </div>
         <div class="mfield">
@@ -288,19 +279,19 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
           <input class="minput" id="fu-price" placeholder="ej: 1180" type="number">
         </div>
         <div class="mfield" style="grid-column:1/-1">
-          <label class="mfield-label">Proveedor actual <span class="mfield-opt">opcional</span></label>
+          <label class="mfield-label">Proveedor <span class="mfield-opt">opcional</span></label>
           <input class="minput" id="fu-supplier" placeholder="ej: Argen Peanuts">
         </div>
       </div>
       <div class="mfield">
         <label class="mfield-label">Comentario <span class="mfield-opt">opcional</span></label>
-        <textarea class="mtextarea" id="fu-comment" placeholder="Observaciones, próximos pasos, contexto..."></textarea>
+        <textarea class="mtextarea" id="fu-comment" placeholder="Observaciones, proximos pasos, contexto..."></textarea>
       </div>
       <div id="fu-date-display" style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:4px;"></div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeFUModal()">Cancelar</button>
-      <button class="btn primary" id="fu-save-btn" onclick="saveFURecord()">💾 Guardar</button>
+      <button class="btn primary" id="fu-save-btn" onclick="saveFURecord()">&#128190; Guardar</button>
     </div>
   </div>
 </div>
@@ -313,32 +304,32 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     <div class="logo-sub">LATINUT · Ofertas & Demandas</div>
   </div>
   <nav class="nav">
-    <div class="nav-section">
-      <div class="nav-label">Herramientas</div>
-      <div class="nav-item active" onclick="showView('matcher')" id="nav-matcher"><span class="icon">🔍</span> Buscar Matches</div>
-      <div class="nav-item" onclick="showView('empresas')" id="nav-empresas"><span class="icon">🏢</span> Empresas</div>
-      <div class="nav-item" onclick="showView('config')" id="nav-config"><span class="icon">⚙</span> Configuración</div>
+    <div class="nav-sec">
+      <div class="nav-lbl">Herramientas</div>
+      <div class="nav-item active" id="nav-matcher" onclick="showView('matcher')"><span>🔍</span> Buscar Matches</div>
+      <div class="nav-item" id="nav-empresas" onclick="showView('empresas')"><span>🏢</span> Empresas</div>
+      <div class="nav-item" id="nav-config" onclick="showView('config')"><span>⚙</span> Configuracion</div>
     </div>
   </nav>
-  <div class="sidebar-footer">
+  <div class="sb-foot">
     <button id="auth-btn" class="auth-btn" onclick="handleAuth()">Conectar con Google</button>
     <div style="font-size:10px;color:var(--text3);margin-top:4px;" id="auth-status-text"></div>
-    <div class="sheet-status">
-      <span class="sheet-dot err" id="sheet-dot"></span>
-      <span id="sheet-status-text">Sin conectar</span>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+      <span class="sdot err" id="sheet-dot"></span>
+      <span class="stext" id="sheet-status-text">Sin conectar</span>
     </div>
   </div>
 </aside>
-<div class="overlay-close" id="overlay-close" onclick="closeSidebar()"></div>
+
 <main class="main">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:12px;">
-      <span class="mobile-toggle" onclick="toggleSidebar()">☰</span>
+      <span class="ham" onclick="toggleSidebar()">&#9776;</span>
       <span class="topbar-title" id="view-title">Buscar Matches</span>
     </div>
     <div class="topbar-right">
       <span style="font-size:11px;color:var(--text3);font-family:var(--mono);" id="last-sync">—</span>
-      <button class="btn" onclick="loadSheetData()">↻ Sincronizar</button>
+      <button class="btn" onclick="loadSheetData()">&#8635; Sincronizar</button>
     </div>
   </div>
   <div class="content" id="content">
@@ -348,368 +339,341 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 </div>
 
 <script>
-// CONFIG
-const CFG_KEY='peanut_matcher_cfg';
-let cfg=Object.assign({clientId:'',sheetId:'10KFlKkOIKz-l6_wXHiHM_9WL-u97AtDM3MtXmHNI5OQ',sheetName:'Sheet1'},JSON.parse(localStorage.getItem(CFG_KEY)||'{}'));
-const COL={CLIENT:1,REGION:2,COUNTRY:3,COMPANY:4,SIZE:28,TYPE:29};
-const EU_REGIONS=['europe','europa','eu','emea','european union'];
-function isEU(v){return EU_REGIONS.includes((v||'').toLowerCase().trim());}
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+var CFG_KEY='peanut_matcher_cfg';
+var cfg=Object.assign({clientId:'',sheetId:'10KFlKkOIKz-l6_wXHiHM_9WL-u97AtDM3MtXmHNI5OQ',sheetName:'Sheet1'},JSON.parse(localStorage.getItem(CFG_KEY)||'{}'));
+var COL={CLIENT:1,REGION:2,COUNTRY:3,COMPANY:4,SIZE:28,TYPE:29};
+var EU_VALS=['europe','europa','eu','emea','european union'];
+function isEU(v){return EU_VALS.indexOf((v||'').toLowerCase().trim())>=0;}
 
-const TYPE_MAP={'raw':['Raw'],'crudo':['Raw'],'blanched':['Blanched'],'blancheados':['Blanched'],'blanched g1/g2':['Blanched'],'horneado':['Roasted'],'tostado':['Roasted'],'blancheado / raw':['Blanched','Raw'],'blanched - raw':['Blanched','Raw'],'blanched / raw':['Blanched','Raw'],'raw - blanched':['Blanched','Raw'],'raw y blanched':['Blanched','Raw'],'crudo y bl':['Blanched','Raw'],'crudo y blanched bf':['Blanched','Raw'],'blanceado, crudo y con cascara':['Blanched','Raw'],'blancheado, crudo y con cascara':['Blanched','Raw'],'tostado, crudo y blanhceado todo':['Blanched','Raw','Roasted'],'tostado, crudo y blanheado todo':['Blanched','Raw','Roasted']};
-function getCanonicalTypes(raw){const k=(raw||'').toLowerCase().trim();if(TYPE_MAP[k])return TYPE_MAP[k];const t=[];if(k.includes('raw')||k.includes('crudo'))t.push('Raw');if(k.includes('blanch')||k.includes('blanc'))t.push('Blanched');if(k.includes('roast')||k.includes('tost')||k.includes('horn'))t.push('Roasted');return t.length?[...new Set(t)]:[];}
+// ── TYPE MAP ────────────────────────────────────────────────────────────────
+var TYPE_MAP={'raw':['Raw'],'crudo':['Raw'],'blanched':['Blanched'],'blancheados':['Blanched'],'blanched g1/g2':['Blanched'],'horneado':['Roasted'],'tostado':['Roasted'],'blancheado / raw':['Blanched','Raw'],'blanched - raw':['Blanched','Raw'],'blanched / raw':['Blanched','Raw'],'raw - blanched':['Blanched','Raw'],'raw y blanched':['Blanched','Raw'],'crudo y bl':['Blanched','Raw'],'crudo y blanched bf':['Blanched','Raw'],'blanceado, crudo y con cascara':['Blanched','Raw'],'blancheado, crudo y con cascara':['Blanched','Raw'],'tostado, crudo y blanhceado todo':['Blanched','Raw','Roasted'],'tostado, crudo y blanheado todo':['Blanched','Raw','Roasted']};
+function getTypes(raw){var k=(raw||'').toLowerCase().trim();if(TYPE_MAP[k])return TYPE_MAP[k];var t=[];if(k.indexOf('raw')>=0||k.indexOf('crudo')>=0)t.push('Raw');if(k.indexOf('blanch')>=0||k.indexOf('blanc')>=0)t.push('Blanched');if(k.indexOf('roast')>=0||k.indexOf('tost')>=0||k.indexOf('horn')>=0)t.push('Roasted');return t.length?[].concat([],t).filter(function(v,i,a){return a.indexOf(v)===i;}):[];}
 
-function parseSizeValue(raw){const s=(raw||'').toLowerCase();const hasSplit=s.includes('split');const hasAny=s.includes('any')||s.includes('todo')||s.includes('cualquier')||s.includes('todos')||s.includes('all')||s.includes('calibres medianos')||s.includes('principalmente')||s.includes('runner')||s.includes('wholes')||s.includes('sortex')||s.includes('chopped')||s.includes('pasta')||s.includes('small');const nums=[];const ms=s.match(/[0-9]+/g);if(ms)ms.forEach(function(n){var v=parseInt(n);if(v>=20&&v<=120)nums.push(v);});return{nums,hasSplit,hasAny};}
-function sizeMatches(raw,minV,maxV,withSplit){var p=parseSizeValue(raw);if(p.hasAny)return true;if(p.hasSplit&&withSplit)return true;return p.nums.some(function(n){return n>=minV&&n<=maxV;});}
+// ── SIZE ────────────────────────────────────────────────────────────────────
+function parseSize(raw){var s=(raw||'').toLowerCase();var sp=s.indexOf('split')>=0;var any=s.indexOf('any')>=0||s.indexOf('todo')>=0||s.indexOf('todos')>=0||s.indexOf('all')>=0||s.indexOf('runner')>=0||s.indexOf('wholes')>=0||s.indexOf('sortex')>=0||s.indexOf('chopped')>=0||s.indexOf('pasta')>=0||s.indexOf('small')>=0||s.indexOf('calibres medianos')>=0||s.indexOf('principalmente')>=0||s.indexOf('cualquier')>=0;var nums=[];var ms=s.match(/[0-9]+/g);if(ms)for(var i=0;i<ms.length;i++){var v=parseInt(ms[i]);if(v>=20&&v<=120)nums.push(v);}return{nums:nums,hasSplit:sp,hasAny:any};}
+function sizeOk(raw,mn,mx,ws){var p=parseSize(raw);if(p.hasAny)return true;if(p.hasSplit&&ws)return true;for(var i=0;i<p.nums.length;i++)if(p.nums[i]>=mn&&p.nums[i]<=mx)return true;return false;}
 
-function normalizeFUType(raw){var s=(raw||'').toLowerCase().trim();if(!s)return '';if(s.includes('roast')||s.includes('tost')||s.includes('horn'))return 'Roasted';if(s.includes('blanch')||s.includes('blanc'))return 'Blanched';if(s.includes('raw')||s.includes('crudo'))return 'Raw';return raw;}
-function normalizeFUSize(raw){var s=(raw||'').toLowerCase().trim();if(!s)return '';var AK=['all','todos','any','small sizes','wholes','wholes and splits','wholes & splits','sortex','sortex reject','chopped','pasta','2 - 4 mm','2-4mm'];for(var i=0;i<AK.length;i++){if(s===AK[i]||s.includes(AK[i]))return 'Any';}var nums=[];var ms=s.match(/[0-9]+/g);if(ms)ms.forEach(function(n){var v=parseInt(n);if(v>=20&&v<=120)nums.push(v);});var hasSplit=s.includes('split');var KNOWN=[[28,32],[30,36],[30,37],[32,38],[34,38],[35,40],[38,42],[40,50],[50,60],[60,70],[70,80],[80,100],[70,100]];var found=[];KNOWN.forEach(function(pair){if(nums.indexOf(pair[0])>=0&&nums.indexOf(pair[1])>=0)found.push(pair[0]+'/'+pair[1]);});var parts=found.length?found:(nums.length?[nums.sort(function(a,b){return a-b;})[0]+'']:[]);if(hasSplit)parts.push('Split');return parts.length?parts.join(' · '):raw;}
+// ── FU NORMALIZERS ──────────────────────────────────────────────────────────
+function normType(raw){var s=(raw||'').toLowerCase().trim();if(!s)return '';if(s.indexOf('roast')>=0||s.indexOf('tost')>=0||s.indexOf('horn')>=0)return 'Roasted';if(s.indexOf('blanch')>=0||s.indexOf('blanc')>=0)return 'Blanched';if(s.indexOf('raw')>=0||s.indexOf('crudo')>=0)return 'Raw';return raw;}
+function normSize(raw){var s=(raw||'').toLowerCase().trim();if(!s)return '';var AK=['all','todos','any','small sizes','wholes','wholes and splits','sortex','sortex reject','chopped','pasta','2 - 4 mm','2-4mm'];for(var i=0;i<AK.length;i++)if(s===AK[i]||s.indexOf(AK[i])>=0)return 'Any';var nums=[];var ms=s.match(/[0-9]+/g);if(ms)for(var i=0;i<ms.length;i++){var v=parseInt(ms[i]);if(v>=20&&v<=120)nums.push(v);}var sp=s.indexOf('split')>=0;var KN=[[28,32],[30,36],[30,37],[32,38],[34,38],[35,40],[38,42],[40,50],[50,60],[60,70],[70,80],[80,100],[70,100]];var found=[];for(var i=0;i<KN.length;i++)if(nums.indexOf(KN[i][0])>=0&&nums.indexOf(KN[i][1])>=0)found.push(KN[i][0]+'/'+KN[i][1]);var parts=found.length?found:(nums.length?[nums.sort(function(a,b){return a-b;})[0]+'']:[]);if(sp)parts.push('Split');return parts.length?parts.join(' · '):raw;}
 
-function similarity(a,b){a=(a||'').toLowerCase().trim().replace(/[^a-z0-9]/g,' ').replace(/  +/g,' ');b=(b||'').toLowerCase().trim().replace(/[^a-z0-9]/g,' ').replace(/  +/g,' ');if(a===b)return 1;if(!a||!b)return 0;var m=a.length,n=b.length,dp=[],i,j;for(i=0;i<=m;i++){dp[i]=[];for(j=0;j<=n;j++)dp[i][j]=i===0?j:j===0?i:0;}for(i=1;i<=m;i++)for(j=1;j<=n;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);return 1-dp[m][n]/Math.max(m,n);}
-function findFollowUp(company){
-  if(!followUpRows.length||!company)return[];
+// ── SIMILARITY ──────────────────────────────────────────────────────────────
+function sim(a,b){a=(a||'').toLowerCase().trim().replace(/[^a-z0-9]/g,' ').replace(/ +/g,' ');b=(b||'').toLowerCase().trim().replace(/[^a-z0-9]/g,' ').replace(/ +/g,' ');if(a===b)return 1;if(!a||!b)return 0;var m=a.length,n=b.length,dp=[],i,j;for(i=0;i<=m;i++){dp[i]=[];for(j=0;j<=n;j++)dp[i][j]=i===0?j:j===0?i:0;}for(i=1;i<=m;i++)for(j=1;j<=n;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);return 1-dp[m][n]/Math.max(m,n);}
+
+function findFU(company){
+  if(!fuRows.length||!company)return[];
   var cLow=company.toLowerCase().trim();
-  return followUpRows.filter(function(row){
-    var fuName=(row[1]||'').trim().toLowerCase();
-    // Exact substring match in either direction
-    if(fuName.includes(cLow)||cLow.includes(fuName)) return true;
-    // Similarity threshold lowered to 0.7
-    return similarity(cLow,fuName)>=0.7;
+  return fuRows.filter(function(r){
+    var n=(r[1]||'').trim().toLowerCase();
+    if(n===cLow||n.indexOf(cLow)>=0||cLow.indexOf(n)>=0)return true;
+    return sim(cLow,n)>=0.7;
   });
 }
 
-// Get all company names from Database for autocomplete
-function getCompanyNames(){return [...new Set(allRows.map(function(r){return(r[COL.COMPANY]||r[COL.CLIENT]||'').trim();}).filter(Boolean))].sort();}
+function getCompanyNames(){
+  var seen={};var out=[];
+  allRows.forEach(function(r){var n=(r[COL.COMPANY]||r[COL.CLIENT]||'').trim();if(n&&!seen[n.toLowerCase()]){seen[n.toLowerCase()]=true;out.push(n);}});
+  return out.sort();
+}
 
-// STATE
-var accessToken=null,tokenClient=null,allRows=[],followUpRows=[];
-var currentView='matcher',lastSearch=null;
-var resultFilters={region:'',country:'',type:''};
-var selectedTypes=new Set(),aptoEuropa=false,incluirSplit=false;
-var rangeMin=38,rangeMax=50,SLIDER_MIN=30,SLIDER_MAX=100;
+// ── STATE ────────────────────────────────────────────────────────────────────
+var tok=null,tcl=null,allRows=[],fuRows=[];
+var view='matcher',lastSearch=null;
+var rf={region:'',country:'',type:''};
+var selTypes=new Set(),withEU=false,withSplit=false;
+var rMin=38,rMax=50,SL=30,SH=100;
+// Modal state
+var fuMode='new',fuEditIdx=null,fuPrefill='';
+var acIdx=-1,acNames=[];
+// Empresas
+var empQuery='',empAcIdx=-1,empAllNames=[];
 
-// FU modal state
-var fuModalMode='new'; // 'new' or 'edit'
-var fuEditRowIndex=null; // index in followUpRows for edit
-var fuPrefilledCompany='';
-var acSelectedIndex=-1;
-
-// OAUTH — scope now includes write
+// ── OAUTH ────────────────────────────────────────────────────────────────────
 var SCOPES='https://www.googleapis.com/auth/spreadsheets';
-function initGoogleAuth(){if(!cfg.clientId)return;if(typeof google==='undefined'||!google.accounts||!google.accounts.oauth2){setTimeout(initGoogleAuth,500);return;}tokenClient=google.accounts.oauth2.initTokenClient({client_id:cfg.clientId,scope:SCOPES,callback:function(resp){if(resp.error){console.error(resp);return;}accessToken=resp.access_token;updateAuthUI(true);loadSheetData();}});}
-function handleAuth(){if(accessToken){google.accounts.oauth2.revoke(accessToken,function(){accessToken=null;allRows=[];followUpRows=[];updateAuthUI(false);setSheetStatus('err','Desconectado');});}else{if(!cfg.clientId){showView('config');showToast('Configurá el Client ID primero');return;}if(!tokenClient){initGoogleAuth();setTimeout(function(){if(tokenClient)tokenClient.requestAccessToken();},600);return;}tokenClient.requestAccessToken();}}
-function updateAuthUI(connected){var btn=document.getElementById('auth-btn'),txt=document.getElementById('auth-status-text');if(connected){btn.textContent='Desconectar Google';btn.className='auth-btn connected';txt.textContent='● Conectado';txt.style.color='var(--ok)';}else{btn.textContent='Conectar con Google';btn.className='auth-btn';txt.textContent='';}if(currentView==='config')renderConfig();}
+function initGoogleAuth(){
+  if(!cfg.clientId)return;
+  if(typeof google==='undefined'||!google.accounts||!google.accounts.oauth2){setTimeout(initGoogleAuth,500);return;}
+  tcl=google.accounts.oauth2.initTokenClient({client_id:cfg.clientId,scope:SCOPES,callback:function(resp){
+    if(resp.error){console.error(resp);return;}
+    tok=resp.access_token;updateAuthUI(true);loadSheetData();
+  }});
+}
+function handleAuth(){
+  if(tok){
+    google.accounts.oauth2.revoke(tok,function(){tok=null;allRows=[];fuRows=[];updateAuthUI(false);setStatus('err','Desconectado');});
+  } else {
+    if(!cfg.clientId){showView('config');toast('Configura el Client ID primero');return;}
+    if(!tcl){initGoogleAuth();setTimeout(function(){if(tcl)tcl.requestAccessToken();},600);return;}
+    tcl.requestAccessToken();
+  }
+}
+function updateAuthUI(c){
+  var btn=document.getElementById('auth-btn'),txt=document.getElementById('auth-status-text');
+  if(c){btn.textContent='Desconectar Google';btn.className='auth-btn connected';txt.textContent='● Conectado';txt.style.color='var(--ok)';}
+  else{btn.textContent='Conectar con Google';btn.className='auth-btn';txt.textContent='';}
+  if(view==='config')renderConfig();
+}
 
-// DATA
+// ── DATA ─────────────────────────────────────────────────────────────────────
 async function loadSheetData(){
-  if(!accessToken){setSheetStatus('err','Sin autenticar');return;}
-  setSheetStatus('loading','Cargando datos...');showProgress();
+  if(!tok){setStatus('err','Sin autenticar');return;}
+  setStatus('loading','Cargando...');prog(true);
   try{
-    var range=encodeURIComponent(cfg.sheetName+'!A2:AL2000');
-    var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+range,{headers:{Authorization:'Bearer '+accessToken}});
+    var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A2:AL2000'),{headers:{Authorization:'Bearer '+tok}});
     if(!r.ok)throw new Error('HTTP '+r.status);
-    var data=await r.json();
-    allRows=(data.values||[]).filter(function(row){return row[COL.TYPE]||row[COL.SIZE]||row[COL.CLIENT]||row[COL.COMPANY];});
+    var d=await r.json();
+    allRows=(d.values||[]).filter(function(row){return row[COL.TYPE]||row[COL.SIZE]||row[COL.CLIENT]||row[COL.COMPANY];});
     try{
-      var fuRange=encodeURIComponent('Follow up!A2:O2000');
-      var fuR=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+fuRange,{headers:{Authorization:'Bearer '+accessToken}});
-      if(fuR.ok){var fuData=await fuR.json();followUpRows=(fuData.values||[]).filter(function(row){return row[1];});}
-    }catch(e){console.warn('Follow up:',e);}
-    setSheetStatus('ok',allRows.length+' clientes · '+followUpRows.length+' follow ups');
+      var fr=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A2:O2000'),{headers:{Authorization:'Bearer '+tok}});
+      if(fr.ok){var fd=await fr.json();fuRows=(fd.values||[]).filter(function(row){return row[1];});}
+    }catch(e){console.warn('FU:',e);}
+    setStatus('ok',allRows.length+' clientes · '+fuRows.length+' follow ups');
     document.getElementById('last-sync').textContent='Sync '+new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-    hideProgress();
-    if(currentView==='matcher')renderMatcher();
-    else if(currentView==='empresas')renderEmpresas();
-  }catch(e){setSheetStatus('err','Error al cargar');hideProgress();showToast('Error al conectar con el Sheet');console.error(e);}
+    prog(false);
+    if(view==='matcher')renderMatcher();
+    else if(view==='empresas')renderEmpresas();
+  }catch(e){setStatus('err','Error');prog(false);toast('Error al conectar');console.error(e);}
 }
-function setSheetStatus(state,text){document.getElementById('sheet-dot').className='sheet-dot'+(state==='err'?' err':state==='loading'?' loading':'');document.getElementById('sheet-status-text').textContent=text;}
+function setStatus(s,t){document.getElementById('sheet-dot').className='sdot'+(s==='err'?' err':s==='loading'?' loading':'');document.getElementById('sheet-status-text').textContent=t;}
 
-// WRITE TO SHEET — append row to Follow Up
-async function appendFURow(rowData){
-  // rowData is array of 15 elements: A=date, B=company, C=contact, D=size, E=type, F=origin, G=packaging, H=tns_label, I=tns, J=price, K=port, L=country, M=shipment, N=supplier, O=comment
-  var range=encodeURIComponent('Follow up!A:O');
-  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+range+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
-  var r=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({values:[rowData]})});
+// ── SHEET WRITE ──────────────────────────────────────────────────────────────
+async function appendFURow(row){
+  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A:O')+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
+  var r=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
   return r.ok;
 }
-
-// UPDATE existing FU row
-async function updateFURow(sheetRowNum,rowData){
-  var range=encodeURIComponent('Follow up!A'+sheetRowNum+':O'+sheetRowNum);
-  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+range+'?valueInputOption=USER_ENTERED';
-  var r=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({values:[rowData]})});
+async function updateFURow(sheetRow,row){
+  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A'+sheetRow+':O'+sheetRow)+'?valueInputOption=USER_ENTERED';
+  var r=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
   return r.ok;
 }
-
-// TODAY as DD/MM/YYYY
 function todayStr(){var d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
 
-// OPEN FU MODAL
-function openFUModal(prefilledCompany, editRowIndex){
-  fuModalMode = editRowIndex!==undefined ? 'edit' : 'new';
-  fuEditRowIndex = editRowIndex;
-  fuPrefilledCompany = prefilledCompany||'';
-  acSelectedIndex = -1;
+// ── FU MODAL ─────────────────────────────────────────────────────────────────
+function openFUModal(prefill,editIdx){
+  fuMode=editIdx!==undefined?'edit':'new';
+  fuEditIdx=editIdx!==undefined?editIdx:null;
+  fuPrefill=prefill||'';
+  acIdx=-1;acNames=[];
 
-  // Reset fields
-  var companyInput=document.getElementById('fu-company');
-  companyInput.value = fuPrefilledCompany;
-  companyInput.dataset.fromDb = fuPrefilledCompany ? 'true' : 'false';
-  document.getElementById('fu-size').value = '';
-  document.getElementById('fu-type').value = '';
-  document.getElementById('fu-tns').value = '';
-  document.getElementById('fu-price').value = '';
-  document.getElementById('fu-supplier').value = '';
-  document.getElementById('fu-comment').value = '';
+  var inp=document.getElementById('fu-company');
+  inp.disabled=false;
+  inp.value=fuPrefill;
+  document.getElementById('fu-size').value='';
+  document.getElementById('fu-type').value='';
+  document.getElementById('fu-tns').value='';
+  document.getElementById('fu-price').value='';
+  document.getElementById('fu-supplier').value='';
+  document.getElementById('fu-comment').value='';
   document.getElementById('ac-list').classList.add('hidden');
-  ;
 
-  if(fuModalMode==='edit' && editRowIndex!==undefined){
-    var row=followUpRows[editRowIndex];
+  if(fuMode==='edit'&&fuEditIdx!==null){
+    var row=fuRows[fuEditIdx];
     document.getElementById('fu-modal-title').textContent='Editar Follow Up';
-    var editCompanyInput=document.getElementById('fu-company');
-    editCompanyInput.value=(row[1]||'').trim();
-    editCompanyInput.dataset.fromDb='true';
-    editCompanyInput.disabled=true;
+    inp.value=(row[1]||'').trim();
+    inp.disabled=true;
     document.getElementById('fu-size').value=(row[3]||'').trim();
     document.getElementById('fu-type').value=(row[4]||'').trim();
     document.getElementById('fu-tns').value=(row[8]||'').trim();
     document.getElementById('fu-price').value=(row[9]||'').trim();
     document.getElementById('fu-supplier').value=(row[13]||'').trim();
     document.getElementById('fu-comment').value=(row[14]||'').trim();
-    document.getElementById('fu-date-display').textContent='Fecha original: '+(row[0]||'—')+' · Se actualizará a hoy al guardar';
+    document.getElementById('fu-date-display').textContent='Fecha original: '+(row[0]||'—')+' · Se actualizara a hoy';
   } else {
     document.getElementById('fu-modal-title').textContent='Agregar Follow Up';
-    document.getElementById('fu-company').disabled=false;
     document.getElementById('fu-date-display').textContent='Fecha: '+todayStr();
   }
 
-  // Always hide warning when opening - it will only show after manual typing
-  ;
-  document.getElementById('ac-list').classList.add('hidden');
   document.getElementById('fu-modal').classList.remove('hidden');
-  setTimeout(function(){if(!fuPrefilledCompany)document.getElementById('fu-company').focus();},100);
+  if(!fuPrefill)setTimeout(function(){inp.focus();},100);
 }
-
 function closeFUModal(){document.getElementById('fu-modal').classList.add('hidden');}
 
-// AUTOCOMPLETE
-function onCompanyInputIfNotPrefilled(){
-  var inp=document.getElementById('fu-company');
-  // If this is the first trigger after prefill, skip it
-  if(inp.dataset.fromDb==='true'){return;}
-  onCompanyInput();
-}
+// ── AUTOCOMPLETE (modal) ─────────────────────────────────────────────────────
 function onCompanyInput(){
-  document.getElementById('fu-company').dataset.fromDb='false';
   var val=document.getElementById('fu-company').value.trim();
-  var notFound=document.getElementById('ac-notfound');
-  acSelectedIndex=-1;
-  if(val.length<2){document.getElementById('ac-list').classList.add('hidden');return;}
-  var names=getCompanyNames();
-  var matches=names.filter(function(n){return n.toLowerCase().includes(val.toLowerCase())||similarity(n.toLowerCase(),val.toLowerCase())>=0.5;}).slice(0,8);
-  if(!matches.length){
-    document.getElementById('ac-list').classList.add('hidden');
-    // Only warn if manually typed (not prefilled/selected from DB, not disabled)
-    var inp=document.getElementById('fu-company');
-    var isPrefilled=inp.dataset.fromDb==='true'||inp.disabled;
-    if(!isPrefilled){
-      var anyMatch=names.some(function(n){return similarity(n.toLowerCase(),val.toLowerCase())>=0.75;});
-      ;
-    } else {
-      ;
-    }
-    return;
-  }
-  ;
-  window._acNames=matches;
   var list=document.getElementById('ac-list');
+  acIdx=-1;
+  if(val.length<2){list.classList.add('hidden');return;}
+  var names=getCompanyNames();
+  var valLow=val.toLowerCase();
+  var matches=names.filter(function(n){return n.toLowerCase().indexOf(valLow)>=0||sim(n.toLowerCase(),valLow)>=0.5;}).slice(0,8);
+  if(!matches.length){list.classList.add('hidden');return;}
+  acNames=matches;
   list.innerHTML=matches.map(function(n,i){
-    var dbRow=allRows.find(function(r){return(r[COL.COMPANY]||r[COL.CLIENT]||'').trim()===n;});
+    var dbRow=null;
+    for(var j=0;j<allRows.length;j++){if((allRows[j][COL.COMPANY]||allRows[j][COL.CLIENT]||'').trim()===n){dbRow=allRows[j];break;}}
     var sub=dbRow?[dbRow[COL.COUNTRY],dbRow[COL.REGION]].filter(Boolean).join(' · '):'';
-    return '<div class="autocomplete-item" onmousedown="selectCompanyIdx('+i+')"><div>'+n+'</div>'+(sub?'<div class="ac-sub">'+sub+'</div>':'')+'</div>';
+    return '<div class="ac-item" onmousedown="selectCompanyByIdx('+i+')"><div>'+n+'</div>'+(sub?'<div class="ac-sub">'+sub+'</div>':'')+'</div>';
   }).join('');
   list.classList.remove('hidden');
 }
-
 function onCompanyKeydown(e){
   var list=document.getElementById('ac-list');
-  var items=list.querySelectorAll('.autocomplete-item');
+  var items=list.querySelectorAll('.ac-item');
   if(!items.length)return;
-  if(e.key==='ArrowDown'){e.preventDefault();acSelectedIndex=Math.min(acSelectedIndex+1,items.length-1);items.forEach(function(el,i){el.classList.toggle('active',i===acSelectedIndex);});}
-  else if(e.key==='ArrowUp'){e.preventDefault();acSelectedIndex=Math.max(acSelectedIndex-1,0);items.forEach(function(el,i){el.classList.toggle('active',i===acSelectedIndex);});}
-  else if(e.key==='Enter'&&acSelectedIndex>=0){e.preventDefault();selectCompanyIdx(acSelectedIndex);}
+  if(e.key==='ArrowDown'){e.preventDefault();acIdx=Math.min(acIdx+1,items.length-1);items.forEach(function(el,i){el.classList.toggle('active',i===acIdx);});}
+  else if(e.key==='ArrowUp'){e.preventDefault();acIdx=Math.max(acIdx-1,0);items.forEach(function(el,i){el.classList.toggle('active',i===acIdx);});}
+  else if(e.key==='Enter'&&acIdx>=0){e.preventDefault();selectCompanyByIdx(acIdx);}
   else if(e.key==='Escape'){list.classList.add('hidden');}
 }
-
-function selectCompanyIdx(idx){
-  var name=window._acNames&&window._acNames[idx];
-  if(name)selectCompany(name);
-}
-function selectCompany(name){
-  var inp=document.getElementById('fu-company');
-  inp.value=name;
-  inp.dataset.fromDb='true';
+function selectCompanyByIdx(idx){
+  var n=acNames[idx];if(!n)return;
+  document.getElementById('fu-company').value=n;
   document.getElementById('ac-list').classList.add('hidden');
-  ;
-  acSelectedIndex=-1;
+  acIdx=-1;
 }
 
-// SAVE FU RECORD
+// ── SAVE FU ──────────────────────────────────────────────────────────────────
 async function saveFURecord(){
-  if(!accessToken){showToast('Conectate con Google primero');return;}
+  if(!tok){toast('Conectate con Google primero');return;}
   var company=document.getElementById('fu-company').value.trim();
-  if(!company){showToast('Ingresá el nombre de la empresa');document.getElementById('fu-company').focus();return;}
-  // Soft warning at save time if not in DB (non-blocking)
-  var inDb=allRows.some(function(r){return similarity((r[COL.COMPANY]||r[COL.CLIENT]||'').trim().toLowerCase(),company.toLowerCase())>=0.8;});
-  if(!inDb&&fuModalMode==='new'){
-    // just log, don't block
-    console.warn('Company not found in DB:',company);
-  }
-
+  if(!company){toast('Ingresa el nombre de la empresa');return;}
   var size=document.getElementById('fu-size').value.trim();
   var type=document.getElementById('fu-type').value.trim();
   var tns=document.getElementById('fu-tns').value.trim();
   var price=document.getElementById('fu-price').value.trim();
   var supplier=document.getElementById('fu-supplier').value.trim();
   var comment=document.getElementById('fu-comment').value.trim();
-  var date=todayStr();
-
-  // rowData: A=date, B=company, C='', D=size, E=type, F='', G='', H='', I=tns, J=price, K='', L='', M='', N=supplier, O=comment
-  var rowData=[date,company,'',size,type,'','','',tns,price,'','','',supplier,comment];
-
+  var rowData=[todayStr(),company,'',size,type,'','','',tns,price,'','','',supplier,comment];
   var btn=document.getElementById('fu-save-btn');
   btn.textContent='Guardando...';btn.disabled=true;
-
   var ok=false;
-  if(fuModalMode==='edit'&&fuEditRowIndex!==null){
-    // Sheet row = fuEditRowIndex + 2 (header on row 1, data starts row 2)
-    ok=await updateFURow(fuEditRowIndex+2,rowData);
-    if(ok){
-      // Update local cache
-      followUpRows[fuEditRowIndex]=rowData;
-      showToast('✓ Follow Up actualizado');
-    }
+  if(fuMode==='edit'&&fuEditIdx!==null){
+    ok=await updateFURow(fuEditIdx+2,rowData);
+    if(ok){fuRows[fuEditIdx]=rowData;toast('✓ Follow Up actualizado');}
   } else {
     ok=await appendFURow(rowData);
-    if(ok){
-      followUpRows.push(rowData);
-      showToast('✓ Follow Up guardado');
-    }
+    if(ok){fuRows.push(rowData);toast('✓ Follow Up guardado');}
   }
-
   btn.textContent='💾 Guardar';btn.disabled=false;
-
   if(ok){
     closeFUModal();
-    if(currentView==='matcher'&&lastSearch){
-      // Refresh match results to reflect new FU
-      lastSearch.results=getMatches();
-      renderResults();
-    } else if(currentView==='empresas'){
-      renderEmpresas();
-    }
-  } else {
-    showToast('Error al guardar en el Sheet');
-  }
+    if(view==='matcher'&&lastSearch){lastSearch.results=getMatches();renderResults();}
+    else if(view==='empresas')renderEmpresas();
+  } else {toast('Error al guardar en el Sheet');}
 }
 
-// MATCH
+// ── MATCH ─────────────────────────────────────────────────────────────────────
 function getMatches(){
-  var types=[...selectedTypes].map(function(t){return t.toLowerCase();});
-  var results=allRows.filter(function(row){
-    if(!aptoEuropa&&isEU(row[COL.REGION]||''))return false;
-    var canon=getCanonicalTypes(row[COL.TYPE]||'').map(function(t){return t.toLowerCase();});
-    var typeOk=types.length===0||types.some(function(t){return canon.includes(t);});
+  var types=[];selTypes.forEach(function(t){types.push(t.toLowerCase());});
+  var results=[];
+  allRows.forEach(function(row){
+    if(!withEU&&isEU(row[COL.REGION]||''))return;
+    var canon=getTypes(row[COL.TYPE]||'').map(function(t){return t.toLowerCase();});
+    var typeOk=types.length===0||types.some(function(t){return canon.indexOf(t)>=0;});
+    if(!typeOk)return;
     var dbSize=(row[COL.SIZE]||'').trim();
-    var sizeOk=sizeMatches(dbSize,rangeMin,rangeMax,incluirSplit);
-    // Fallback: if DB has no size, check Follow Up records for size match
-    if(!sizeOk&&!dbSize){
+    var szOk=sizeOk(dbSize,rMin,rMax,withSplit);
+    // Fallback: if DB has no size, check FU records
+    if(!szOk&&!dbSize){
       var co=(row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
-      var fuRecs=findFollowUp(co);
-      sizeOk=fuRecs.some(function(fuRow){
-        return sizeMatches((fuRow[3]||'').trim(),rangeMin,rangeMax,incluirSplit);
-      });
+      var fuRecs=findFU(co);
+      for(var i=0;i<fuRecs.length;i++){if(sizeOk((fuRecs[i][3]||'').trim(),rMin,rMax,withSplit)){szOk=true;break;}}
     }
-    return typeOk&&sizeOk;
-  }).map(function(row){
+    if(!szOk)return;
     var company=(row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
-    var fuRecs=findFollowUp(company);
+    var fu=findFU(company);
     var eu=isEU(row[COL.REGION]||'');
     var pri;
-    if(aptoEuropa){if(eu&&fuRecs.length)pri=0;else if(fuRecs.length)pri=1;else if(eu)pri=2;else pri=3;}
-    else{pri=fuRecs.length?0:1;}
-    return{client:(row[COL.CLIENT]||'').trim(),region:(row[COL.REGION]||'').trim(),country:(row[COL.COUNTRY]||'').trim(),company,size:(row[COL.SIZE]||'').trim(),type:(row[COL.TYPE]||'').trim(),canonicalTypes:getCanonicalTypes(row[COL.TYPE]||''),sizeInfo:parseSizeValue(row[COL.SIZE]||''),fuRecords:fuRecs,hasFU:fuRecs.length>0,isEu:eu,priority:pri};
+    if(withEU){if(eu&&fu.length)pri=0;else if(fu.length)pri=1;else if(eu)pri=2;else pri=3;}
+    else{pri=fu.length?0:1;}
+    results.push({client:(row[COL.CLIENT]||'').trim(),region:(row[COL.REGION]||'').trim(),country:(row[COL.COUNTRY]||'').trim(),company:company,size:dbSize,type:(row[COL.TYPE]||'').trim(),types:getTypes(row[COL.TYPE]||''),szInfo:parseSize(dbSize),fu:fu,hasFU:fu.length>0,isEu:eu,pri:pri});
   });
-  return results.sort(function(a,b){return a.priority-b.priority;});
+  return results.sort(function(a,b){return a.pri-b.pri;});
 }
 
-// SLIDER
+// ── SLIDER ────────────────────────────────────────────────────────────────────
 function updateSlider(){
-  var mi=document.getElementById('range-min'),ma=document.getElementById('range-max');if(!mi||!ma)return;
-  var minV=parseInt(mi.value),maxV=parseInt(ma.value);if(minV>maxV){minV=maxV;mi.value=minV;}
-  rangeMin=minV;rangeMax=maxV;
-  var pMin=(minV-SLIDER_MIN)/(SLIDER_MAX-SLIDER_MIN)*100,pMax=(maxV-SLIDER_MIN)/(SLIDER_MAX-SLIDER_MIN)*100;
-  var fill=document.getElementById('slider-fill');if(fill){fill.style.left=pMin+'%';fill.style.width=(pMax-pMin)+'%';}
-  var bmi=document.getElementById('badge-min'),bma=document.getElementById('badge-max');
-  if(bmi)bmi.textContent=minV;if(bma)bma.textContent=maxV;
+  var mi=document.getElementById('sl-min'),ma=document.getElementById('sl-max');if(!mi||!ma)return;
+  var mn=parseInt(mi.value),mx=parseInt(ma.value);if(mn>mx){mn=mx;mi.value=mn;}
+  rMin=mn;rMax=mx;
+  var pm=(mn-SL)/(SH-SL)*100,px=(mx-SL)/(SH-SL)*100;
+  var f=document.getElementById('sl-fill');if(f){f.style.left=pm+'%';f.style.width=(px-pm)+'%';}
+  var bm=document.getElementById('badge-min'),bx=document.getElementById('badge-max');
+  if(bm)bm.textContent=mn;if(bx)bx.textContent=mx;
 }
 
-// VIEWS
-function showView(view){
-  currentView=view;
+// ── VIEWS ─────────────────────────────────────────────────────────────────────
+function showView(v){
+  view=v;
   document.querySelectorAll('.nav-item').forEach(function(el){el.classList.remove('active');});
-  var el=document.getElementById('nav-'+view);if(el)el.classList.add('active');
-  var titles={matcher:'Buscar Matches',empresas:'Empresas',config:'Configuración'};
-  document.getElementById('view-title').textContent=titles[view]||view;
-  if(view==='matcher')renderMatcher();
-  else if(view==='empresas')renderEmpresas();
-  else if(view==='config')renderConfig();
+  var el=document.getElementById('nav-'+v);if(el)el.classList.add('active');
+  var titles={matcher:'Buscar Matches',empresas:'Empresas',config:'Configuracion'};
+  document.getElementById('view-title').textContent=titles[v]||v;
+  if(v==='matcher')renderMatcher();
+  else if(v==='empresas')renderEmpresas();
+  else renderConfig();
   if(window.innerWidth<=768)closeSidebar();
 }
 
-function toggleType(type){if(selectedTypes.has(type))selectedTypes.delete(type);else selectedTypes.add(type);document.querySelectorAll('.type-chip').forEach(function(el){el.classList.toggle('selected',selectedTypes.has(el.dataset.val));});}
-function toggleSplit(){incluirSplit=!incluirSplit;var el=document.getElementById('split-toggle'),ck=document.getElementById('split-check'),sb=document.getElementById('split-sub');if(!el)return;el.classList.toggle('split-active',incluirSplit);ck.innerHTML=incluirSplit?'<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':'';sb.textContent=incluirSplit?'Incluye clientes que compran Split':'No incluye clientes de Split';}
-function toggleEuropa(){aptoEuropa=!aptoEuropa;var el=document.getElementById('europa-toggle'),ck=document.getElementById('eu-check'),sb=document.getElementById('eu-sub');if(!el)return;el.classList.toggle('eu-active',aptoEuropa);ck.innerHTML=aptoEuropa?'<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':'';sb.textContent=aptoEuropa?'Incluye clientes europeos en el resultado':'Excluye clientes europeos del resultado';}
+function toggleType(t){
+  if(selTypes.has(t))selTypes.delete(t);else selTypes.add(t);
+  document.querySelectorAll('.type-chip').forEach(function(el){el.classList.toggle('selected',selTypes.has(el.dataset.v));});
+}
+var CHK='<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function toggleSplit(){
+  withSplit=!withSplit;
+  var el=document.getElementById('tog-split'),ck=document.getElementById('ck-split'),sb=document.getElementById('sub-split');
+  if(!el)return;
+  el.classList.toggle('split-on',withSplit);ck.innerHTML=withSplit?CHK:'';
+  sb.textContent=withSplit?'Incluye clientes que compran Split':'No incluye clientes de Split';
+}
+function toggleEU(){
+  withEU=!withEU;
+  var el=document.getElementById('tog-eu'),ck=document.getElementById('ck-eu'),sb=document.getElementById('sub-eu');
+  if(!el)return;
+  el.classList.toggle('eu-on',withEU);ck.innerHTML=withEU?CHK:'';
+  sb.textContent=withEU?'Incluye clientes europeos en el resultado':'Excluye clientes europeos del resultado';
+}
+function runSearch(){
+  if(selTypes.size===0){toast('Selecciona al menos un tipo');return;}
+  if(!allRows.length){toast('Primero sincroniza el Sheet');return;}
+  var results=getMatches();
+  lastSearch={types:Array.from(selTypes),rMin:rMin,rMax:rMax,split:withSplit,eu:withEU,results:results};
+  rf={region:'',country:'',type:''};
+  renderResults();
+}
+function clearSearch(){lastSearch=null;selTypes.clear();withEU=false;withSplit=false;rMin=38;rMax=50;renderMatcher();}
+function setF(k,v){rf[k]=v;renderResults();}
+function clearF(){rf={region:'',country:'',type:''};renderResults();}
 
-function runSearch(){if(selectedTypes.size===0){showToast('Seleccioná al menos un tipo');return;}if(!allRows.length){showToast('Primero sincronizá el Sheet');return;}var results=getMatches();lastSearch={types:[...selectedTypes],rangeMin,rangeMax,incluirSplit,aptoEuropa,results};resultFilters={region:'',country:'',type:''};renderResults();}
-function clearSearch(){lastSearch=null;selectedTypes.clear();aptoEuropa=false;incluirSplit=false;rangeMin=38;rangeMax=50;renderMatcher();}
-function setResultFilter(key,value){resultFilters[key]=value;renderResults();}
-function clearResultFilters(){resultFilters={region:'',country:'',type:''};renderResults();}
-
+// ── RENDER MATCHER ────────────────────────────────────────────────────────────
 function renderMatcher(){
   var TYPES=['Raw','Blanched','Roasted'];
-  var typeChips=TYPES.map(function(t){return '<span class="chip type-chip'+(selectedTypes.has(t)?' selected':'')+'" data-val="'+t+'" onclick="toggleType(\''+t+'\')">'+t+'</span>';}).join('');
-  var pMin=(rangeMin-SLIDER_MIN)/(SLIDER_MAX-SLIDER_MIN)*100,pMax=(rangeMax-SLIDER_MIN)/(SLIDER_MAX-SLIDER_MIN)*100;
+  var chips=TYPES.map(function(t){return '<span class="chip type-chip'+(selTypes.has(t)?' selected':'')+'" data-v="'+t+'" onclick="toggleType(\''+t+'\')">'+t+'</span>';}).join('');
+  var pm=(rMin-SL)/(SH-SL)*100,px=(rMax-SL)/(SH-SL)*100;
   var ticks=[30,38,40,42,50,60,70,100];
-  var ticksHtml=ticks.map(function(t){var p=(t-SLIDER_MIN)/(SLIDER_MAX-SLIDER_MIN)*100;return '<span style="position:absolute;left:'+p+'%;transform:translateX(-50%);font-size:9px;color:var(--text3);font-family:var(--mono);">'+t+'</span>';}).join('');
+  var ticksHtml=ticks.map(function(t){var p=(t-SL)/(SH-SL)*100;return '<span style="position:absolute;left:'+p+'%;transform:translateX(-50%);font-size:9px;color:var(--text3);font-family:var(--mono);">'+t+'</span>';}).join('');
   var banner='';
-  if(!accessToken)banner='<div class="info-banner">🔐 <strong>Conectate con Google</strong> para cargar los clientes desde el Sheet.</div>';
-  else if(!allRows.length)banner='<div class="info-banner">📋 Conectado. Hacé click en <strong>↻ Sincronizar</strong> para cargar los clientes.</div>';
+  if(!tok)banner='<div class="info-banner">🔐 <strong>Conectate con Google</strong> desde la barra lateral para cargar los clientes.</div>';
+  else if(!allRows.length)banner='<div class="info-banner">📋 Conectado. Haz click en <strong>↻ Sincronizar</strong> para cargar los clientes.</div>';
 
   document.getElementById('content').innerHTML=
     banner+
-    '<div class="oferta-card">'+
-      '<div class="oferta-title">🥜 Nueva Oferta</div>'+
-      '<div class="oferta-sub">Seleccioná tipo, rango de calibre y si incluye Split para encontrar los matches.</div>'+
-      '<label class="form-label">Tipo de maní</label>'+
-      '<div class="chip-group">'+typeChips+'</div>'+
+    '<div class="card">'+
+      '<div class="card-title">🥜 Nueva Oferta</div>'+
+      '<div class="card-sub">Selecciona tipo, rango de calibre y si incluye Split.</div>'+
+      '<label class="form-label">Tipo de mani</label>'+
+      '<div class="chip-group">'+chips+'</div>'+
       '<hr class="form-divider">'+
       '<label class="form-label">Rango de calibre</label>'+
-      '<div class="slider-values"><span class="slider-val-badge" id="badge-min">'+rangeMin+'</span><span class="slider-val-sep">→</span><span class="slider-val-badge" id="badge-max">'+rangeMax+'</span><span style="font-size:11px;color:var(--text3);margin-left:4px;">clientes con calibres en este rango</span></div>'+
-      '<div class="slider-wrap"><div class="slider-track-wrap">'+
-        '<div id="slider-fill" class="slider-fill" style="left:'+pMin+'%;width:'+(pMax-pMin)+'%;"></div>'+
-        '<input type="range" class="slider-input" id="range-min" min="'+SLIDER_MIN+'" max="'+SLIDER_MAX+'" value="'+rangeMin+'" step="1" style="z-index:3;" oninput="updateSlider()">'+
-        '<input type="range" class="slider-input" id="range-max" min="'+SLIDER_MIN+'" max="'+SLIDER_MAX+'" value="'+rangeMax+'" step="1" style="z-index:4;" oninput="updateSlider()">'+
-      '</div><div class="slider-labels" style="position:relative;height:16px;margin-top:8px;">'+ticksHtml+'</div></div>'+
-      '<div class="toggle-row'+(incluirSplit?' split-active':'')+'" id="split-toggle" onclick="toggleSplit()">'+
-        '<div class="toggle-check" id="split-check">'+(incluirSplit?'<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':'')+'</div>'+
+      '<div class="sl-vals"><span class="sl-badge" id="badge-min">'+rMin+'</span><span style="color:var(--text3)">→</span><span class="sl-badge" id="badge-max">'+rMax+'</span><span style="font-size:11px;color:var(--text3);margin-left:4px;">calibres en rango</span></div>'+
+      '<div class="sl-wrap"><div class="sl-track">'+
+        '<div id="sl-fill" class="sl-fill" style="left:'+pm+'%;width:'+(px-pm)+'%;"></div>'+
+        '<input type="range" class="sl-inp" id="sl-min" min="'+SL+'" max="'+SH+'" value="'+rMin+'" step="1" style="z-index:3;" oninput="updateSlider()">'+
+        '<input type="range" class="sl-inp" id="sl-max" min="'+SL+'" max="'+SH+'" value="'+rMax+'" step="1" style="z-index:4;" oninput="updateSlider()">'+
+      '</div><div style="position:relative;height:16px;margin-top:8px;">'+ticksHtml+'</div></div>'+
+      '<div class="tog'+(withSplit?' split-on':'')+'" id="tog-split" onclick="toggleSplit()">'+
+        '<div class="tog-check" id="ck-split">'+(withSplit?CHK:'')+'</div>'+
         '<span style="font-size:16px;">✂️</span>'+
-        '<div><div class="toggle-label-main">Incluir Split</div><div class="toggle-label-sub" id="split-sub">'+(incluirSplit?'Incluye clientes que compran Split':'No incluye clientes de Split')+'</div></div>'+
+        '<div><div class="tog-main">Incluir Split</div><div class="tog-sub" id="sub-split">'+(withSplit?'Incluye clientes que compran Split':'No incluye clientes de Split')+'</div></div>'+
       '</div>'+
-      '<div class="toggle-row'+(aptoEuropa?' eu-active':'')+'" id="europa-toggle" onclick="toggleEuropa()">'+
-        '<div class="toggle-check" id="eu-check">'+(aptoEuropa?'<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':'')+'</div>'+
+      '<div class="tog'+(withEU?' eu-on':'')+'" id="tog-eu" onclick="toggleEU()">'+
+        '<div class="tog-check" id="ck-eu">'+(withEU?CHK:'')+'</div>'+
         '<span style="font-size:18px;">🇪🇺</span>'+
-        '<div><div class="toggle-label-main">Apto Europa</div><div class="toggle-label-sub" id="eu-sub">'+(aptoEuropa?'Incluye clientes europeos en el resultado':'Excluye clientes europeos del resultado')+'</div></div>'+
+        '<div><div class="tog-main">Apto Europa</div><div class="tog-sub" id="sub-eu">'+(withEU?'Incluye clientes europeos en el resultado':'Excluye clientes europeos del resultado')+'</div></div>'+
       '</div>'+
       '<div class="form-actions">'+
         '<button class="btn-search" onclick="runSearch()">🔍 Buscar matches</button>'+
@@ -721,368 +685,313 @@ function renderMatcher(){
   if(lastSearch)renderResults();
 }
 
-// BUILD FU PANEL HTML (shared between matcher and empresas)
-function buildFURecord(row, showEditBtns){
+// ── FU PANEL ──────────────────────────────────────────────────────────────────
+var fuPanelCounter=0;
+function buildFURec(row){
   var date=(row[0]||'').trim();
-  var sz=normalizeFUSize((row[3]||'').trim());
-  var ty=normalizeFUType((row[4]||'').trim());
-  var tns=(row[8]||'').trim(),price=(row[9]||'').trim(),supplier=(row[13]||'').trim(),comment=(row[14]||'').trim();
-  var rowIdx=followUpRows.indexOf(row);
-  var editBtn=showEditBtns&&rowIdx>=0?'<span class="fu-edit-btn" onclick="openFUModal(\'\','+rowIdx+')" title="Editar">✏️</span>':'';
-  return '<div class="fu-record">'+
-    '<div class="fu-record-body">'+
+  var sz=normSize((row[3]||'').trim());
+  var ty=normType((row[4]||'').trim());
+  var tns=(row[8]||'').trim(),price=(row[9]||'').trim(),sp=(row[13]||'').trim(),cm=(row[14]||'').trim();
+  var rowIdx=fuRows.indexOf(row);
+  var editBtn=rowIdx>=0?'<span class="fu-edit-btn" onclick="openFUModal(\'\','+rowIdx+')" title="Editar">✏️</span>':'';
+  return '<div class="fu-rec">'+
+    '<div class="fu-rec-body">'+
       '<div class="fu-date">'+(date||'—')+'</div>'+
       '<div class="fu-details">'+
-        (sz&&sz!=='—'?'<span class="futag size">'+sz+'</span>':'')+
-        (ty&&ty!=='—'?'<span class="futag type">'+ty+'</span>':'')+
-        (tns?'<span class="futag tns">'+tns+' tn</span>':'')+
-        (price?'<span class="futag price">USD '+price+'</span>':'')+
-        (supplier?'<span class="futag supplier">🏭 '+supplier+'</span>':'')+
+        (sz&&sz!=='—'?'<span class="ftag sz">'+sz+'</span>':'')+
+        (ty&&ty!=='—'?'<span class="ftag ty">'+ty+'</span>':'')+
+        (tns?'<span class="ftag tn">'+tns+' tn</span>':'')+
+        (price?'<span class="ftag pr">USD '+price+'</span>':'')+
+        (sp?'<span class="ftag sp">🏭 '+sp+'</span>':'')+
       '</div>'+
-      (comment?'<div class="fu-comment">"'+comment+'"</div>':'')+
+      (cm?'<div class="fu-comment">"'+cm+'"</div>':'')+
     '</div>'+
     editBtn+
   '</div>';
 }
 
-function buildFUPanel(fuRecords, showEditBtns, showAll){
+function buildFUPanel(fuRecords){
+  if(!fuRecords||!fuRecords.length)return '';
   var sorted=fuRecords.slice().sort(function(a,b){
     var da=new Date((a[0]||'').split('/').reverse().join('-'));
     var db=new Date((b[0]||'').split('/').reverse().join('-'));
     return db-da;
   });
-  var panelId='fu-panel-'+Math.random().toString(36).slice(2,7);
+  fuPanelCounter++;
+  var pid='fup'+fuPanelCounter;
   var preview=sorted.slice(0,3);
   var rest=sorted.slice(3);
-  var previewHtml=preview.map(function(row){return buildFURecord(row,showEditBtns);}).join('');
-  var restHtml=rest.length?rest.map(function(row){return buildFURecord(row,showEditBtns);}).join(''):'';
-  var moreBtn=rest.length?
-    '<div id="more-'+panelId+'" style="font-size:11px;color:#b45309;margin-top:6px;font-family:var(--mono);cursor:pointer;text-decoration:underline;" onclick="toggleFUAll(''+panelId+'')">▼ Ver '+rest.length+' registro'+(rest.length>1?'s':'')+' más</div>'+
-    '<div id="rest-'+panelId+'" style="display:none;">'+restHtml+'<div style="font-size:11px;color:#b45309;margin-top:6px;font-family:var(--mono);cursor:pointer;text-decoration:underline;" onclick="toggleFUAll(''+panelId+'')">▲ Ocultar</div></div>':
-    '';
+  var previewHtml=preview.map(buildFURec).join('');
+  var restHtml=rest.length?rest.map(buildFURec).join(''):'';
+  var moreHtml='';
+  if(rest.length){
+    moreHtml='<div id="more-'+pid+'" class="fu-more-btn" onclick="toggleFUPanel(\''+pid+'\')">▼ Ver '+rest.length+' registro'+(rest.length>1?'s':'')+' mas</div>'+
+      '<div id="rest-'+pid+'" style="display:none;">'+restHtml+
+        '<div class="fu-more-btn" onclick="toggleFUPanel(\''+pid+'\')">▲ Ocultar</div>'+
+      '</div>';
+  }
   return '<div class="fu-panel">'+
     '<div class="fu-panel-header">'+
       '<span class="fu-panel-title">📋 Follow Up</span>'+
       '<span class="fu-panel-count">'+fuRecords.length+' registro'+(fuRecords.length>1?'s':'')+'</span>'+
     '</div>'+
-    previewHtml+
-    moreBtn+
+    previewHtml+moreHtml+
   '</div>';
 }
 
-function toggleFUAll(panelId){
-  var restEl=document.getElementById('rest-'+panelId);
-  var moreEl=document.getElementById('more-'+panelId);
-  if(!restEl||!moreEl)return;
-  var isHidden=restEl.style.display==='none';
-  restEl.style.display=isHidden?'block':'none';
-  moreEl.style.display=isHidden?'none':'block';
+function toggleFUPanel(pid){
+  var rest=document.getElementById('rest-'+pid);
+  var more=document.getElementById('more-'+pid);
+  if(!rest||!more)return;
+  var hidden=rest.style.display==='none';
+  rest.style.display=hidden?'block':'none';
+  more.style.display=hidden?'none':'block';
 }
 
+// ── RENDER RESULTS ────────────────────────────────────────────────────────────
 function renderResults(){
   var area=document.getElementById('results-area');if(!area||!lastSearch)return;
-  var types=lastSearch.types,rMin=lastSearch.rangeMin,rMax=lastSearch.rangeMax;
-  var withSplit=lastSearch.incluirSplit,withEU=lastSearch.aptoEuropa,results=lastSearch.results;
+  var types=lastSearch.types,rMn=lastSearch.rMin,rMx=lastSearch.rMax,ws=lastSearch.split,we=lastSearch.eu,results=lastSearch.results;
+  var fil=results.slice();
+  if(rf.region)fil=fil.filter(function(r){return r.region.toLowerCase()===rf.region.toLowerCase();});
+  if(rf.country)fil=fil.filter(function(r){return r.country.toLowerCase()===rf.country.toLowerCase();});
+  if(rf.type)fil=fil.filter(function(r){return r.types.map(function(t){return t.toLowerCase();}).indexOf(rf.type.toLowerCase())>=0;});
+  var fuN=results.filter(function(r){return r.hasFU;}).length;
+  var hf=rf.region||rf.country||rf.type;
 
-  var filtered=results.slice();
-  if(resultFilters.region)filtered=filtered.filter(function(r){return r.region.toLowerCase()===resultFilters.region.toLowerCase();});
-  if(resultFilters.country)filtered=filtered.filter(function(r){return r.country.toLowerCase()===resultFilters.country.toLowerCase();});
-  if(resultFilters.type)filtered=filtered.filter(function(r){return r.canonicalTypes.map(function(t){return t.toLowerCase();}).indexOf(resultFilters.type.toLowerCase())>=0;});
-
-  var fuCount=results.filter(function(r){return r.hasFU;}).length;
-  var hasFilters=resultFilters.region||resultFilters.country||resultFilters.type;
-
-  var statsHtml='<div class="stats-row">'+
-    '<div class="stat-card"><div class="stat-label">Matches encontrados</div><div class="stat-value" style="color:'+(results.length>0?'var(--ok)':'var(--text3)')+'">'+results.length+'</div><div class="stat-sub">'+(hasFilters?'<span style="color:var(--accent)">'+filtered.length+' tras filtros</span>':types.join(' + '))+'</div></div>'+
-    '<div class="stat-card"><div class="stat-label">Con Follow Up</div><div class="stat-value" style="color:'+(fuCount>0?'#d97706':'var(--text3)')+'">'+fuCount+'</div><div class="stat-sub">historial de contacto</div></div>'+
-    '<div class="stat-card"><div class="stat-label">Europa</div><div class="stat-value" style="color:'+(withEU?'var(--info)':'var(--text3)')+';font-size:18px;">'+(withEU?'Incluida':'Excluida')+'</div><div class="stat-sub">'+(withEU?'Primeros en lista':'')+'</div></div>'+
+  var stats='<div class="stats-row">'+
+    '<div class="stat-card"><div class="stat-label">Matches encontrados</div><div class="stat-value" style="color:'+(results.length>0?'var(--ok)':'var(--text3)')+'">'+results.length+'</div><div class="stat-sub">'+(hf?'<span style="color:var(--accent)">'+fil.length+' tras filtros</span>':types.join(' + '))+'</div></div>'+
+    '<div class="stat-card"><div class="stat-label">Con Follow Up</div><div class="stat-value" style="color:'+(fuN>0?'#d97706':'var(--text3)')+'">'+fuN+'</div><div class="stat-sub">historial de contacto</div></div>'+
+    '<div class="stat-card"><div class="stat-label">Europa</div><div class="stat-value" style="color:'+(we?'var(--info)':'var(--text3)')+';font-size:18px;">'+(we?'Incluida':'Excluida')+'</div><div class="stat-sub">'+(we?'Primeros en lista':'')+'</div></div>'+
   '</div>';
 
-  var typePills=types.map(function(t){return '<span class="rpill accent">'+t+'</span>';}).join('');
-  var rangePill='<span class="rpill dark">'+rMin+'–'+rMax+'</span>';
-  var splitPill=withSplit?'<span class="rpill muted">✂️ Split</span>':'';
-  var euPill=withEU?'<span class="rpill eu">🇪🇺 EU</span>':'';
-
-  var uRegions=[...new Set(results.map(function(r){return r.region;}).filter(Boolean))].sort();
-  var uCountries=[...new Set(results.map(function(r){return r.country;}).filter(Boolean))].sort();
-  var uTypes=[...new Set(results.reduce(function(acc,r){return acc.concat(r.canonicalTypes);},[]))].sort();
+  var uR=[].concat([],results.map(function(r){return r.region;}).filter(Boolean)).filter(function(v,i,a){return a.indexOf(v)===i;}).sort();
+  var uC=[].concat([],results.map(function(r){return r.country;}).filter(Boolean)).filter(function(v,i,a){return a.indexOf(v)===i;}).sort();
+  var uT=[].concat.apply([],results.map(function(r){return r.types;})).filter(function(v,i,a){return a.indexOf(v)===i;}).sort();
   var filterBar='';
   if(results.length>0){
     filterBar='<div class="filter-bar"><span class="filter-bar-label">Filtrar:</span>'+
-      '<select class="fsel'+(resultFilters.region?' active':'')+'" onchange="setResultFilter(\'region\',this.value)"><option value="">Todas las regiones</option>'+uRegions.map(function(r){return '<option value="'+r+'"'+(resultFilters.region===r?' selected':'')+'>'+r+(isEU(r)?' 🇪🇺':'')+'</option>';}).join('')+'</select>'+
-      '<select class="fsel'+(resultFilters.country?' active':'')+'" onchange="setResultFilter(\'country\',this.value)"><option value="">Todos los países</option>'+uCountries.map(function(c){return '<option value="'+c+'"'+(resultFilters.country===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>'+
-      (uTypes.length>1?'<select class="fsel'+(resultFilters.type?' active':'')+'" onchange="setResultFilter(\'type\',this.value)"><option value="">Todos los tipos</option>'+uTypes.map(function(t){return '<option value="'+t+'"'+(resultFilters.type===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select>':'')+
-      (hasFilters?'<button class="filter-reset" onclick="clearResultFilters()">✕ Limpiar</button>':'')+
-      '<span class="filter-count">'+filtered.length+' de '+results.length+'</span>'+
+      '<select class="fsel'+(rf.region?' active':'')+'" onchange="setF(\'region\',this.value)"><option value="">Todas las regiones</option>'+uR.map(function(r){return '<option value="'+r+'"'+(rf.region===r?' selected':'')+'>'+r+(isEU(r)?' 🇪🇺':'')+'</option>';}).join('')+'</select>'+
+      '<select class="fsel'+(rf.country?' active':'')+'" onchange="setF(\'country\',this.value)"><option value="">Todos los paises</option>'+uC.map(function(c){return '<option value="'+c+'"'+(rf.country===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>'+
+      (uT.length>1?'<select class="fsel'+(rf.type?' active':'')+'" onchange="setF(\'type\',this.value)"><option value="">Todos los tipos</option>'+uT.map(function(t){return '<option value="'+t+'"'+(rf.type===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select>':'')+
+      (hf?'<button class="filter-reset" onclick="clearF()">✕ Limpiar</button>':'')+
+      '<span class="filter-count">'+fil.length+' de '+results.length+'</span>'+
     '</div>';
   }
 
-  var SEC_LABELS={0:withEU?'⭐ Follow Up · Europa':'⭐ Follow Up',1:withEU?'⭐ Follow Up · Resto':'🌍 Resto del mundo',2:'🇪🇺 Europa',3:'🌍 Resto del mundo'};
-  var SEC_COLORS={0:'#d97706',1:withEU?'#d97706':'var(--text3)',2:'var(--info)',3:'var(--text3)'};
+  var SLB={0:we?'⭐ Follow Up · Europa':'⭐ Follow Up',1:we?'⭐ Follow Up · Resto':'🌍 Resto del mundo',2:'🇪🇺 Europa',3:'🌍 Resto del mundo'};
+  var SCL={0:'#d97706',1:we?'#d97706':'var(--text3)',2:'var(--info)',3:'var(--text3)'};
 
-  var listHtml='';
-  if(filtered.length===0){
-    listHtml='<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">'+(results.length>0?'Sin resultados con estos filtros':'Sin matches')+'</div><div class="empty-sub">'+(results.length>0?'Probá cambiando los filtros.':'No hay clientes para los criterios seleccionados.')+'</div></div>';
+  var list='';
+  if(fil.length===0){
+    list='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">'+(results.length>0?'Sin resultados con estos filtros':'Sin matches')+'</div><div class="empty-sub">'+(results.length>0?'Proba cambiando los filtros.':'No hay clientes para los criterios seleccionados.')+'</div></div>';
   } else {
-    var lastPri=-1;listHtml='<div class="match-list">';
-    filtered.forEach(function(m,i){
-      if(!hasFilters&&m.priority!==lastPri){
-        var lbl=SEC_LABELS[m.priority]||'',clr=SEC_COLORS[m.priority]||'var(--text3)';
-        if(lbl)listHtml+='<div class="section-divider" style="margin-top:'+(i>0?'12px':'0')+'"><span class="section-divider-label" style="color:'+clr+'">'+lbl+'</span><div class="section-divider-line" style="background:'+clr+';opacity:.3;"></div></div>';
-        lastPri=m.priority;
+    var lp=-1;list='<div class="match-list">';
+    fil.forEach(function(m,i){
+      if(!hf&&m.pri!==lp){
+        var lb=SLB[m.pri]||'',cl=SCL[m.pri]||'var(--text3)';
+        if(lb)list+='<div class="sec-div" style="margin-top:'+(i>0?'12px':'0')+'"><span class="sec-div-lbl" style="color:'+cl+'">'+lb+'</span><div class="sec-div-line" style="background:'+cl+';opacity:.3;"></div></div>';
+        lp=m.pri;
       }
-      var initial=(m.company||m.client||'?')[0].toUpperCase();
+      var init=(m.company||m.client||'?')[0].toUpperCase();
       var name=m.company||m.client||'—';
       var meta=[m.country,m.region].filter(Boolean).join(' · ');
-      var matchedTypes=m.canonicalTypes.filter(function(t){return types.map(function(x){return x.toLowerCase();}).indexOf(t.toLowerCase())>=0;});
-      var sizeLabel=m.sizeInfo.hasAny?'Any':(m.sizeInfo.hasSplit&&!m.sizeInfo.nums.length?'Split':m.size);
-      var fuHtml=m.hasFU?buildFUPanel(m.fuRecords,true):'';
-      var safeName=name.replace(/'/g,"\\'");
-      listHtml+='<div class="match-card'+(m.hasFU?' has-fu':'')+'" style="animation-delay:'+(i*.03)+'s">'+
-        '<div class="match-top">'+
-          '<div class="match-avatar'+(m.hasFU?' fu':'')+'">'+initial+'</div>'+
-          '<div class="match-body">'+
-            '<div class="match-name-row">'+
-              '<div class="match-name">'+name+'</div>'+
-              (m.hasFU?'<span class="fu-badge">⭐ Follow Up</span>':'')+
-            '</div>'+
-            (meta?'<div class="match-meta">'+meta+'</div>':'')+
-            '<div class="match-tags">'+
-              matchedTypes.map(function(t){return '<span class="mtag type">'+t+'</span>';}).join('')+
-              '<span class="mtag '+(m.sizeInfo.hasAny?'split':(m.sizeInfo.hasSplit&&!m.sizeInfo.nums.length?'split':'size'))+'">'+sizeLabel+'</span>'+
-              (m.region?'<span class="mtag region">'+(m.isEu?'🇪🇺 ':'')+m.region+'</span>':'')+
-              (m.country?'<span class="mtag country">'+m.country+'</span>':'')+
+      var mTypes=m.types.filter(function(t){return types.map(function(x){return x.toLowerCase();}).indexOf(t.toLowerCase())>=0;});
+      var szl=m.szInfo.hasAny?'Any':(m.szInfo.hasSplit&&!m.szInfo.nums.length?'Split':m.size)||'—';
+      // Use idx-based onclick for edit button - store idx in window._matchFU
+      if(!window._matchFU)window._matchFU=[];
+      var fuIdx=window._matchFU.length;
+      window._matchFU.push(name);
+      list+='<div class="mcard'+(m.hasFU?' has-fu':'')+'" style="animation-delay:'+(i*.03)+'s">'+
+        '<div class="mcard-top">'+
+          '<div class="mavatar'+(m.hasFU?' fu':'')+'">'+init+'</div>'+
+          '<div class="mbody">'+
+            '<div class="mname-row"><div class="mname">'+name+'</div>'+(m.hasFU?'<span class="fu-badge">⭐ Follow Up</span>':'')+'</div>'+
+            (meta?'<div class="mmeta">'+meta+'</div>':'')+
+            '<div class="mtags">'+
+              mTypes.map(function(t){return '<span class="mtag ty">'+t+'</span>';}).join('')+
+              '<span class="mtag sz">'+szl+'</span>'+
+              (m.region?'<span class="mtag rg">'+(m.isEu?'🇪🇺 ':'')+m.region+'</span>':'')+
+              (m.country?'<span class="mtag ct">'+m.country+'</span>':'')+
             '</div>'+
           '</div>'+
-          '<span class="edit-btn" onclick="openFUModal(\''+safeName+'\')" title="Agregar Follow Up">✏️</span>'+
-          '<div class="match-check">✓</div>'+
+          '<span class="edit-btn" onclick="openFUModal(window._matchFU['+fuIdx+'])" title="Agregar Follow Up">✏️</span>'+
+          '<div class="mcheck">✓</div>'+
         '</div>'+
-        fuHtml+
+        buildFUPanel(m.fu)+
       '</div>';
     });
-    listHtml+='</div>';
+    list+='</div>';
   }
 
-  area.innerHTML=statsHtml+'<div class="results-header"><div class="results-title">'+filtered.length+' match'+(filtered.length!==1?'es':'')+' encontrado'+(filtered.length!==1?'s':'')+'</div><div class="results-pills">'+typePills+rangePill+splitPill+euPill+'</div></div>'+filterBar+listHtml;
+  area.innerHTML=stats+
+    '<div class="res-header"><div class="res-title">'+fil.length+' match'+(fil.length!==1?'es':'')+' encontrado'+(fil.length!==1?'s':'')+'</div>'+
+    '<div class="res-pills">'+types.map(function(t){return '<span class="rpill ac">'+t+'</span>';}).join('')+
+    '<span class="rpill dk">'+rMn+'–'+rMx+'</span>'+
+    (ws?'<span class="rpill mu">✂️ Split</span>':'')+
+    (we?'<span class="rpill eu">🇪🇺 EU</span>':'')+
+    '</div></div>'+filterBar+list;
 }
 
-// ── EMPRESAS VIEW ──────────────────────────────────────────────────────────
-var empresasQuery='';
-
+// ── EMPRESAS ──────────────────────────────────────────────────────────────────
 function renderEmpresas(){
   var banner='';
-  if(!accessToken)banner='<div class="info-banner">🔐 <strong>Conectate con Google</strong> para cargar las empresas.</div>';
-  else if(!allRows.length)banner='<div class="info-banner">📋 Conectado. Hacé click en <strong>↻ Sincronizar</strong> para cargar los datos.</div>';
-
+  if(!tok)banner='<div class="info-banner">🔐 <strong>Conectate con Google</strong> para cargar las empresas.</div>';
+  else if(!allRows.length)banner='<div class="info-banner">📋 Conectado. Haz click en <strong>↻ Sincronizar</strong>.</div>';
   document.getElementById('content').innerHTML=
     banner+
-    '<div class="empresa-search-wrap">'+
-      '<div class="oferta-title" style="margin-bottom:12px;">🏢 Empresas</div>'+
+    '<div class="emp-search-wrap">'+
+      '<div class="card-title" style="margin-bottom:12px;">🏢 Empresas</div>'+
       '<div style="position:relative;">'+
-        '<input class="minput" id="emp-search" placeholder="Buscar empresa... (ej: STOCKINVEST)" value="'+empresasQuery+'"'+
-          ' oninput="onEmpSearch(this.value)" onkeydown="onEmpKeydown(event)" autocomplete="off">'+
-        '<div class="autocomplete-list hidden" id="emp-ac-list"></div>'+
+        '<input class="minput" id="emp-search" placeholder="Buscar empresa..." value="'+empQuery+'" oninput="onEmpSearch(this.value)" onkeydown="onEmpKeydown(event)" autocomplete="off">'+
+        '<div class="ac-list hidden" id="emp-ac-list"></div>'+
       '</div>'+
       '<button class="btn primary" style="margin-top:10px;width:100%;" onclick="openFUModal(\'\')">+ Agregar Follow Up</button>'+
     '</div>'+
     '<div id="emp-results"></div>';
-
-  if(empresasQuery)renderEmpresaResults(empresasQuery);
+  if(empQuery)renderEmpResults(empQuery);
 }
 
-var empAcIdx=-1;
-var empAllNames=[];
-
-function deduplicateNames(dbNames,fuNames){
-  var seen={};var result=[];
-  dbNames.forEach(function(n){var k=n.toLowerCase().trim();if(!seen[k]){seen[k]=n;result.push(n);}});
+function dedupeNames(dbNames,fuNames){
+  var seen={};var out=[];
+  dbNames.forEach(function(n){var k=n.toLowerCase().trim();if(!seen[k]){seen[k]=n;out.push(n);}});
   fuNames.forEach(function(n){
-    var k=n.toLowerCase().trim();
-    if(seen[k])return;
-    var isSim=Object.keys(seen).some(function(s){return s.includes(k)||k.includes(s)||similarity(s,k)>=0.7;});
-    if(!isSim){seen[k]=n;result.push(n);}
+    var k=n.toLowerCase().trim();if(seen[k])return;
+    var isSim=false;
+    for(var s in seen){if(s.indexOf(k)>=0||k.indexOf(s)>=0||sim(s,k)>=0.7){isSim=true;break;}}
+    if(!isSim){seen[k]=n;out.push(n);}
   });
-  return result.sort();
-}
-
-function selectEmpresaByIndex(idx){
-  var name=empAllNames[idx];
-  if(!name)return;
-  selectEmpresa(name);
+  return out.sort();
 }
 
 function onEmpSearch(val){
-  empresasQuery=val;empAcIdx=-1;
+  empQuery=val;empAcIdx=-1;
   var list=document.getElementById('emp-ac-list');
-  if(val.length<2){list.classList.add('hidden');document.getElementById('emp-results').innerHTML='';return;}
+  if(!list)return;
+  if(val.length<2){list.classList.add('hidden');var r=document.getElementById('emp-results');if(r)r.innerHTML='';return;}
   var dbNames=getCompanyNames();
-  var fuNames=[...new Set(followUpRows.map(function(r){return(r[1]||'').trim();}).filter(Boolean))];
-  empAllNames=deduplicateNames(dbNames,fuNames);
+  var fuNames=[];var fuSeen={};
+  fuRows.forEach(function(r){var n=(r[1]||'').trim();if(n&&!fuSeen[n.toLowerCase()]){fuSeen[n.toLowerCase()]=true;fuNames.push(n);}});
+  empAllNames=dedupeNames(dbNames,fuNames);
   var valLow=val.toLowerCase();
-  var matches=empAllNames.filter(function(n){
-    return n.toLowerCase().includes(valLow)||similarity(n.toLowerCase(),valLow)>=0.8;
-  }).slice(0,10);
-  if(!matches.length){list.classList.add('hidden');renderEmpresaResults(val);return;}
-  list.innerHTML=matches.map(function(n){
-    var dbRow=allRows.find(function(r){return(r[COL.COMPANY]||r[COL.CLIENT]||'').trim().toLowerCase()===n.toLowerCase();});
+  var matches=empAllNames.filter(function(n){return n.toLowerCase().indexOf(valLow)>=0||sim(n.toLowerCase(),valLow)>=0.7;}).slice(0,10);
+  if(!matches.length){list.classList.add('hidden');renderEmpResults(val);return;}
+  list.innerHTML=matches.map(function(n,i){
+    var dbRow=null;for(var j=0;j<allRows.length;j++){if((allRows[j][COL.COMPANY]||allRows[j][COL.CLIENT]||'').trim().toLowerCase()===n.toLowerCase()){dbRow=allRows[j];break;}}
     var sub=dbRow?[dbRow[COL.COUNTRY],dbRow[COL.REGION]].filter(Boolean).join(' · '):'Solo en Follow Up';
-    var idx=empAllNames.indexOf(n);
-    return '<div class="autocomplete-item" onmousedown="selectEmpresaByIndex('+idx+')"><div>'+n+'</div><div class="ac-sub">'+sub+'</div></div>';
+    return '<div class="ac-item" onmousedown="selectEmpByIdx('+i+')"><div>'+n+'</div><div class="ac-sub">'+sub+'</div></div>';
   }).join('');
   list.classList.remove('hidden');
 }
-
 function onEmpKeydown(e){
-  var list=document.getElementById('emp-ac-list');
-  var items=list.querySelectorAll('.autocomplete-item');
+  var list=document.getElementById('emp-ac-list');if(!list)return;
+  var items=list.querySelectorAll('.ac-item');
   if(e.key==='ArrowDown'){e.preventDefault();empAcIdx=Math.min(empAcIdx+1,items.length-1);items.forEach(function(el,i){el.classList.toggle('active',i===empAcIdx);});}
   else if(e.key==='ArrowUp'){e.preventDefault();empAcIdx=Math.max(empAcIdx-1,0);items.forEach(function(el,i){el.classList.toggle('active',i===empAcIdx);});}
-  else if(e.key==='Enter'){e.preventDefault();if(empAcIdx>=0)selectEmpresa(items[empAcIdx].dataset.val);else renderEmpresaResults(document.getElementById('emp-search').value);}
+  else if(e.key==='Enter'){e.preventDefault();if(empAcIdx>=0)selectEmpByIdx(empAcIdx);else renderEmpResults(document.getElementById('emp-search').value);}
   else if(e.key==='Escape'){list.classList.add('hidden');}
 }
-
-function selectEmpresa(name){
-  document.getElementById('emp-search').value=name;
-  empresasQuery=name;
-  document.getElementById('emp-ac-list').classList.add('hidden');
-  renderEmpresaResults(name);
+function selectEmpByIdx(idx){
+  var n=empAllNames[idx];if(!n)return;
+  var inp=document.getElementById('emp-search');if(inp)inp.value=n;
+  empQuery=n;
+  var list=document.getElementById('emp-ac-list');if(list)list.classList.add('hidden');
+  renderEmpResults(n);
 }
 
-function renderEmpresaResults(query){
+function renderEmpResults(query){
   var area=document.getElementById('emp-results');if(!area)return;
   if(!query){area.innerHTML='';return;}
-
-  // Find in DB
-  var dbMatches=allRows.filter(function(r){
-    var n=(r[COL.COMPANY]||r[COL.CLIENT]||'').trim();
-    return n.toLowerCase().includes(query.toLowerCase())||similarity(n,query)>=0.6;
-  });
-
-  // Find FU records — case-insensitive + 80% similarity
   var qLow=query.toLowerCase();
-  var fuMatches=followUpRows.filter(function(r){
-    var n=(r[1]||'').trim().toLowerCase();
-    return n.includes(qLow)||qLow.includes(n)||similarity(n,qLow)>=0.7;
-  });
-
+  var dbMatches=allRows.filter(function(r){var n=(r[COL.COMPANY]||r[COL.CLIENT]||'').trim();return n.toLowerCase().indexOf(qLow)>=0||sim(n.toLowerCase(),qLow)>=0.6;});
+  var fuMatches=fuRows.filter(function(r){var n=(r[1]||'').trim().toLowerCase();return n.indexOf(qLow)>=0||qLow.indexOf(n)>=0||sim(n,qLow)>=0.7;});
   if(!dbMatches.length&&!fuMatches.length){
-    area.innerHTML='<div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">Sin resultados</div><div class="empty-sub">No se encontró "'+query+'" en Database ni en Follow Up.</div></div>';
+    area.innerHTML='<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">Sin resultados</div><div class="empty-sub">No se encontro "'+query+'" en Database ni en Follow Up.</div></div>';
     return;
   }
-
-  // Group FU by canonical key (lowercase) so Stockinvest & STOCKINVEST merge
+  // Group FU by lowercase key, prefer DB name
   var fuByKey={};
-  fuMatches.forEach(function(r){
-    var n=(r[1]||'').trim();
-    var k=n.toLowerCase();
-    if(!fuByKey[k])fuByKey[k]=[];
-    fuByKey[k].push(r);
-  });
-  // For display, prefer DB name; fallback to FU name
-  var fuByCompany={};
-  Object.keys(fuByKey).forEach(function(k){
-    var dbRow=dbMatches.find(function(r){return(r[COL.COMPANY]||r[COL.CLIENT]||'').trim().toLowerCase()===k;});
-    var displayName=dbRow?(dbRow[COL.COMPANY]||dbRow[COL.CLIENT]||'').trim():fuByKey[k][0][1].trim();
-    fuByCompany[displayName]=fuByKey[k];
-  });
-
+  fuMatches.forEach(function(r){var k=(r[1]||'').trim().toLowerCase();if(!fuByKey[k])fuByKey[k]=[];fuByKey[k].push(r);});
   var html='';
-
+  if(!window._empFU)window._empFU=[];
   if(dbMatches.length){
     dbMatches.forEach(function(row){
       var company=(row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
       var meta=[row[COL.COUNTRY],row[COL.REGION]].filter(Boolean).join(' · ');
-      var dbTypes=getCanonicalTypes(row[COL.TYPE]||'');
+      var dbTypes=getTypes(row[COL.TYPE]||'');
       var dbSize=(row[COL.SIZE]||'').trim();
-      // Get FU for this company
-      var fu=findFollowUp(company);
-      var safeName=company.replace(/'/g,"\\'");
-
-      html+='<div class="empresa-card">'+
-        '<div class="empresa-card-header">'+
-          '<div>'+
-            '<div class="empresa-name">'+company+'</div>'+
-            (meta?'<div class="empresa-meta">'+meta+'</div>':'')+
-          '</div>'+
-          '<button class="btn primary" style="font-size:12px;padding:6px 12px;" onclick="openFUModal(\''+safeName+'\')">+ Follow Up</button>'+
+      var fu=findFU(company);
+      var empIdx=window._empFU.length;
+      window._empFU.push(company);
+      html+='<div class="emp-card">'+
+        '<div class="emp-card-header">'+
+          '<div><div class="emp-name">'+company+'</div>'+(meta?'<div class="emp-meta">'+meta+'</div>':'')+' </div>'+
+          '<button class="btn primary" style="font-size:12px;padding:6px 12px;" onclick="openFUModal(window._empFU['+empIdx+'])">+ Follow Up</button>'+
         '</div>'+
         '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;">'+
-          dbTypes.map(function(t){return '<span class="mtag type">'+t+'</span>';}).join('')+
-          (dbSize?'<span class="mtag size">'+dbSize+'</span>':'')+
+          dbTypes.map(function(t){return '<span class="mtag ty">'+t+'</span>';}).join('')+
+          (dbSize?'<span class="mtag sz">'+dbSize+'</span>':'')+
         '</div>'+
-        (fu.length?buildFUPanel(fu,true):'<div style="font-size:12px;color:var(--text3);padding:8px 0;">Sin registros de Follow Up aún.</div>')+
+        (fu.length?buildFUPanel(fu):'<div style="font-size:12px;color:var(--text3);padding:8px 0;">Sin registros de Follow Up aun.</div>')+
       '</div>';
     });
-  } else if(fuMatches.length){
-    // Companies only in FU
-    Object.keys(fuByCompany).forEach(function(name){
-      var fu=fuByCompany[name];
-      var safeName=name.replace(/'/g,"\\'");
-      html+='<div class="empresa-card">'+
-        '<div class="empresa-card-header">'+
-          '<div>'+
-            '<div class="empresa-name">'+name+'</div>'+
-            '<div class="empresa-meta" style="color:var(--warn);">Solo en Follow Up (no encontrado en Database)</div>'+
-          '</div>'+
-          '<button class="btn primary" style="font-size:12px;padding:6px 12px;" onclick="openFUModal(\''+safeName+'\')">+ Follow Up</button>'+
+  } else {
+    Object.keys(fuByKey).forEach(function(k){
+      var fu=fuByKey[k];
+      var displayName=fu[0][1].trim();
+      var empIdx=window._empFU.length;
+      window._empFU.push(displayName);
+      html+='<div class="emp-card">'+
+        '<div class="emp-card-header">'+
+          '<div><div class="emp-name">'+displayName+'</div><div class="emp-meta" style="color:var(--warn);">Solo en Follow Up</div></div>'+
+          '<button class="btn primary" style="font-size:12px;padding:6px 12px;" onclick="openFUModal(window._empFU['+empIdx+'])">+ Follow Up</button>'+
         '</div>'+
-        buildFUPanel(fu,true)+
+        buildFUPanel(fu)+
       '</div>';
     });
   }
-
   area.innerHTML=html;
 }
 
-// CONFIG
+// ── CONFIG ────────────────────────────────────────────────────────────────────
 function renderConfig(){
-  var c=!!accessToken;
+  var c=!!tok;
   document.getElementById('content').innerHTML=
-    '<div class="config-section">'+
-      '<div class="config-title">Conexión con Google</div>'+
-      '<div class="config-desc">OAuth Client ID para leer el Sheet privado.</div>'+
-      '<div class="config-field"><div class="config-label">Google OAuth Client ID</div>'+
-      '<input class="config-input" id="cfg-clientId" value="'+cfg.clientId+'" placeholder="1096062212521-xxx.apps.googleusercontent.com"></div>'+
-      '<div class="config-save"><button class="btn primary" onclick="saveConfig()">Guardar</button></div>'+
-    '</div>'+
-    '<div class="config-section">'+
-      '<div class="config-title">Google Sheet</div>'+
-      '<div class="config-field"><div class="config-label">ID del Sheet</div>'+
-      '<input class="config-input" id="cfg-sheetId" value="'+cfg.sheetId+'"></div>'+
-      '<div class="config-field"><div class="config-label">Pestaña de Database</div>'+
-      '<input class="config-input" id="cfg-sheetName" value="'+cfg.sheetName+'" placeholder="Sheet1"></div>'+
-      '<div class="config-save"><button class="btn primary" onclick="saveConfig()">Guardar y conectar</button></div>'+
-    '</div>'+
-    '<div class="config-section" style="border:2px solid '+(c?'rgba(52,199,89,.3)':'rgba(0,113,227,.2)')+';">'+
-      '<div class="config-title">'+(c?'✅ Google conectado':'🔐 Cuenta Google')+'</div>'+
-      '<div class="config-desc">'+(c?'Autenticado correctamente. Podés sincronizar el Sheet o desconectarte.':'Autenticarte con Google para leer el Sheet en tiempo real.')+'</div>'+
-      '<button onclick="handleAuth()" style="width:100%;padding:13px;border-radius:var(--radius-lg);font-size:14px;font-weight:600;border:1.5px solid;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:all .15s;background:'+(c?'var(--danger-light)':'#fff')+';color:'+(c?'var(--danger)':'var(--text)')+';border-color:'+(c?'rgba(255,59,48,.3)':'var(--border)')+';">'+
-        (c?'<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#ff3b30" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Desconectar Google':'<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Conectar con Google')+
-      '</button>'+
-      (c?'<button onclick="loadSheetData()" style="width:100%;padding:13px;border-radius:var(--radius-lg);font-size:14px;font-weight:600;border:1.5px solid rgba(52,199,89,.3);background:var(--ok-light);color:var(--ok);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;margin-top:8px;">↻ Sincronizar Sheet</button>':'')+
+    '<div class="cfg-sec"><div class="cfg-title">Conexion con Google</div><div class="cfg-desc">OAuth Client ID para leer el Sheet privado.</div>'+
+    '<div class="cfg-field"><div class="cfg-label">Google OAuth Client ID</div><input class="cfg-input" id="cfg-clientId" value="'+cfg.clientId+'" placeholder="1096062212521-xxx.apps.googleusercontent.com"></div>'+
+    '<div class="cfg-save"><button class="btn primary" onclick="saveConfig()">Guardar</button></div></div>'+
+    '<div class="cfg-sec"><div class="cfg-title">Google Sheet</div>'+
+    '<div class="cfg-field"><div class="cfg-label">ID del Sheet</div><input class="cfg-input" id="cfg-sheetId" value="'+cfg.sheetId+'"></div>'+
+    '<div class="cfg-field"><div class="cfg-label">Pestana de Database</div><input class="cfg-input" id="cfg-sheetName" value="'+cfg.sheetName+'" placeholder="Sheet1"></div>'+
+    '<div class="cfg-save"><button class="btn primary" onclick="saveConfig()">Guardar y conectar</button></div></div>'+
+    '<div class="cfg-sec" style="border:2px solid '+(c?'rgba(52,199,89,.3)':'rgba(0,113,227,.2)')+';">'+
+    '<div class="cfg-title">'+(c?'✅ Google conectado':'🔐 Cuenta Google')+'</div>'+
+    '<div class="cfg-desc">'+(c?'Autenticado correctamente.':'Autenticarte con Google para leer el Sheet en tiempo real.')+'</div>'+
+    '<button onclick="handleAuth()" style="width:100%;padding:13px;border-radius:var(--rl);font-size:14px;font-weight:600;border:1.5px solid;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;background:'+(c?'var(--danger-light)':'#fff')+';color:'+(c?'var(--danger)':'var(--text)')+';border-color:'+(c?'rgba(255,59,48,.3)':'var(--border)')+';">'+
+    (c?'🗑 Desconectar Google':'<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Conectar con Google')+
+    '</button>'+
+    (c?'<button onclick="loadSheetData()" style="width:100%;padding:13px;border-radius:var(--rl);font-size:14px;font-weight:600;border:1.5px solid rgba(52,199,89,.3);background:var(--ok-light);color:var(--ok);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;margin-top:8px;">↻ Sincronizar Sheet</button>':'')+
     '</div>';
 }
-
 function saveConfig(){
   cfg.clientId=document.getElementById('cfg-clientId').value.trim()||cfg.clientId;
   cfg.sheetId=document.getElementById('cfg-sheetId').value.trim()||cfg.sheetId;
   cfg.sheetName=document.getElementById('cfg-sheetName').value.trim()||cfg.sheetName;
   localStorage.setItem(CFG_KEY,JSON.stringify(cfg));
-  initGoogleAuth();showToast('Configuración guardada');
+  initGoogleAuth();toast('Configuracion guardada');
   setTimeout(function(){showView('matcher');},800);
 }
 
-// UTILS
-function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';clearTimeout(t._tid);t._tid=setTimeout(function(){t.style.opacity='0';},2800);}
-function showProgress(){document.getElementById('progress-bar').classList.add('active');}
-function hideProgress(){document.getElementById('progress-bar').classList.remove('active');}
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay-close').classList.toggle('show');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay-close').classList.remove('show');}
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';},2800);}
+function prog(on){document.getElementById('pbar').classList.toggle('go',on);}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
 
 window.onload=function(){
   if(cfg.clientId)initGoogleAuth();
   renderMatcher();
-  setSheetStatus('err',cfg.clientId?'Sin autenticar':'Sin configurar');
+  setStatus('err',cfg.clientId?'Sin autenticar':'Sin configurar');
 };
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
