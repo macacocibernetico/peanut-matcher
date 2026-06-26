@@ -318,6 +318,10 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
       <span class="sdot err" id="sheet-dot"></span>
       <span class="stext" id="sheet-status-text">Sin conectar</span>
     </div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
+      <span>Peanut Matcher</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v1.4.0</span>
+    </div>
   </div>
 </aside>
 
@@ -501,11 +505,11 @@ function onCompanyInput(){
   var matches=names.filter(function(n){return n.toLowerCase().indexOf(valLow)>=0||sim(n.toLowerCase(),valLow)>=0.5;}).slice(0,8);
   if(!matches.length){list.classList.add('hidden');return;}
   acNames=matches;
-  list.innerHTML=matches.map(function(n,i){
+  list.innerHTML=matches.map(function(n){
     var dbRow=null;
     for(var j=0;j<allRows.length;j++){if((allRows[j][COL.COMPANY]||allRows[j][COL.CLIENT]||'').trim()===n){dbRow=allRows[j];break;}}
     var sub=dbRow?[dbRow[COL.COUNTRY],dbRow[COL.REGION]].filter(Boolean).join(' · '):'';
-    return '<div class="ac-item" onmousedown="selectCompanyByIdx('+i+')"><div>'+n+'</div>'+(sub?'<div class="ac-sub">'+sub+'</div>':'')+'</div>';
+    return '<div class="ac-item" data-name="'+n.replace(/"/g,'&quot;')+'" onmousedown="selectCompanyByName(this.dataset.name)"><div>'+n+'</div>'+(sub?'<div class="ac-sub">'+sub+'</div>':'')+'</div>';
   }).join('');
   list.classList.remove('hidden');
 }
@@ -515,14 +519,19 @@ function onCompanyKeydown(e){
   if(!items.length)return;
   if(e.key==='ArrowDown'){e.preventDefault();acIdx=Math.min(acIdx+1,items.length-1);items.forEach(function(el,i){el.classList.toggle('active',i===acIdx);});}
   else if(e.key==='ArrowUp'){e.preventDefault();acIdx=Math.max(acIdx-1,0);items.forEach(function(el,i){el.classList.toggle('active',i===acIdx);});}
-  else if(e.key==='Enter'&&acIdx>=0){e.preventDefault();selectCompanyByIdx(acIdx);}
+  else if(e.key==='Enter'&&acIdx>=0){e.preventDefault();var el=document.querySelectorAll('#ac-list .ac-item')[acIdx];if(el)selectCompanyByName(el.dataset.name);}
   else if(e.key==='Escape'){list.classList.add('hidden');}
 }
-function selectCompanyByIdx(idx){
-  var n=acNames[idx];if(!n)return;
-  document.getElementById('fu-company').value=n;
+function selectCompanyByName(name){
+  if(!name)return;
+  document.getElementById('fu-company').value=name;
   document.getElementById('ac-list').classList.add('hidden');
   acIdx=-1;
+}
+function selectCompanyByIdx(idx){
+  var items=document.querySelectorAll('#ac-list .ac-item');
+  var el=items[idx];
+  if(el)selectCompanyByName(el.dataset.name);
 }
 
 // ── SAVE FU ──────────────────────────────────────────────────────────────────
@@ -878,10 +887,10 @@ function onEmpSearch(val){
   var valLow=val.toLowerCase();
   var matches=empAllNames.filter(function(n){return n.toLowerCase().indexOf(valLow)>=0||sim(n.toLowerCase(),valLow)>=0.7;}).slice(0,10);
   if(!matches.length){list.classList.add('hidden');renderEmpResults(val);return;}
-  list.innerHTML=matches.map(function(n,i){
+  list.innerHTML=matches.map(function(n){
     var dbRow=null;for(var j=0;j<allRows.length;j++){if((allRows[j][COL.COMPANY]||allRows[j][COL.CLIENT]||'').trim().toLowerCase()===n.toLowerCase()){dbRow=allRows[j];break;}}
     var sub=dbRow?[dbRow[COL.COUNTRY],dbRow[COL.REGION]].filter(Boolean).join(' · '):'Solo en Follow Up';
-    return '<div class="ac-item" onmousedown="selectEmpByIdx('+i+')"><div>'+n+'</div><div class="ac-sub">'+sub+'</div></div>';
+    return '<div class="ac-item" data-name="'+n.replace(/"/g,'&quot;')+'" onmousedown="selectEmpByName(this.dataset.name)"><div>'+n+'</div><div class="ac-sub">'+sub+'</div></div>';
   }).join('');
   list.classList.remove('hidden');
 }
@@ -890,15 +899,21 @@ function onEmpKeydown(e){
   var items=list.querySelectorAll('.ac-item');
   if(e.key==='ArrowDown'){e.preventDefault();empAcIdx=Math.min(empAcIdx+1,items.length-1);items.forEach(function(el,i){el.classList.toggle('active',i===empAcIdx);});}
   else if(e.key==='ArrowUp'){e.preventDefault();empAcIdx=Math.max(empAcIdx-1,0);items.forEach(function(el,i){el.classList.toggle('active',i===empAcIdx);});}
-  else if(e.key==='Enter'){e.preventDefault();if(empAcIdx>=0)selectEmpByIdx(empAcIdx);else renderEmpResults(document.getElementById('emp-search').value);}
+  else if(e.key==='Enter'){e.preventDefault();if(empAcIdx>=0){var el=document.querySelectorAll('#emp-ac-list .ac-item')[empAcIdx];if(el)selectEmpByName(el.dataset.name);}else renderEmpResults(document.getElementById('emp-search').value);}
   else if(e.key==='Escape'){list.classList.add('hidden');}
 }
-function selectEmpByIdx(idx){
-  var n=empAllNames[idx];if(!n)return;
-  var inp=document.getElementById('emp-search');if(inp)inp.value=n;
-  empQuery=n;
+function selectEmpByName(name){
+  if(!name)return;
+  var inp=document.getElementById('emp-search');if(inp)inp.value=name;
+  empQuery=name;
   var list=document.getElementById('emp-ac-list');if(list)list.classList.add('hidden');
-  renderEmpResults(n);
+  empAcIdx=-1;
+  renderEmpResults(name);
+}
+function selectEmpByIdx(idx){
+  var items=document.querySelectorAll('#emp-ac-list .ac-item');
+  var el=items[idx];
+  if(el)selectEmpByName(el.dataset.name);
 }
 
 function renderEmpResults(query){
