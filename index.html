@@ -722,42 +722,61 @@ function renderMatcher(){
 }
 
 // BUILD FU PANEL HTML (shared between matcher and empresas)
-function buildFUPanel(fuRecords, showEditBtns){
+function buildFURecord(row, showEditBtns){
+  var date=(row[0]||'').trim();
+  var sz=normalizeFUSize((row[3]||'').trim());
+  var ty=normalizeFUType((row[4]||'').trim());
+  var tns=(row[8]||'').trim(),price=(row[9]||'').trim(),supplier=(row[13]||'').trim(),comment=(row[14]||'').trim();
+  var rowIdx=followUpRows.indexOf(row);
+  var editBtn=showEditBtns&&rowIdx>=0?'<span class="fu-edit-btn" onclick="openFUModal(\'\','+rowIdx+')" title="Editar">✏️</span>':'';
+  return '<div class="fu-record">'+
+    '<div class="fu-record-body">'+
+      '<div class="fu-date">'+(date||'—')+'</div>'+
+      '<div class="fu-details">'+
+        (sz&&sz!=='—'?'<span class="futag size">'+sz+'</span>':'')+
+        (ty&&ty!=='—'?'<span class="futag type">'+ty+'</span>':'')+
+        (tns?'<span class="futag tns">'+tns+' tn</span>':'')+
+        (price?'<span class="futag price">USD '+price+'</span>':'')+
+        (supplier?'<span class="futag supplier">🏭 '+supplier+'</span>':'')+
+      '</div>'+
+      (comment?'<div class="fu-comment">"'+comment+'"</div>':'')+
+    '</div>'+
+    editBtn+
+  '</div>';
+}
+
+function buildFUPanel(fuRecords, showEditBtns, showAll){
   var sorted=fuRecords.slice().sort(function(a,b){
     var da=new Date((a[0]||'').split('/').reverse().join('-'));
     var db=new Date((b[0]||'').split('/').reverse().join('-'));
     return db-da;
   });
-  // Find indices in followUpRows for edit
-  var records=sorted.slice(0,3).map(function(row){
-    var date=(row[0]||'').trim();
-    var sz=normalizeFUSize((row[3]||'').trim());
-    var ty=normalizeFUType((row[4]||'').trim());
-    var tns=(row[8]||'').trim(),price=(row[9]||'').trim(),supplier=(row[13]||'').trim(),comment=(row[14]||'').trim();
-    var rowIdx=followUpRows.indexOf(row);
-    var editBtn=showEditBtns&&rowIdx>=0?'<span class="fu-edit-btn" onclick="openFUModal(\'\','+rowIdx+')" title="Editar">✏️</span>':'';
-    return '<div class="fu-record">'+
-      '<div class="fu-record-body">'+
-        '<div class="fu-date">'+(date||'—')+'</div>'+
-        '<div class="fu-details">'+
-          (sz&&sz!=='—'?'<span class="futag size">'+sz+'</span>':'')+
-          (ty&&ty!=='—'?'<span class="futag type">'+ty+'</span>':'')+
-          (tns?'<span class="futag tns">'+tns+' tn</span>':'')+
-          (price?'<span class="futag price">USD '+price+'</span>':'')+
-          (supplier?'<span class="futag supplier">🏭 '+supplier+'</span>':'')+
-        '</div>'+
-        (comment?'<div class="fu-comment">"'+comment+'"</div>':'')+
-      '</div>'+
-      editBtn+
-    '</div>';
-  }).join('');
+  var panelId='fu-panel-'+Math.random().toString(36).slice(2,7);
+  var preview=sorted.slice(0,3);
+  var rest=sorted.slice(3);
+  var previewHtml=preview.map(function(row){return buildFURecord(row,showEditBtns);}).join('');
+  var restHtml=rest.length?rest.map(function(row){return buildFURecord(row,showEditBtns);}).join(''):'';
+  var moreBtn=rest.length?
+    '<div id="more-'+panelId+'" style="font-size:11px;color:#b45309;margin-top:6px;font-family:var(--mono);cursor:pointer;text-decoration:underline;" onclick="toggleFUAll(''+panelId+'')">▼ Ver '+rest.length+' registro'+(rest.length>1?'s':'')+' más</div>'+
+    '<div id="rest-'+panelId+'" style="display:none;">'+restHtml+'<div style="font-size:11px;color:#b45309;margin-top:6px;font-family:var(--mono);cursor:pointer;text-decoration:underline;" onclick="toggleFUAll(''+panelId+'')">▲ Ocultar</div></div>':
+    '';
   return '<div class="fu-panel">'+
     '<div class="fu-panel-header">'+
       '<span class="fu-panel-title">📋 Follow Up</span>'+
       '<span class="fu-panel-count">'+fuRecords.length+' registro'+(fuRecords.length>1?'s':'')+'</span>'+
-    '</div>'+records+
-    (fuRecords.length>3?'<div style="font-size:10px;color:#b45309;margin-top:6px;font-family:var(--mono);">+ '+(fuRecords.length-3)+' registros más</div>':'')+
+    '</div>'+
+    previewHtml+
+    moreBtn+
   '</div>';
+}
+
+function toggleFUAll(panelId){
+  var restEl=document.getElementById('rest-'+panelId);
+  var moreEl=document.getElementById('more-'+panelId);
+  if(!restEl||!moreEl)return;
+  var isHidden=restEl.style.display==='none';
+  restEl.style.display=isHidden?'block':'none';
+  moreEl.style.display=isHidden?'none':'block';
 }
 
 function renderResults(){
