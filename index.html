@@ -799,9 +799,6 @@ function renderResults(){
       var mTypes=m.types.filter(function(t){return types.map(function(x){return x.toLowerCase();}).indexOf(t.toLowerCase())>=0;});
       var szl=m.szInfo.hasAny?'Any':(m.szInfo.hasSplit&&!m.szInfo.nums.length?'Split':m.size)||'—';
       // Use idx-based onclick for edit button - store idx in window._matchFU
-      if(i===0)window._matchFU=[];
-      var fuIdx=window._matchFU.length;
-      window._matchFU.push(name);
       list+='<div class="mcard'+(m.hasFU?' has-fu':'')+'" style="animation-delay:'+(i*.03)+'s">'+
         '<div class="mcard-top">'+
           '<div class="mavatar'+(m.hasFU?' fu':'')+'">'+init+'</div>'+
@@ -815,7 +812,7 @@ function renderResults(){
               (m.country?'<span class="mtag ct">'+m.country+'</span>':'')+
             '</div>'+
           '</div>'+
-          '<span class="edit-btn" onclick="openFUModal(window._matchFU['+fuIdx+'])" title="Agregar Follow Up">✏️</span>'+
+          '<span class="edit-btn" data-company="'+name.replace(/"/g,'&quot;')+'" onclick="openFUModal(this.dataset.company)" title="Agregar Follow Up">✏️</span>'+
           '<div class="mcheck">✓</div>'+
         '</div>'+
         buildFUPanel(m.fu)+
@@ -843,7 +840,7 @@ function renderEmpresas(){
     '<div class="emp-search-wrap">'+
       '<div class="card-title" style="margin-bottom:12px;">🏢 Empresas</div>'+
       '<div style="position:relative;">'+
-        '<input class="minput" id="emp-search" placeholder="Buscar empresa..." value="'+empQuery+'" oninput="onEmpSearch(this.value)" onkeydown="onEmpKeydown(event)" autocomplete="off">'+
+        '<input class="minput" id="emp-search" placeholder="Buscar empresa..." value="'+empQuery+'" oninput="debouncedEmpSearch(this.value)" onkeydown="onEmpKeydown(event)" autocomplete="off">'+
         '<div class="ac-list hidden" id="emp-ac-list"></div>'+
       '</div>'+
       '<button class="btn primary" style="margin-top:10px;width:100%;" onclick="openFUModal(\'\')">+ Agregar Follow Up</button>'+
@@ -864,6 +861,11 @@ function dedupeNames(dbNames,fuNames){
   return out.sort();
 }
 
+var _empSearchTimer=null;
+function debouncedEmpSearch(val){
+  clearTimeout(_empSearchTimer);
+  _empSearchTimer=setTimeout(function(){onEmpSearch(val);},200);
+}
 function onEmpSearch(val){
   empQuery=val;empAcIdx=-1;
   var list=document.getElementById('emp-ac-list');
@@ -913,7 +915,6 @@ function renderEmpResults(query){
   var fuByKey={};
   fuMatches.forEach(function(r){var k=(r[1]||'').trim().toLowerCase();if(!fuByKey[k])fuByKey[k]=[];fuByKey[k].push(r);});
   var html='';
-  window._empFU=[];
   if(dbMatches.length){
     dbMatches.forEach(function(row){
       var company=(row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
@@ -921,12 +922,10 @@ function renderEmpResults(query){
       var dbTypes=getTypes(row[COL.TYPE]||'');
       var dbSize=(row[COL.SIZE]||'').trim();
       var fu=findFU(company);
-      var empIdx=window._empFU.length;
-      window._empFU.push(company);
       html+='<div class="emp-card">'+
         '<div class="emp-card-header">'+
           '<div><div class="emp-name">'+company+'</div>'+(meta?'<div class="emp-meta">'+meta+'</div>':'')+' </div>'+
-          '<button class="btn primary" style="font-size:12px;padding:6px 12px;" onclick="openFUModal(window._empFU['+empIdx+'])">+ Follow Up</button>'+
+          '<button class="btn primary" style="font-size:12px;padding:6px 12px;" data-company="'+company.replace(/"/g,'&quot;')+'" onclick="openFUModal(this.dataset.company)">+ Follow Up</button>'+
         '</div>'+
         '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;">'+
           dbTypes.map(function(t){return '<span class="mtag ty">'+t+'</span>';}).join('')+
@@ -939,12 +938,10 @@ function renderEmpResults(query){
     Object.keys(fuByKey).forEach(function(k){
       var fu=fuByKey[k];
       var displayName=fu[0][1].trim();
-      var empIdx=window._empFU.length;
-      window._empFU.push(displayName);
       html+='<div class="emp-card">'+
         '<div class="emp-card-header">'+
           '<div><div class="emp-name">'+displayName+'</div><div class="emp-meta" style="color:var(--warn);">Solo en Follow Up</div></div>'+
-          '<button class="btn primary" style="font-size:12px;padding:6px 12px;" onclick="openFUModal(window._empFU['+empIdx+'])">+ Follow Up</button>'+
+          '<button class="btn primary" style="font-size:12px;padding:6px 12px;" data-company="'+displayName.replace(/"/g,'&quot;')+'" onclick="openFUModal(this.dataset.company)">+ Follow Up</button>'+
         '</div>'+
         buildFUPanel(fu)+
       '</div>';
