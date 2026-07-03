@@ -322,7 +322,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 <div class="modal-overlay hidden" id="of-modal">
   <div class="modal">
     <div class="modal-header">
-      <span class="modal-title">Cargar oferta</span>
+      <span class="modal-title" id="of-modal-title">Cargar oferta</span>
       <span class="modal-close" onclick="closeOfertaModal()">&#215;</span>
     </div>
     <div class="modal-body">
@@ -346,6 +346,36 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     <div class="modal-footer">
       <button class="btn" onclick="closeOfertaModal()">Cancelar</button>
       <button class="btn primary" id="of-save-btn" onclick="saveOferta()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DB COMPANY MODAL -->
+<div class="modal-overlay hidden" id="db-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Agregar empresa a Database</span>
+      <span class="modal-close" onclick="closeDbModal()">&#215;</span>
+    </div>
+    <div class="modal-body">
+      <div class="mfield">
+        <label class="mfield-label">Empresa (Company)</label>
+        <input class="minput" id="db-company" placeholder="Nombre de la empresa" autocomplete="off" oninput="debouncedDbDup()">
+        <div id="db-dup-warn" style="display:none;background:var(--warn-light);border:1px solid rgba(255,149,0,.25);border-radius:var(--r);padding:9px 12px;font-size:12px;color:#92400e;margin-top:6px;"></div>
+      </div>
+      <div class="mform-grid">
+        <div class="mfield"><label class="mfield-label">Client <span class="mfield-opt">opcional</span></label><input class="minput" id="db-client" placeholder="Nombre del contacto/cliente"></div>
+        <div class="mfield"><label class="mfield-label">Region <span class="mfield-opt">opcional</span></label><input class="minput" id="db-region" placeholder="ej: EUROPA, LATAM"></div>
+        <div class="mfield"><label class="mfield-label">Country <span class="mfield-opt">opcional</span></label><input class="minput" id="db-country" placeholder="ej: NETHERLANDS"></div>
+        <div class="mfield"><label class="mfield-label">Size <span class="mfield-opt">opcional</span></label><input class="minput" id="db-size" placeholder="ej: 40/50"></div>
+        <div class="mfield"><label class="mfield-label">Type <span class="mfield-opt">opcional</span></label><input class="minput" id="db-type" placeholder="ej: Raw, Blanched, BF"></div>
+        <div class="mfield"><label class="mfield-label">Grado <span class="mfield-opt">opcional</span></label><input class="minput" id="db-grado" placeholder="ej: A, B, G1"></div>
+        <div class="mfield"><label class="mfield-label">Estado</label><select class="mselect" id="db-estado"><option>Activo</option><option>Inactivo</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeDbModal()">Cancelar</button>
+      <button class="btn primary" id="db-save-btn" onclick="saveDbCompany()">💾 Guardar</button>
     </div>
   </div>
 </div>
@@ -375,7 +405,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v1.6.0</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v1.8.0</span>
     </div>
   </div>
 </aside>
@@ -399,76 +429,127 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 
 <script>
 // ── OFERTAS ──────────────────────────────────────────────────────────────────
+var ofQuery='',ofEstadoF='',ofMode='new',ofEditIdx=null;
+var _ofSearchTimer=null;
+function debouncedOfSearch(v){clearTimeout(_ofSearchTimer);_ofSearchTimer=setTimeout(function(){ofQuery=v;renderOfertasList();},200);}
+function setOfEstado(v){ofEstadoF=(ofEstadoF===v?'':v);renderOfertas();}
+
 function renderOfertas(){
   var banner='';
   if(!tok)banner='<div class="info-banner">🔐 <strong>Conectate con Google</strong> para cargar las ofertas.</div>';
   else if(!availRows.length&&!allRows.length)banner='<div class="info-banner">📋 Conectado. Haz click en <strong>↻ Sincronizar</strong>.</div>';
-  var cards='';
-  if(availRows.length){
-    var sorted=availRows.slice().sort(function(a,b){
-      var da=new Date(((a[AV.FECHA]||'').split('/')).reverse().join('-'));
-      var db=new Date(((b[AV.FECHA]||'').split('/')).reverse().join('-'));
-      return db-da;
-    });
-    cards='<div class="match-list">'+sorted.map(function(r){
-      var prov=(r[AV.PROV]||'').trim();
-      var origen=(r[AV.ORIGEN]||'').trim();
-      var prod=(r[AV.PROD]||'').trim();
-      var tipo=(r[AV.TIPO]||'').trim();
-      var grado=(r[AV.GRADO]||'').trim();
-      var crop=(r[AV.CROP]||'').trim();
-      var tns=(r[AV.TNS]||'').trim();
-      var alfa=(r[AV.ALFA]||'').trim();
-      var estado=(r[AV.ESTADO]||'').trim();
-      var fecha=(r[AV.FECHA]||'').trim();
-      var obs=(r[AV.OBS]||'').trim();
-      var next=(r[AV.NEXT]||'').trim();
-      var eLow=estado.toLowerCase();
-      var cls=eLow.indexOf('disponible')===0?'of-disp':(eLow.indexOf('defin')>=0?'of-def':'of-other');
-      var init=(prov||'?')[0].toUpperCase();
-      return '<div class="mcard ofcard '+cls+'">'+
-        '<div class="mcard-top">'+
-          '<div class="mavatar">'+init+'</div>'+
-          '<div class="mbody">'+
-            '<div class="mname-row"><div class="mname">'+prov+'</div>'+
-              (estado?'<span class="'+(cls==='of-disp'?'active-badge':'inactive-badge')+'">'+estado+'</span>':'')+
-            '</div>'+
-            '<div class="mmeta">'+[origen,fecha].filter(Boolean).join(' · ')+'</div>'+
-            '<div class="mtags">'+
-              (prod?'<span class="mtag sz">'+prod+'</span>':'')+
-              (tipo?'<span class="mtag ty">'+tipo+'</span>':'')+
-              (grado?'<span class="mtag gr">Grado '+grado+'</span>':'')+
-              (crop?'<span class="mtag ct">CROP '+crop+'</span>':'')+
-              (tns?'<span class="mtag sz">'+tns+' tn</span>':'')+
-              (alfa?'<span class="mtag '+(alfa.toLowerCase()==='eu'?'rg':'sz')+'">'+alfa+'</span>':'')+
-            '</div>'+
-            (obs?'<div class="fu-comment" style="margin-top:6px;">"'+obs+'"</div>':'')+
-            (next?'<div style="font-size:11px;color:var(--info);margin-top:4px;">➡ '+next+'</div>':'')+
-          '</div>'+
-        '</div>'+
-      '</div>';
-    }).join('')+'</div>';
-  } else {
-    cards='<div class="empty"><div class="empty-icon">📦</div><div class="empty-title">Sin ofertas cargadas</div><div class="empty-sub">Carga la primera disponibilidad de un proveedor.</div></div>';
-  }
+  // Estado chips from unique values
+  var estados=[];var seenE={};
+  availRows.forEach(function(r){var e=(r[AV.ESTADO]||'').trim();if(e&&!seenE[e.toLowerCase()]){seenE[e.toLowerCase()]=true;estados.push(e);}});
+  var chips=estados.map(function(e){
+    return '<span class="chip'+(ofEstadoF.toLowerCase()===e.toLowerCase()?' selected':'')+'" style="padding:5px 12px;font-size:11px;" data-est="'+e.replace(/"/g,'&quot;')+'" onclick="setOfEstado(this.dataset.est)">'+e+'</span>';
+  }).join('');
   document.getElementById('content').innerHTML=
     banner+
     '<div class="card" style="margin-bottom:16px;">'+
       '<div class="card-title">📦 Ofertas de proveedores</div>'+
       '<div class="card-sub">Disponibilidad cargada en la hoja Availability.</div>'+
       '<button class="btn-search" onclick="openOfertaModal()">+ Cargar oferta</button>'+
-    '</div>'+cards;
+      '<div style="margin-top:14px;">'+
+        '<input class="minput" id="of-search" placeholder="Buscar por proveedor, producto, origen..." value="'+ofQuery.replace(/"/g,'&quot;')+'" oninput="debouncedOfSearch(this.value)" autocomplete="off">'+
+      '</div>'+
+      (chips?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">'+chips+'</div>':'')+
+    '</div>'+
+    '<div id="ofertas-list"></div>';
+  renderOfertasList();
 }
-function openOfertaModal(){
+
+function renderOfertasList(){
+  var area=document.getElementById('ofertas-list');if(!area)return;
+  var q=ofQuery.toLowerCase().trim();
+  var rows=availRows.filter(function(r){
+    if(ofEstadoF&&(r[AV.ESTADO]||'').trim().toLowerCase()!==ofEstadoF.toLowerCase())return false;
+    if(!q)return true;
+    var hay=[r[AV.PROV],r[AV.ORIGEN],r[AV.PROD],r[AV.TIPO],r[AV.GRADO],r[AV.CROP],r[AV.ALFA],r[AV.ESTADO],r[AV.OBS],r[AV.NEXT]].join(' ').toLowerCase();
+    return hay.indexOf(q)>=0;
+  });
+  if(!rows.length){
+    area.innerHTML='<div class="empty"><div class="empty-icon">📦</div><div class="empty-title">'+(availRows.length?'Sin resultados':'Sin ofertas cargadas')+'</div><div class="empty-sub">'+(availRows.length?'Proba con otra busqueda o quita el filtro de estado.':'Carga la primera disponibilidad de un proveedor.')+'</div></div>';
+    return;
+  }
+  var sorted=rows.slice().sort(function(a,b){
+    var da=new Date(((a[AV.FECHA]||'').split('/')).reverse().join('-'));
+    var db=new Date(((b[AV.FECHA]||'').split('/')).reverse().join('-'));
+    return db-da;
+  });
+  var counter='<div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;">'+rows.length+' de '+availRows.length+' ofertas</div>';
+  area.innerHTML=counter+'<div class="match-list">'+sorted.map(function(r){
+    var prov=(r[AV.PROV]||'').trim();
+    var origen=(r[AV.ORIGEN]||'').trim();
+    var prod=(r[AV.PROD]||'').trim();
+    var tipo=(r[AV.TIPO]||'').trim();
+    var grado=(r[AV.GRADO]||'').trim();
+    var crop=(r[AV.CROP]||'').trim();
+    var tns=(r[AV.TNS]||'').trim();
+    var alfa=(r[AV.ALFA]||'').trim();
+    var estado=(r[AV.ESTADO]||'').trim();
+    var fecha=(r[AV.FECHA]||'').trim();
+    var obs=(r[AV.OBS]||'').trim();
+    var next=(r[AV.NEXT]||'').trim();
+    var eLow=estado.toLowerCase();
+    var cls=eLow.indexOf('disponible')===0?'of-disp':(eLow.indexOf('defin')>=0?'of-def':'of-other');
+    var init=(prov||'?')[0].toUpperCase();
+    var realIdx=availRows.indexOf(r);
+    return '<div class="mcard ofcard '+cls+'">'+
+      '<div class="mcard-top">'+
+        '<div class="mavatar">'+init+'</div>'+
+        '<div class="mbody">'+
+          '<div class="mname-row"><div class="mname">'+prov+'</div>'+
+            (estado?'<span class="'+(cls==='of-disp'?'active-badge':'inactive-badge')+'">'+estado+'</span>':'')+
+          '</div>'+
+          '<div class="mmeta">'+[origen,fecha].filter(Boolean).join(' · ')+'</div>'+
+          '<div class="mtags">'+
+            (prod?'<span class="mtag sz">'+prod+'</span>':'')+
+            (tipo?'<span class="mtag ty">'+tipo+'</span>':'')+
+            (grado?'<span class="mtag gr">Grado '+grado+'</span>':'')+
+            (crop?'<span class="mtag ct">CROP '+crop+'</span>':'')+
+            (tns?'<span class="mtag sz">'+tns+' tn</span>':'')+
+            (alfa?'<span class="mtag '+(alfa.toLowerCase()==='eu'?'rg':'sz')+'">'+alfa+'</span>':'')+
+          '</div>'+
+          (obs?'<div class="fu-comment" style="margin-top:6px;">"'+obs+'"</div>':'')+
+          (next?'<div style="font-size:11px;color:var(--info);margin-top:4px;">➡ '+next+'</div>':'')+
+        '</div>'+
+        '<span class="edit-btn" data-idx="'+realIdx+'" onclick="openOfertaModal(parseInt(this.dataset.idx))" title="Editar oferta">✏️</span>'+
+      '</div>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+
+function openOfertaModal(editIdx){
+  ofMode=(editIdx!==undefined&&editIdx!==null&&!isNaN(editIdx))?'edit':'new';
+  ofEditIdx=ofMode==='edit'?editIdx:null;
   ['of-prov','of-origen','of-prod','of-grado','of-crop','of-tns','of-obs'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('of-tipo').value='';
   document.getElementById('of-alfa').value='';
   document.getElementById('of-estado').value='Disponible';
-  document.getElementById('of-date-display').textContent='Fecha aviso: '+todayStr();
+  if(ofMode==='edit'){
+    var r=availRows[ofEditIdx]||[];
+    document.getElementById('of-modal-title').textContent='Editar oferta';
+    document.getElementById('of-prov').value=(r[AV.PROV]||'').trim();
+    document.getElementById('of-origen').value=(r[AV.ORIGEN]||'').trim();
+    document.getElementById('of-prod').value=(r[AV.PROD]||'').trim();
+    document.getElementById('of-tipo').value=(r[AV.TIPO]||'').trim();
+    document.getElementById('of-grado').value=(r[AV.GRADO]||'').trim();
+    document.getElementById('of-crop').value=(r[AV.CROP]||'').trim();
+    document.getElementById('of-tns').value=(r[AV.TNS]||'').trim();
+    document.getElementById('of-alfa').value=(r[AV.ALFA]||'').trim();
+    document.getElementById('of-estado').value=(r[AV.ESTADO]||'Disponible').trim();
+    document.getElementById('of-obs').value=(r[AV.OBS]||'').trim();
+    document.getElementById('of-date-display').textContent='Fecha original: '+((r[AV.FECHA]||'').trim()||'—')+' · Se actualizara a hoy al guardar';
+  } else {
+    document.getElementById('of-modal-title').textContent='Cargar oferta';
+    document.getElementById('of-date-display').textContent='Fecha aviso: '+todayStr();
+  }
   document.getElementById('of-modal').classList.remove('hidden');
-  setTimeout(function(){document.getElementById('of-prov').focus();},100);
+  if(ofMode==='new')setTimeout(function(){document.getElementById('of-prov').focus();},100);
 }
 function closeOfertaModal(){document.getElementById('of-modal').classList.add('hidden');}
+
 var availGid=null;
 async function getAvailGid(){
   if(availGid!==null)return availGid;
@@ -485,7 +566,6 @@ async function appendOfertaRow(row){
   // Insert at row 2 (top), pushing existing rows down
   var gid=await getAvailGid();
   if(gid===null||gid===undefined){
-    // Fallback: append at bottom if sheet gid not found
     var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A:L')+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
     var rr=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
     return rr.ok;
@@ -495,10 +575,17 @@ async function appendOfertaRow(row){
   var r2=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A2:L2')+'?valueInputOption=USER_ENTERED',{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
   return r2.ok;
 }
+async function updateOfertaRow(sheetRow,row){
+  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A'+sheetRow+':L'+sheetRow)+'?valueInputOption=USER_ENTERED';
+  var r=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+  return r.ok;
+}
 async function saveOferta(){
   if(!tok){toast('Conectate con Google primero');return;}
   var prov=document.getElementById('of-prov').value.trim();
   if(!prov){toast('Ingresa el proveedor');return;}
+  var prevNext='';
+  if(ofMode==='edit'&&ofEditIdx!==null&&availRows[ofEditIdx])prevNext=(availRows[ofEditIdx][AV.NEXT]||'');
   var row=[prov,
     document.getElementById('of-origen').value.trim(),
     document.getElementById('of-prod').value.trim(),
@@ -510,13 +597,102 @@ async function saveOferta(){
     document.getElementById('of-estado').value.trim(),
     todayStr(),
     document.getElementById('of-obs').value.trim(),
-    ''];
+    prevNext];
   var btn=document.getElementById('of-save-btn');
   btn.textContent='Guardando...';btn.disabled=true;
-  var ok=await appendOfertaRow(row);
+  var ok=false;
+  if(ofMode==='edit'&&ofEditIdx!==null){
+    var shRow=availRows[ofEditIdx]&&availRows[ofEditIdx]._sheetRow;
+    if(!shRow){btn.textContent='💾 Guardar';btn.disabled=false;toast('Sincroniza antes de editar esta oferta');return;}
+    ok=await updateOfertaRow(shRow,row);
+    if(ok){row._sheetRow=shRow;availRows[ofEditIdx]=row;toast('✓ Oferta actualizada');}
+  } else {
+    ok=await appendOfertaRow(row);
+    if(ok){
+      availRows.forEach(function(r){if(r._sheetRow)r._sheetRow++;});
+      row._sheetRow=2;
+      availRows.unshift(row);
+      toast('✓ Oferta guardada');
+    }
+  }
   btn.textContent='💾 Guardar';btn.disabled=false;
-  if(ok){availRows.unshift(row);toast('✓ Oferta guardada');closeOfertaModal();if(view==='ofertas')renderOfertas();}
+  if(ok){closeOfertaModal();if(view==='ofertas')renderOfertas();}
   else toast('Error al guardar en el Sheet');
+}
+
+// ── DB COMPANY ───────────────────────────────────────────────────────────────
+function findSimilarCompany(name){
+  if(!name)return null;
+  var nLow=name.toLowerCase().trim();
+  var names=getCompanyNames();
+  var best=null,bestScore=0;
+  for(var i=0;i<names.length;i++){
+    var s=sim(names[i].toLowerCase(),nLow);
+    if(s>=0.7&&s>bestScore){best=names[i];bestScore=s;}
+  }
+  return best;
+}
+var _dbDupTimer=null;
+function debouncedDbDup(){
+  clearTimeout(_dbDupTimer);
+  _dbDupTimer=setTimeout(function(){
+    var val=document.getElementById('db-company').value.trim();
+    var warn=document.getElementById('db-dup-warn');
+    if(val.length<2){warn.style.display='none';return;}
+    var similar=findSimilarCompany(val);
+    if(similar){
+      warn.textContent='⚠️ Ya existe una empresa similar en Database: '+similar+'. No se va a poder guardar.';
+      warn.style.display='block';
+    }else{
+      warn.style.display='none';
+    }
+  },300);
+}
+function openDbModal(){
+  ['db-company','db-client','db-region','db-country','db-size','db-type','db-grado'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('db-estado').value='Activo';
+  document.getElementById('db-dup-warn').style.display='none';
+  document.getElementById('db-modal').classList.remove('hidden');
+  setTimeout(function(){document.getElementById('db-company').focus();},100);
+}
+function closeDbModal(){document.getElementById('db-modal').classList.add('hidden');}
+async function appendDbRow(row){
+  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A:AN')+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
+  var r=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+  return r.ok;
+}
+async function saveDbCompany(){
+  if(!tok){toast('Conectate con Google primero');return;}
+  var company=document.getElementById('db-company').value.trim();
+  if(!company){toast('Ingresa el nombre de la empresa');return;}
+  var similar=findSimilarCompany(company);
+  if(similar){
+    toast('❌ Ya existe una empresa similar: '+similar);
+    document.getElementById('db-dup-warn').textContent='⚠️ Ya existe una empresa similar en Database: '+similar+'. No se va a poder guardar.';
+    document.getElementById('db-dup-warn').style.display='block';
+    return;
+  }
+  var row=new Array(40).fill('');
+  row[COL.CLIENT]=document.getElementById('db-client').value.trim();
+  row[COL.REGION]=document.getElementById('db-region').value.trim();
+  row[COL.COUNTRY]=document.getElementById('db-country').value.trim();
+  row[COL.COMPANY]=company;
+  row[COL.SIZE]=document.getElementById('db-size').value.trim();
+  row[COL.TYPE]=document.getElementById('db-type').value.trim();
+  row[COL.ESTADO]=document.getElementById('db-estado').value.trim();
+  row[COL.GRADO]=document.getElementById('db-grado').value.trim();
+  var btn=document.getElementById('db-save-btn');
+  btn.textContent='Guardando...';btn.disabled=true;
+  var ok=await appendDbRow(row);
+  btn.textContent='💾 Guardar';btn.disabled=false;
+  if(ok){
+    allRows.push(row);
+    toast('✓ Empresa agregada a Database');
+    closeDbModal();
+    if(view==='empresas')renderEmpresas();
+  } else {
+    toast('Error al guardar en el Sheet');
+  }
 }
 
 // ── CONFIG ──────────────────────────────────────────────────────────────────
@@ -609,11 +785,11 @@ async function loadSheetData(){
     allRows=(d.values||[]).filter(function(row){return row[COL.TYPE]||row[COL.SIZE]||row[COL.CLIENT]||row[COL.COMPANY];});
     try{
       var fr=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A2:Q2000'),{headers:{Authorization:'Bearer '+tok}});
-      if(fr.ok){var fd=await fr.json();fuRows=(fd.values||[]).filter(function(row){return row[1];});}
+      if(fr.ok){var fd=await fr.json();fuRows=(fd.values||[]).map(function(row,i){row._sheetRow=i+2;return row;}).filter(function(row){return row[1];});}
     }catch(e){console.warn('FU:',e);}
     try{
       var ar=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A2:L2000'),{headers:{Authorization:'Bearer '+tok}});
-      if(ar.ok){var ad=await ar.json();availRows=(ad.values||[]).filter(function(row){return row[0];});}
+      if(ar.ok){var ad=await ar.json();availRows=(ad.values||[]).map(function(row,i){row._sheetRow=i+2;return row;}).filter(function(row){return row[0];});}
     }catch(e){console.warn('Availability:',e);}
     setStatus('ok',allRows.length+' clientes · '+fuRows.length+' follow ups');
     document.getElementById('last-sync').textContent='Sync '+new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
@@ -740,11 +916,16 @@ async function saveFURecord(){
   btn.textContent='Guardando...';btn.disabled=true;
   var ok=false;
   if(fuMode==='edit'&&fuEditIdx!==null){
-    ok=await updateFURow(fuEditIdx+2,rowData);
-    if(ok){fuRows[fuEditIdx]=rowData;toast('✓ Follow Up actualizado');}
+    var shRow=fuRows[fuEditIdx]._sheetRow||(fuEditIdx+2);
+    ok=await updateFURow(shRow,rowData);
+    if(ok){rowData._sheetRow=shRow;fuRows[fuEditIdx]=rowData;toast('✓ Follow Up actualizado');}
   } else {
     ok=await appendFURow(rowData);
-    if(ok){fuRows.push(rowData);toast('✓ Follow Up guardado');}
+    if(ok){
+      var maxR=1;fuRows.forEach(function(r){if(r._sheetRow&&r._sheetRow>maxR)maxR=r._sheetRow;});
+      rowData._sheetRow=maxR+1;
+      fuRows.push(rowData);toast('✓ Follow Up guardado');
+    }
   }
   btn.textContent='💾 Guardar';btn.disabled=false;
   if(ok){
@@ -1085,7 +1266,10 @@ function renderEmpresas(){
         '<input class="minput" id="emp-search" placeholder="Buscar empresa..." value="'+empQuery+'" oninput="debouncedEmpSearch(this.value)" onkeydown="onEmpKeydown(event)" autocomplete="off">'+
         '<div class="ac-list hidden" id="emp-ac-list"></div>'+
       '</div>'+
-      '<button class="btn primary" style="margin-top:10px;width:100%;" onclick="openFUModal(\'\')">+ Agregar Follow Up</button>'+
+      '<div style="display:flex;gap:8px;margin-top:10px;">'+
+        '<button class="btn primary" style="flex:1;justify-content:center;" onclick="openFUModal(\'\')">+ Agregar Follow Up</button>'+
+        '<button class="btn" style="flex:1;justify-content:center;" onclick="openDbModal()">🏢 + Agregar empresa</button>'+
+      '</div>'+
     '</div>'+
     '<div id="emp-results"></div>';
   if(empQuery)renderEmpResults(empQuery);
