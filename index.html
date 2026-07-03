@@ -124,6 +124,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .mcheck{font-size:20px;color:var(--ok);flex-shrink:0;}
 .edit-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text3);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;}
 .edit-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+.edit-btn.del:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-light);}
 .fu-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;}
 .fu-panel{margin-top:10px;background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:10px 12px;}
 .fu-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
@@ -247,6 +248,19 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
   .mform-grid{grid-template-columns:1fr;}
   #toast{left:14px;right:14px;bottom:14px;text-align:center;}
   .modal-overlay{z-index:600;}
+  /* iOS: inputs < 16px trigger auto-zoom on focus */
+  .minput,.mselect,.mtextarea,.cfg-input{font-size:16px;}
+  /* Bigger touch targets */
+  .edit-btn{width:38px;height:38px;font-size:16px;}
+  .fu-edit-btn{width:32px;height:32px;font-size:14px;}
+  .fu-more-btn{padding:6px 0;font-size:12px;}
+  .modal{max-height:88vh;}
+  .modal-footer .btn{padding:12px 18px;font-size:14px;}
+  .btn-row-2{flex-direction:column;}
+  .topbar-right .btn{padding:7px 10px;}
+  .chip.selected,.chip{min-height:38px;display:inline-flex;align-items:center;}
+  .mname-row{gap:6px;}
+  .active-badge,.inactive-badge{font-size:9px;padding:2px 7px;}
 }
 </style>
 </head>
@@ -405,7 +419,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v1.8.0</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v1.9.0</span>
     </div>
   </div>
 </aside>
@@ -514,7 +528,10 @@ function renderOfertasList(){
           (obs?'<div class="fu-comment" style="margin-top:6px;">"'+obs+'"</div>':'')+
           (next?'<div style="font-size:11px;color:var(--info);margin-top:4px;">➡ '+next+'</div>':'')+
         '</div>'+
-        '<span class="edit-btn" data-idx="'+realIdx+'" onclick="openOfertaModal(parseInt(this.dataset.idx))" title="Editar oferta">✏️</span>'+
+        '<div style="display:flex;flex-direction:column;gap:6px;">'+
+          '<span class="edit-btn" data-idx="'+realIdx+'" onclick="openOfertaModal(parseInt(this.dataset.idx))" title="Editar oferta">✏️</span>'+
+          '<span class="edit-btn del" data-idx="'+realIdx+'" onclick="deleteOferta(parseInt(this.dataset.idx))" title="Eliminar oferta">🗑</span>'+
+        '</div>'+
       '</div>'+
     '</div>';
   }).join('')+'</div>';
@@ -579,6 +596,32 @@ async function updateOfertaRow(sheetRow,row){
   var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A'+sheetRow+':L'+sheetRow)+'?valueInputOption=USER_ENTERED';
   var r=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
   return r.ok;
+}
+async function deleteOfertaRow(sheetRow){
+  var gid=await getAvailGid();
+  if(gid===null||gid===undefined)return false;
+  var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+':batchUpdate',{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({requests:[{deleteDimension:{range:{sheetId:gid,dimension:'ROWS',startIndex:sheetRow-1,endIndex:sheetRow}}}]})});
+  return r.ok;
+}
+async function deleteOferta(idx){
+  var r=availRows[idx];
+  if(!r)return;
+  if(!tok){toast('Conectate con Google primero');return;}
+  var shRow=r._sheetRow;
+  if(!shRow){toast('Sincroniza antes de eliminar esta oferta');return;}
+  var prov=(r[AV.PROV]||'').trim();
+  if(!confirm('¿Eliminar la oferta de '+prov+'? Esto borra la fila del Sheet y no se puede deshacer.'))return;
+  prog(true);
+  var okDel=await deleteOfertaRow(shRow);
+  prog(false);
+  if(okDel){
+    availRows.splice(idx,1);
+    availRows.forEach(function(x){if(x._sheetRow&&x._sheetRow>shRow)x._sheetRow--;});
+    toast('✓ Oferta eliminada');
+    renderOfertasList();
+  } else {
+    toast('Error al eliminar la oferta');
+  }
 }
 async function saveOferta(){
   if(!tok){toast('Conectate con Google primero');return;}
@@ -1266,7 +1309,7 @@ function renderEmpresas(){
         '<input class="minput" id="emp-search" placeholder="Buscar empresa..." value="'+empQuery+'" oninput="debouncedEmpSearch(this.value)" onkeydown="onEmpKeydown(event)" autocomplete="off">'+
         '<div class="ac-list hidden" id="emp-ac-list"></div>'+
       '</div>'+
-      '<div style="display:flex;gap:8px;margin-top:10px;">'+
+      '<div class="btn-row-2" style="display:flex;gap:8px;margin-top:10px;">'+
         '<button class="btn primary" style="flex:1;justify-content:center;" onclick="openFUModal(\'\')">+ Agregar Follow Up</button>'+
         '<button class="btn" style="flex:1;justify-content:center;" onclick="openDbModal()">🏢 + Agregar empresa</button>'+
       '</div>'+
