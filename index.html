@@ -128,6 +128,15 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .cal-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;background:var(--accent-light);color:var(--accent);border:1px solid rgba(212,137,26,.25);font-family:var(--mono);font-size:12px;font-weight:600;}
 .cal-chip .x{cursor:pointer;font-weight:700;color:var(--accent-dim);font-size:14px;line-height:1;}
 .cal-chip .x:hover{color:var(--danger);}
+.shipcal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.shipcal-year{font-family:var(--mono);font-weight:600;font-size:14px;color:var(--text);}
+.shipcal-nav{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.shipcal-nav:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+.shipcal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.shipcal-m{padding:8px 4px;text-align:center;border-radius:8px;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;user-select:none;transition:all .12s;}
+.shipcal-m:hover{border-color:var(--accent);color:var(--accent);}
+.shipcal-m.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+.shipcal-sel{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;}
 .fu-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;}
 .fu-panel{margin-top:10px;background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:10px 12px;}
 .fu-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
@@ -325,6 +334,19 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
           <label class="mfield-label">Proveedor <span class="mfield-opt">opcional</span></label>
           <input class="minput" id="fu-supplier" placeholder="ej: Argen Peanuts">
         </div>
+        <div class="mfield">
+          <label class="mfield-label">Puerto <span class="mfield-opt">opcional</span></label>
+          <select class="mselect" id="fu-port"><option value=""></option></select>
+        </div>
+        <div class="mfield">
+          <label class="mfield-label">Pais <span class="mfield-opt">opcional</span></label>
+          <select class="mselect" id="fu-country"><option value=""></option></select>
+        </div>
+        <div class="mfield" style="grid-column:1/-1">
+          <label class="mfield-label">Shipment period <span class="mfield-opt">elegí uno o varios meses (podés cambiar de año), o escribí abajo</span></label>
+          <div id="fu-ship-cal" style="border:1.5px solid var(--border);border-radius:var(--r);padding:10px;margin-bottom:8px;background:var(--bg3);"></div>
+          <input class="minput" id="fu-shipment" placeholder="Texto libre (ej: ASAP, Q1, a confirmar...)">
+        </div>
       </div>
       <div class="mfield">
         <label class="mfield-label">Comentario <span class="mfield-opt">opcional</span></label>
@@ -440,7 +462,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.4.0</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.4.1</span>
     </div>
   </div>
 </aside>
@@ -801,6 +823,32 @@ async function saveDbCompany(){
 }
 
 // ── DEMANDAS (Follow Up) ─────────────────────────────────────────────────────
+async function deleteFURow(sheetRow){
+  var gid=await getFuGid();
+  if(gid===null||gid===undefined)return false;
+  var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+':batchUpdate',{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({requests:[{deleteDimension:{range:{sheetId:gid,dimension:'ROWS',startIndex:sheetRow-1,endIndex:sheetRow}}}]})});
+  return r.ok;
+}
+async function deleteDemanda(idx){
+  var r=fuRows[idx];
+  if(!r)return;
+  if(!tok){toast('Conectate con Google primero');return;}
+  var shRow=r._sheetRow;
+  if(!shRow){toast('Sincroniza antes de eliminar esta demanda');return;}
+  var company=(r[FU.CUSTOMER]||'').trim();
+  if(!confirm('¿Eliminar la demanda de '+company+'? Esto borra la fila del Sheet y no se puede deshacer.'))return;
+  prog(true);
+  var okDel=await deleteFURow(shRow);
+  prog(false);
+  if(okDel){
+    fuRows.splice(idx,1);
+    fuRows.forEach(function(x){if(x._sheetRow&&x._sheetRow>shRow)x._sheetRow--;});
+    toast('✓ Demanda eliminada');
+    renderDemandasList();
+  } else {
+    toast('Error al eliminar la demanda');
+  }
+}
 var demQuery='',demSort='desc';
 var _demSearchTimer=null;
 function debouncedDemSearch(v){clearTimeout(_demSearchTimer);_demSearchTimer=setTimeout(function(){demQuery=v;renderDemandasList();},200);}
@@ -876,7 +924,10 @@ function renderDemandasList(){
           '</div>'+
           (comment?'<div class="fu-comment" style="margin-top:6px;">"'+comment+'"</div>':'')+
         '</div>'+
-        '<span class="edit-btn" data-idx="'+realIdx+'" onclick="openFUModal(\'\',parseInt(this.dataset.idx))" title="Editar demanda">✏️</span>'+
+        '<div style="display:flex;flex-direction:column;gap:6px;">'+
+          '<span class="edit-btn" data-idx="'+realIdx+'" onclick="openFUModal(\'\',parseInt(this.dataset.idx))" title="Editar demanda">✏️</span>'+
+          '<span class="edit-btn del" data-idx="'+realIdx+'" onclick="deleteDemanda(parseInt(this.dataset.idx))" title="Eliminar demanda">🗑</span>'+
+        '</div>'+
       '</div>'+
     '</div>';
   }).join('')+'</div>';
@@ -1189,6 +1240,92 @@ function sizeStrToCalibers(s){
   if(hasSplit)out.push('Split');
   return out;
 }
+function fillFuDropdowns(selPort,selCountry){
+  // Ports: unique from Follow up col J (PORT)
+  var ports={},portList=[];
+  fuRows.forEach(function(r){var v=(r[FU.PORT]||'').trim();if(v&&!ports[v.toLowerCase()]){ports[v.toLowerCase()]=true;portList.push(v);}});
+  portList.sort();
+  // Countries: unique from Follow up col K + Database_old country col
+  var ctry={},ctryList=[];
+  fuRows.forEach(function(r){var v=(r[FU.COUNTRY]||'').trim();if(v&&!ctry[v.toLowerCase()]){ctry[v.toLowerCase()]=true;ctryList.push(v);}});
+  allRows.forEach(function(r){var v=(r[COL.COUNTRY]||'').trim();if(v&&!ctry[v.toLowerCase()]){ctry[v.toLowerCase()]=true;ctryList.push(v);}});
+  ctryList.sort();
+  var portSel=document.getElementById('fu-port');
+  var ctrySel=document.getElementById('fu-country');
+  function opt(v,sel){return '<option value="'+v.replace(/"/g,'&quot;')+'"'+(sel&&sel.toLowerCase()===v.toLowerCase()?' selected':'')+'>'+v+'</option>';}
+  portSel.innerHTML='<option value=""></option>'+portList.map(function(v){return opt(v,selPort);}).join('');
+  ctrySel.innerHTML='<option value=""></option>'+ctryList.map(function(v){return opt(v,selCountry);}).join('');
+  // If the current value isn't in the list (e.g. legacy), add it so it shows
+  if(selPort&&portList.map(function(x){return x.toLowerCase();}).indexOf(selPort.toLowerCase())<0){portSel.innerHTML+=opt(selPort,selPort);}
+  if(selCountry&&ctryList.map(function(x){return x.toLowerCase();}).indexOf(selCountry.toLowerCase())<0){ctrySel.innerHTML+=opt(selCountry,selCountry);}
+}
+var SHIP_MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var SHIP_ABBR=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+var fuShipSel=[];        // selected months as {m:'Marzo', y:2026}
+var fuShipYear=(new Date()).getFullYear(); // year currently shown in the calendar
+function shipKey(m,y){return m+' '+y;}
+function isShipOn(m,y){return fuShipSel.some(function(s){return s.m===m&&s.y===y;});}
+function renderShipCal(){
+  var box=document.getElementById('fu-ship-cal');if(!box)return;
+  var grid=SHIP_MONTHS.map(function(m,i){
+    var on=isShipOn(m,fuShipYear);
+    return '<div class="shipcal-m'+(on?' on':'')+'" data-m="'+m+'" onclick="toggleShipMonth(this.dataset.m)">'+SHIP_ABBR[i]+'</div>';
+  }).join('');
+  // selected summary (all years), sorted chronologically
+  var sel=fuShipSel.slice().sort(function(a,b){return a.y-b.y||SHIP_MONTHS.indexOf(a.m)-SHIP_MONTHS.indexOf(b.m);});
+  var selHtml=sel.length?'<div class="shipcal-sel">'+sel.map(function(s){
+    return '<span class="cal-chip">'+s.m.slice(0,3)+' '+s.y+'<span class="x" data-m="'+s.m+'" data-y="'+s.y+'" onclick="removeShipMonth(this.dataset.m,parseInt(this.dataset.y))">×</span></span>';
+  }).join('')+'</div>':'';
+  box.innerHTML=
+    '<div class="shipcal-head">'+
+      '<span class="shipcal-nav" onclick="shipYearShift(-1)">‹</span>'+
+      '<span class="shipcal-year">'+fuShipYear+'</span>'+
+      '<span class="shipcal-nav" onclick="shipYearShift(1)">›</span>'+
+    '</div>'+
+    '<div class="shipcal-grid">'+grid+'</div>'+
+    selHtml;
+}
+function shipYearShift(d){fuShipYear+=d;renderShipCal();}
+function toggleShipMonth(m){
+  var i=-1;
+  for(var k=0;k<fuShipSel.length;k++){if(fuShipSel[k].m===m&&fuShipSel[k].y===fuShipYear){i=k;break;}}
+  if(i>=0)fuShipSel.splice(i,1);else fuShipSel.push({m:m,y:fuShipYear});
+  renderShipCal();
+}
+function removeShipMonth(m,y){
+  fuShipSel=fuShipSel.filter(function(s){return !(s.m===m&&s.y===y);});
+  renderShipCal();
+}
+// Combine selected months (chronological) with free text into one string
+function buildShipmentValue(){
+  var sel=fuShipSel.slice().sort(function(a,b){return a.y-b.y||SHIP_MONTHS.indexOf(a.m)-SHIP_MONTHS.indexOf(b.m);});
+  var monthsStr=sel.map(function(s){return s.m+' '+s.y;}).join(', ');
+  var free=document.getElementById('fu-shipment').value.trim();
+  var parts=[];
+  if(monthsStr)parts.push(monthsStr);
+  if(free)parts.push(free);
+  return parts.join(' · ');
+}
+// Split an existing shipment string back into selected month/year pairs + leftover free text
+function parseShipmentValue(s){
+  fuShipSel=[];
+  s=(s||'').trim();
+  var free=s;
+  SHIP_MONTHS.forEach(function(m){
+    // match "Marzo 2026" (with year) or bare "Marzo" (assume current shown year)
+    var reY=new RegExp(m+'\\s+(20\\d\\d)','i');
+    var mm;
+    while((mm=reY.exec(free))!==null){
+      fuShipSel.push({m:m,y:parseInt(mm[1])});
+      free=free.replace(mm[0],'');
+      reY.lastIndex=0;
+    }
+    var reBare=new RegExp('\\b'+m+'\\b','i');
+    if(reBare.test(free)){fuShipSel.push({m:m,y:fuShipYear});free=free.replace(reBare,'');}
+  });
+  free=free.replace(/^[\s,·]+|[\s,·]+$/g,'').replace(/[,·]\s*[,·]/g,',').replace(/\s{2,}/g,' ').replace(/^[\s,·]+|[\s,·]+$/g,'').trim();
+  return free;
+}
 function openFUModal(prefill,editIdx){
   fuMode=editIdx!==undefined?'edit':'new';
   fuEditIdx=editIdx!==undefined?editIdx:null;
@@ -1201,6 +1338,8 @@ function openFUModal(prefill,editIdx){
   fuSelTypes=[];fuCalibers=[];
   document.getElementById('fu-cal-min').value='';
   document.getElementById('fu-cal-max').value='';
+  document.getElementById('fu-shipment').value='';
+  fuShipSel=[];fuShipYear=(new Date()).getFullYear();
   document.getElementById('fu-tns').value='';
   document.getElementById('fu-price').value='';
   document.getElementById('fu-supplier').value='';
@@ -1220,6 +1359,7 @@ function openFUModal(prefill,editIdx){
     document.getElementById('fu-tns').value=(row[FU.TNS]||'').trim();
     document.getElementById('fu-price').value=(row[FU.PRICE]||'').trim();
     document.getElementById('fu-supplier').value=(row[FU.BUYSFROM]||row[FU.SUPPLIER]||'').trim();
+    document.getElementById('fu-shipment').value=parseShipmentValue((row[FU.SHIPMENT]||'').trim());
     document.getElementById('fu-comment').value=(row[FU.OBS]||'').trim();
     document.getElementById('fu-grado').value=(row[FU.GRADO]||'').trim();
     document.getElementById('fu-alfa').value=(row[FU.ALFA]||'').trim();
@@ -1229,7 +1369,13 @@ function openFUModal(prefill,editIdx){
     document.getElementById('fu-date-display').textContent='Fecha: '+todayStr();
   }
 
-  renderFuTypeChips();renderFuCalibers();
+  renderFuTypeChips();renderFuCalibers();renderShipCal();
+  if(fuMode==='edit'&&fuEditIdx!==null){
+    var er=fuRows[fuEditIdx]||[];
+    fillFuDropdowns((er[FU.PORT]||'').trim(),(er[FU.COUNTRY]||'').trim());
+  } else {
+    fillFuDropdowns('','');
+  }
   document.getElementById('fu-modal').classList.remove('hidden');
   if(!fuPrefill)setTimeout(function(){inp.focus();},100);
 }
@@ -1286,6 +1432,9 @@ async function saveFURecord(){
   var price=document.getElementById('fu-price').value.trim();
   var supplier=document.getElementById('fu-supplier').value.trim();
   var comment=document.getElementById('fu-comment').value.trim();
+  var port=document.getElementById('fu-port').value.trim();
+  var country=document.getElementById('fu-country').value.trim();
+  var shipment=buildShipmentValue();
   var grado=document.getElementById('fu-grado').value.trim();
   var alfa=document.getElementById('fu-alfa').value.trim();
   // Build a 21-column row (A..U) respecting the Follow up sheet layout
@@ -1297,6 +1446,9 @@ async function saveFURecord(){
   rowData[FU.TNS]=tns;
   rowData[FU.PRICE]=price;
   rowData[FU.BUYSFROM]=supplier;
+  rowData[FU.PORT]=port;
+  rowData[FU.COUNTRY]=country;
+  rowData[FU.SHIPMENT]=shipment;
   rowData[FU.OBS]=comment;
   rowData[FU.GRADO]=grado;
   rowData[FU.ALFA]=alfa;
@@ -1306,7 +1458,7 @@ async function saveFURecord(){
   if(fuMode==='edit'&&fuEditIdx!==null){
     var prev=fuRows[fuEditIdx]||[];
     // keep columns not present in the form so we don't wipe them
-    [FU.CONTACT,FU.ORIGIN,FU.PACKAGING,FU.PORT,FU.COUNTRY,FU.SHIPMENT,FU.SUPPLIER,FU.TEAMM,FU.CONTRATO,FU.DIAS,FU.ESTADO].forEach(function(ix){
+    [FU.CONTACT,FU.ORIGIN,FU.PACKAGING,FU.SUPPLIER,FU.TEAMM,FU.CONTRATO,FU.DIAS,FU.ESTADO].forEach(function(ix){
       if((prev[ix]||'')!=='')rowData[ix]=prev[ix];
     });
     var shRow=fuRows[fuEditIdx]._sheetRow||(fuEditIdx+2);
