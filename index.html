@@ -440,7 +440,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.3.0</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.4.0</span>
     </div>
   </div>
 </aside>
@@ -832,7 +832,7 @@ function renderDemandasList(){
   var q=demQuery.toLowerCase().trim();
   var rows=fuRows.filter(function(r){
     if(!q)return true;
-    var hay=[r[1],r[3],r[4],r[8],r[9],r[13],r[14],r[15],r[16]].join(' ').toLowerCase();
+    var hay=[r[FU.CUSTOMER],r[FU.SIZE],r[FU.TYPE],r[FU.TNS],r[FU.PRICE],r[FU.SUPPLIER],r[FU.BUYSFROM],r[FU.OBS],r[FU.GRADO],r[FU.ALFA]].join(' ').toLowerCase();
     return hay.indexOf(q)>=0;
   });
   if(!rows.length){
@@ -846,16 +846,16 @@ function renderDemandasList(){
   });
   var counter='<div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;">'+rows.length+' de '+fuRows.length+' demandas</div>';
   area.innerHTML=counter+'<div class="match-list">'+sorted.map(function(r){
-    var company=(r[1]||'').trim();
-    var fecha=(r[0]||'').trim();
-    var size=normSize((r[3]||'').trim());
-    var type=(r[4]||'').trim();
-    var tns=(r[8]||'').trim();
-    var price=(r[9]||'').trim();
-    var supplier=(r[13]||'').trim();
-    var comment=(r[14]||'').trim();
-    var grado=(r[15]||'').trim();
-    var alfa=(r[16]||'').trim();
+    var company=(r[FU.CUSTOMER]||'').trim();
+    var fecha=(r[FU.DATE]||'').trim();
+    var size=normSize((r[FU.SIZE]||'').trim());
+    var type=(r[FU.TYPE]||'').trim();
+    var tns=(r[FU.TNS]||'').trim();
+    var price=(r[FU.PRICE]||'').trim();
+    var supplier=(r[FU.BUYSFROM]||r[FU.SUPPLIER]||'').trim();
+    var comment=(r[FU.OBS]||'').trim();
+    var grado=(r[FU.GRADO]||'').trim();
+    var alfa=(r[FU.ALFA]||'').trim();
     var init=(company||'?')[0].toUpperCase();
     var realIdx=fuRows.indexOf(r);
     return '<div class="mcard">'+
@@ -887,6 +887,10 @@ var CFG_KEY='peanut_matcher_cfg';
 var cfg=Object.assign({clientId:'',sheetId:'10KFlKkOIKz-l6_wXHiHM_9WL-u97AtDM3MtXmHNI5OQ',sheetName:'Sheet1'},JSON.parse(localStorage.getItem(CFG_KEY)||'{}'));
 var COL={CLIENT:1,REGION:2,COUNTRY:3,COMPANY:4,SIZE:28,TYPE:29,ESTADO:38,GRADO:39};
 var AV={PROV:0,ORIGEN:1,PROD:2,TIPO:3,GRADO:4,CROP:5,TNS:6,ALFA:7,ESTADO:8,FECHA:9,OBS:10,NEXT:11};
+// Follow up columns (A..U): 0 Date,1 Customer,2 Contact,3 Size,4 Type,5 Origin,6 Packaging,
+// 7 Tns,8 Price,9 Port,10 Country,11 Shipment,12 Supplier,13 Buys from,14 Observations,
+// 15 Grado,16 Afla/Apto BF,17 Team M,18 Contrato,19 Dias,20 Estado
+var FU={DATE:0,CUSTOMER:1,CONTACT:2,SIZE:3,TYPE:4,ORIGIN:5,PACKAGING:6,TNS:7,PRICE:8,PORT:9,COUNTRY:10,SHIPMENT:11,SUPPLIER:12,BUYSFROM:13,OBS:14,GRADO:15,ALFA:16,TEAMM:17,CONTRATO:18,DIAS:19,ESTADO:20};
 function isBF(row){return /\bbf\b/.test(((row[COL.TYPE]||'')+'').toLowerCase());}
 function isInactive(row){return ((row[COL.ESTADO]||'').toLowerCase().trim()).indexOf('inact')>=0;}
 var EU_VALS=['europe','europa','eu','emea','european union'];
@@ -1079,7 +1083,7 @@ async function loadSheetData(){
     var d=await r.json();
     allRows=(d.values||[]).filter(function(row){return row[COL.TYPE]||row[COL.SIZE]||row[COL.CLIENT]||row[COL.COMPANY];});
     try{
-      var fr=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A2:Q2000'),{headers:{Authorization:'Bearer '+tok}});
+      var fr=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A2:U2000'),{headers:{Authorization:'Bearer '+tok}});
       if(fr.ok){var fd=await fr.json();fuRows=(fd.values||[]).map(function(row,i){row._sheetRow=i+2;return row;}).filter(function(row){return row[1];});}
     }catch(e){console.warn('FU:',e);}
     try{
@@ -1098,13 +1102,33 @@ async function loadSheetData(){
 function setStatus(s,t){document.getElementById('sheet-dot').className='sdot'+(s==='err'?' err':s==='loading'?' loading':'');document.getElementById('sheet-status-text').textContent=t;}
 
 // ── SHEET WRITE ──────────────────────────────────────────────────────────────
+var fuGid=null;
+async function getFuGid(){
+  if(fuGid!==null)return fuGid;
+  try{
+    var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'?fields=sheets.properties',{headers:{Authorization:'Bearer '+tok}});
+    if(!r.ok)return null;
+    var d=await r.json();
+    var sh=(d.sheets||[]).filter(function(s){return (s.properties.title||'').toLowerCase()==='follow up';})[0];
+    fuGid=sh?sh.properties.sheetId:null;
+  }catch(e){console.error(e);fuGid=null;}
+  return fuGid;
+}
 async function appendFURow(row){
-  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A:O')+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
-  var r=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
-  return r.ok;
+  // Insert at row 2 (top), pushing existing rows down. Falls back to bottom-append.
+  var gid=await getFuGid();
+  if(gid===null||gid===undefined){
+    var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A:U')+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
+    var rr=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+    return rr.ok;
+  }
+  var r1=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+':batchUpdate',{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({requests:[{insertDimension:{range:{sheetId:gid,dimension:'ROWS',startIndex:1,endIndex:2},inheritFromBefore:false}}]})});
+  if(!r1.ok)return false;
+  var r2=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A2:U2')+'?valueInputOption=USER_ENTERED',{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+  return r2.ok;
 }
 async function updateFURow(sheetRow,row){
-  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A'+sheetRow+':O'+sheetRow)+'?valueInputOption=USER_ENTERED';
+  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A'+sheetRow+':U'+sheetRow)+'?valueInputOption=USER_ENTERED';
   var r=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
   return r.ok;
 }
@@ -1190,16 +1214,16 @@ function openFUModal(prefill,editIdx){
     document.getElementById('fu-modal-title').textContent='Editar Follow Up';
     inp.value=(row[1]||'').trim();
     inp.disabled=true;
-    fuCalibers=sizeStrToCalibers((row[3]||'').trim());
-    fuSelTypes=getTypes((row[4]||'').trim());
-    if(/\bbf\b/.test(((row[4]||'')+'').toLowerCase())&&fuSelTypes.indexOf('BF')<0)fuSelTypes.push('BF');
-    document.getElementById('fu-tns').value=(row[8]||'').trim();
-    document.getElementById('fu-price').value=(row[9]||'').trim();
-    document.getElementById('fu-supplier').value=(row[13]||'').trim();
-    document.getElementById('fu-comment').value=(row[14]||'').trim();
-    document.getElementById('fu-grado').value=(row[15]||'').trim();
-    document.getElementById('fu-alfa').value=(row[16]||'').trim();
-    document.getElementById('fu-date-display').textContent='Fecha original: '+(row[0]||'—')+' · Se actualizara a hoy';
+    fuCalibers=sizeStrToCalibers((row[FU.SIZE]||'').trim());
+    fuSelTypes=getTypes((row[FU.TYPE]||'').trim());
+    if(/\bbf\b/.test(((row[FU.TYPE]||'')+'').toLowerCase())&&fuSelTypes.indexOf('BF')<0)fuSelTypes.push('BF');
+    document.getElementById('fu-tns').value=(row[FU.TNS]||'').trim();
+    document.getElementById('fu-price').value=(row[FU.PRICE]||'').trim();
+    document.getElementById('fu-supplier').value=(row[FU.BUYSFROM]||row[FU.SUPPLIER]||'').trim();
+    document.getElementById('fu-comment').value=(row[FU.OBS]||'').trim();
+    document.getElementById('fu-grado').value=(row[FU.GRADO]||'').trim();
+    document.getElementById('fu-alfa').value=(row[FU.ALFA]||'').trim();
+    document.getElementById('fu-date-display').textContent='Fecha original: '+(row[FU.DATE]||'—')+' · Se actualizara a hoy';
   } else {
     document.getElementById('fu-modal-title').textContent='Agregar Follow Up';
     document.getElementById('fu-date-display').textContent='Fecha: '+todayStr();
@@ -1264,20 +1288,36 @@ async function saveFURecord(){
   var comment=document.getElementById('fu-comment').value.trim();
   var grado=document.getElementById('fu-grado').value.trim();
   var alfa=document.getElementById('fu-alfa').value.trim();
-  var rowData=[todayStr(),company,'',size,type,'','','',tns,price,'','','',supplier,comment,grado,alfa];
+  // Build a 21-column row (A..U) respecting the Follow up sheet layout
+  var rowData=new Array(21).fill('');
+  rowData[FU.DATE]=todayStr();
+  rowData[FU.CUSTOMER]=company;
+  rowData[FU.SIZE]=size;
+  rowData[FU.TYPE]=type;
+  rowData[FU.TNS]=tns;
+  rowData[FU.PRICE]=price;
+  rowData[FU.BUYSFROM]=supplier;
+  rowData[FU.OBS]=comment;
+  rowData[FU.GRADO]=grado;
+  rowData[FU.ALFA]=alfa;
   var btn=document.getElementById('fu-save-btn');
   btn.textContent='Guardando...';btn.disabled=true;
   var ok=false;
   if(fuMode==='edit'&&fuEditIdx!==null){
+    var prev=fuRows[fuEditIdx]||[];
+    // keep columns not present in the form so we don't wipe them
+    [FU.CONTACT,FU.ORIGIN,FU.PACKAGING,FU.PORT,FU.COUNTRY,FU.SHIPMENT,FU.SUPPLIER,FU.TEAMM,FU.CONTRATO,FU.DIAS,FU.ESTADO].forEach(function(ix){
+      if((prev[ix]||'')!=='')rowData[ix]=prev[ix];
+    });
     var shRow=fuRows[fuEditIdx]._sheetRow||(fuEditIdx+2);
     ok=await updateFURow(shRow,rowData);
     if(ok){rowData._sheetRow=shRow;fuRows[fuEditIdx]=rowData;toast('✓ Follow Up actualizado');}
   } else {
     ok=await appendFURow(rowData);
     if(ok){
-      var maxR=1;fuRows.forEach(function(r){if(r._sheetRow&&r._sheetRow>maxR)maxR=r._sheetRow;});
-      rowData._sheetRow=maxR+1;
-      fuRows.push(rowData);toast('✓ Follow Up guardado');
+      fuRows.forEach(function(r){if(r._sheetRow)r._sheetRow++;});
+      rowData._sheetRow=2;
+      fuRows.unshift(rowData);toast('✓ Follow Up guardado');
     }
   }
   btn.textContent='💾 Guardar';btn.disabled=false;
@@ -1461,10 +1501,10 @@ function renderMatcher(){
 var fuPanelCounter=0;
 function buildFURec(row){
   var date=(row[0]||'').trim();
-  var sz=normSize((row[3]||'').trim());
-  var ty=normType((row[4]||'').trim());
-  var tns=(row[8]||'').trim(),price=(row[9]||'').trim(),sp=(row[13]||'').trim(),cm=(row[14]||'').trim();
-  var gr=(row[15]||'').trim(),al=(row[16]||'').trim();
+  var sz=normSize((row[FU.SIZE]||'').trim());
+  var ty=normType((row[FU.TYPE]||'').trim());
+  var tns=(row[FU.TNS]||'').trim(),price=(row[FU.PRICE]||'').trim(),sp=(row[FU.BUYSFROM]||row[FU.SUPPLIER]||'').trim(),cm=(row[FU.OBS]||'').trim();
+  var gr=(row[FU.GRADO]||'').trim(),al=(row[FU.ALFA]||'').trim();
   var rowIdx=fuRows.indexOf(row);
   var editBtn=rowIdx>=0?'<span class="fu-edit-btn" onclick="openFUModal(\'\','+rowIdx+')" title="Editar">✏️</span>':'';
   return '<div class="fu-rec">'+
