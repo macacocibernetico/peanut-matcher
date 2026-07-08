@@ -414,7 +414,6 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
       </div>
       <div class="mform-grid">
         <div class="mfield"><label class="mfield-label">Estado</label><select class="mselect" id="edit-estado"><option value="">— sin cambiar —</option><option>Activo</option><option>Inactivo</option></select></div>
-        <div class="mfield"><label class="mfield-label">Grado <span class="mfield-opt">opcional</span></label><input class="minput" id="edit-grado" placeholder="ej: A, B, G1"></div>
         <div class="mfield"><label class="mfield-label">Region <span class="mfield-opt">opcional</span></label><input class="minput" id="edit-region" placeholder="ej: EUROPA"></div>
         <div class="mfield"><label class="mfield-label">Country <span class="mfield-opt">opcional</span></label><input class="minput" id="edit-country" placeholder="ej: NETHERLANDS"></div>
       </div>
@@ -443,7 +442,6 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
         <div class="mfield"><label class="mfield-label">Client <span class="mfield-opt">opcional</span></label><input class="minput" id="db-client" placeholder="Nombre del contacto/cliente"></div>
         <div class="mfield"><label class="mfield-label">Region <span class="mfield-opt">opcional</span></label><input class="minput" id="db-region" placeholder="ej: EUROPA, LATAM"></div>
         <div class="mfield"><label class="mfield-label">Country <span class="mfield-opt">opcional</span></label><input class="minput" id="db-country" placeholder="ej: NETHERLANDS"></div>
-        <div class="mfield"><label class="mfield-label">Grado <span class="mfield-opt">opcional</span></label><input class="minput" id="db-grado" placeholder="ej: A, B, G1"></div>
         <div class="mfield"><label class="mfield-label">Estado</label><select class="mselect" id="db-estado"><option>Activo</option><option>Inactivo</option></select></div>
       </div>
       <div class="mfield">
@@ -499,7 +497,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.6.1</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.6.2</span>
     </div>
   </div>
 </aside>
@@ -824,7 +822,7 @@ function addCaliberSplit(){
 }
 function removeCaliber(i){dbCalibers.splice(i,1);renderDbCalibers();}
 function openDbModal(){
-  ['db-company','db-client','db-region','db-country','db-grado','db-cal-min','db-cal-max'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['db-company','db-client','db-region','db-country','db-cal-min','db-cal-max'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('db-estado').value='Activo';
   document.getElementById('db-dup-warn').style.display='none';
   dbSelTypes=[];dbCalibers=[];dbSelTeam=[];
@@ -887,7 +885,6 @@ function openTeamEdit(sheetRow){
   renderTeamEditChips();
   document.getElementById('edit-maildoc').value=(row[COL.MAILDOC]||'').trim();
   document.getElementById('edit-estado').value=(row[COL.ESTADO]||'').trim();
-  document.getElementById('edit-grado').value=(row[COL.GRADO]||'').trim();
   document.getElementById('edit-region').value=(row[COL.REGION]||'').trim();
   document.getElementById('edit-country').value=(row[COL.COUNTRY]||'').trim();
   document.getElementById('team-modal').classList.remove('hidden');
@@ -899,7 +896,6 @@ async function saveTeamEdit(){
   var team=TEAM_OPTS.filter(function(t){return teamEditSel.indexOf(t)>=0;}).join(' - ');
   var maildocRaw=document.getElementById('edit-maildoc').value.trim();
   var estado=document.getElementById('edit-estado').value.trim();
-  var grado=document.getElementById('edit-grado').value.trim();
   var region=document.getElementById('edit-region').value.trim();
   var country=document.getElementById('edit-country').value.trim();
   // Multiple mails: accept comma / semicolon / space / newline separators, store as ", "
@@ -920,7 +916,6 @@ async function saveTeamEdit(){
   var writes=[];
   writes.push(['A',team,COL.TEAM]);
   writes.push([colLetter(COL.MAILDOC),maildoc,COL.MAILDOC]);
-  writes.push([colLetter(COL.GRADO),grado,COL.GRADO]);
   writes.push([colLetter(COL.REGION),region,COL.REGION]);
   writes.push([colLetter(COL.COUNTRY),country,COL.COUNTRY]);
   if(estado)writes.push([colLetter(COL.ESTADO),estado,COL.ESTADO]);
@@ -938,7 +933,7 @@ async function saveTeamEdit(){
       if(allRows[i]._sheetRow===teamEditRow){
         var r=allRows[i];
         while(r.length<=COL.MAILDOC)r.push('');
-        r[COL.TEAM]=team;r[COL.MAILDOC]=maildoc;r[COL.GRADO]=grado;r[COL.REGION]=region;r[COL.COUNTRY]=country;
+        r[COL.TEAM]=team;r[COL.MAILDOC]=maildoc;r[COL.REGION]=region;r[COL.COUNTRY]=country;
         if(estado)r[COL.ESTADO]=estado;
         break;
       }
@@ -970,7 +965,6 @@ async function saveDbCompany(){
   row[COL.SIZE]=dbCalibers.join('; ');
   row[COL.TYPE]=dbSelTypes.join('; ');
   row[COL.ESTADO]=document.getElementById('db-estado').value.trim();
-  row[COL.GRADO]=document.getElementById('db-grado').value.trim();
   var btn=document.getElementById('db-save-btn');
   btn.textContent='Guardando...';btn.disabled=true;
   var ok=await appendDbRow(row);
@@ -1101,7 +1095,7 @@ function renderDemandasList(){
 // ── CONFIG ──────────────────────────────────────────────────────────────────
 var CFG_KEY='peanut_matcher_cfg';
 var cfg=Object.assign({clientId:'',sheetId:'10KFlKkOIKz-l6_wXHiHM_9WL-u97AtDM3MtXmHNI5OQ',sheetName:'Sheet1'},JSON.parse(localStorage.getItem(CFG_KEY)||'{}'));
-var COL={TEAM:0,CLIENT:1,REGION:2,COUNTRY:3,COMPANY:4,SIZE:28,TYPE:29,ESTADO:38,GRADO:39,MAILDOC:50};
+var COL={TEAM:0,CLIENT:1,REGION:2,COUNTRY:3,COMPANY:4,SIZE:28,TYPE:29,ESTADO:38,MAILDOC:50};
 function colLetter(idx){var s='';idx=idx+1;while(idx>0){var m=(idx-1)%26;s=String.fromCharCode(65+m)+s;idx=Math.floor((idx-1)/26);}return s;}
 var TEAM_OPTS=['M','F','A'];
 function parseTeam(v){return ((v||'')+'').split(/[-,\/]/).map(function(x){return x.trim().toUpperCase();}).filter(function(x){return TEAM_OPTS.indexOf(x)>=0;});}
@@ -1684,7 +1678,7 @@ function getMatches(){
     var pri;
     if(withEU){if(eu&&fu.length)pri=0;else if(fu.length)pri=1;else if(eu)pri=2;else pri=3;}
     else{pri=fu.length?0:1;}
-    results.push({client:(row[COL.CLIENT]||'').trim(),region:(row[COL.REGION]||'').trim(),country:(row[COL.COUNTRY]||'').trim(),company:company,size:dbSize,type:(row[COL.TYPE]||'').trim(),types:getTypes(row[COL.TYPE]||''),szInfo:parseSize(dbSize),fu:fu,hasFU:fu.length>0,isEu:eu,pri:pri,estado:(row[COL.ESTADO]||'').trim(),inactive:isInactive(row),grado:(row[COL.GRADO]||'').trim(),bf:isBF(row)});
+    results.push({client:(row[COL.CLIENT]||'').trim(),region:(row[COL.REGION]||'').trim(),country:(row[COL.COUNTRY]||'').trim(),company:company,size:dbSize,type:(row[COL.TYPE]||'').trim(),types:getTypes(row[COL.TYPE]||''),szInfo:parseSize(dbSize),fu:fu,hasFU:fu.length>0,isEu:eu,pri:pri,estado:(row[COL.ESTADO]||'').trim(),inactive:isInactive(row),bf:isBF(row)});
   });
   return results.sort(function(a,b){return a.pri-b.pri;});
 }
@@ -1945,7 +1939,6 @@ function renderResults(){
               '<span class="mtag sz">'+szl+'</span>'+
               (m.region?'<span class="mtag rg">'+(m.isEu?'🇪🇺 ':'')+m.region+'</span>':'')+
               (m.country?'<span class="mtag ct">'+m.country+'</span>':'')+
-              (m.grado?'<span class="mtag gr">Grado '+m.grado+'</span>':'')+
               (m.bf?'<span class="mtag bf">🐦 BF</span>':'')+
             '</div>'+
           '</div>'+
@@ -2069,7 +2062,6 @@ function renderEmpResults(){
       var fu=findFU(company);
       var estadoVal=(row[COL.ESTADO]||'').trim();
       var inact=isInactive(row);
-      var gradoVal=(row[COL.GRADO]||'').trim();
       var teamArr=parseTeam(row[COL.TEAM]);
       var shRow=row._sheetRow||0;
       html+='<div class="emp-card'+(inact?' inactive':'')+'">'+
@@ -2080,7 +2072,6 @@ function renderEmpResults(){
         '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">'+
           dbTypes.map(function(t){return '<span class="mtag ty">'+t+'</span>';}).join('')+
           (dbSize?'<span class="mtag sz">'+dbSize+'</span>':'')+
-          (gradoVal?'<span class="mtag gr">Grado '+gradoVal+'</span>':'')+
           (isBF(row)?'<span class="mtag bf">🐦 BF</span>':'')+
           (teamArr.length?'<span class="mtag team">👤 '+teamArr.join(' - ')+'</span>':'<span class="mtag" style="background:var(--bg3);color:var(--text3);border:1px dashed var(--border2);">👤 Sin asignar</span>')+
           ((row[COL.MAILDOC]||'').trim()?'<span class="mtag" style="background:#eef7ff;color:#0369a1;border:1px solid rgba(3,105,161,.2);">✉ '+(row[COL.MAILDOC]||'').trim()+'</span>':'')+
