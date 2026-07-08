@@ -214,6 +214,9 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .mtag.bf{background:#ecfdf5;color:#047857;border:1px solid rgba(4,120,87,.2);}
 .ftag.gr{background:rgba(133,77,14,.1);color:#854d0e;}
 .ftag.al{background:rgba(2,132,199,.1);color:#0369a1;}
+.mtag.team{background:#eef2ff;color:#4338ca;border:1px solid rgba(67,56,202,.2);}
+.team-pick-chip{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;user-select:none;font-family:var(--mono);}
+.team-pick-chip.on{background:#4338ca;color:#fff;border-color:#4338ca;}
 .active-badge{display:inline-flex;font-size:10px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:var(--ok-light);color:var(--ok);border:1px solid rgba(52,199,89,.3);}
 .inactive-badge{display:inline-flex;font-size:10px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:var(--bg3);color:var(--text3);border:1px solid var(--border2);}
 .mcard.inactive,.emp-card.inactive{opacity:.55;}
@@ -393,6 +396,26 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
   </div>
 </div>
 
+<!-- TEAM EDIT MODAL -->
+<div class="modal-overlay hidden" id="team-modal">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-header">
+      <span class="modal-title">Editar comercial asignado</span>
+      <span class="modal-close" onclick="closeTeamEdit()">&#215;</span>
+    </div>
+    <div class="modal-body">
+      <div class="mfield">
+        <label class="mfield-label">Team member <span class="mfield-opt">tocá uno o varios (M · F · A)</span></label>
+        <div class="chip-group" id="team-edit-chips"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeTeamEdit()">Cancelar</button>
+      <button class="btn primary" id="team-save-btn" onclick="saveTeamEdit()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- DB COMPANY MODAL -->
 <div class="modal-overlay hidden" id="db-modal">
   <div class="modal">
@@ -412,6 +435,10 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
         <div class="mfield"><label class="mfield-label">Country <span class="mfield-opt">opcional</span></label><input class="minput" id="db-country" placeholder="ej: NETHERLANDS"></div>
         <div class="mfield"><label class="mfield-label">Grado <span class="mfield-opt">opcional</span></label><input class="minput" id="db-grado" placeholder="ej: A, B, G1"></div>
         <div class="mfield"><label class="mfield-label">Estado</label><select class="mselect" id="db-estado"><option>Activo</option><option>Inactivo</option></select></div>
+      </div>
+      <div class="mfield">
+        <label class="mfield-label">Team member <span class="mfield-opt">tocá uno o varios (M · F · A)</span></label>
+        <div class="chip-group" id="db-team-chips"></div>
       </div>
       <div class="mfield">
         <label class="mfield-label">Type <span class="mfield-opt">tocá para seleccionar uno o varios</span></label>
@@ -462,7 +489,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.4.1</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.5.0</span>
     </div>
   </div>
 </aside>
@@ -737,6 +764,19 @@ function debouncedDbDup(){
 var DB_TYPES=['Raw','Blanched','Roasted','In shell','BF'];
 var dbSelTypes=[];   // selected type strings
 var dbCalibers=[];   // array of caliber strings like "38/42" or "Split"
+var dbSelTeam=[];
+function renderDbTeamChips(){
+  var box=document.getElementById('db-team-chips');if(!box)return;
+  box.innerHTML=TEAM_OPTS.map(function(t){
+    var on=dbSelTeam.indexOf(t)>=0;
+    return '<span class="chip'+(on?' selected':'')+'" data-t="'+t+'" onclick="toggleDbTeam(this.dataset.t)">'+t+'</span>';
+  }).join('');
+}
+function toggleDbTeam(t){
+  var i=dbSelTeam.indexOf(t);
+  if(i>=0)dbSelTeam.splice(i,1);else dbSelTeam.push(t);
+  renderDbTeamChips();
+}
 function renderDbTypeChips(){
   var box=document.getElementById('db-type-chips');if(!box)return;
   box.innerHTML=DB_TYPES.map(function(t){
@@ -777,16 +817,81 @@ function openDbModal(){
   ['db-company','db-client','db-region','db-country','db-grado','db-cal-min','db-cal-max'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('db-estado').value='Activo';
   document.getElementById('db-dup-warn').style.display='none';
-  dbSelTypes=[];dbCalibers=[];
-  renderDbTypeChips();renderDbCalibers();
+  dbSelTypes=[];dbCalibers=[];dbSelTeam=[];
+  renderDbTypeChips();renderDbCalibers();renderDbTeamChips();
   document.getElementById('db-modal').classList.remove('hidden');
   setTimeout(function(){document.getElementById('db-company').focus();},100);
 }
 function closeDbModal(){document.getElementById('db-modal').classList.add('hidden');}
+var dbGid=null;
+async function getDbGid(){
+  if(dbGid!==null)return dbGid;
+  try{
+    var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'?fields=sheets.properties',{headers:{Authorization:'Bearer '+tok}});
+    if(!r.ok)return null;
+    var d=await r.json();
+    var sh=(d.sheets||[]).filter(function(s){return (s.properties.title||'')===cfg.sheetName;})[0];
+    dbGid=sh?sh.properties.sheetId:null;
+  }catch(e){console.error(e);dbGid=null;}
+  return dbGid;
+}
 async function appendDbRow(row){
-  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A:AN')+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
-  var r=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+  // Insert at row 2 (top), pushing existing rows down. Falls back to bottom-append.
+  var gid=await getDbGid();
+  if(gid===null||gid===undefined){
+    var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A:AP')+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
+    var rr=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+    return rr.ok;
+  }
+  var r1=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+':batchUpdate',{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({requests:[{insertDimension:{range:{sheetId:gid,dimension:'ROWS',startIndex:1,endIndex:2},inheritFromBefore:false}}]})});
+  if(!r1.ok)return false;
+  var r2=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A2:AP2')+'?valueInputOption=USER_ENTERED',{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+  return r2.ok;
+}
+async function updateDbCell(sheetRow,colLetter,value){
+  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!'+colLetter+sheetRow+':'+colLetter+sheetRow)+'?valueInputOption=USER_ENTERED';
+  var r=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[[value]]})});
   return r.ok;
+}
+var teamEditRow=0,teamEditSel=[];
+function renderTeamEditChips(){
+  var box=document.getElementById('team-edit-chips');if(!box)return;
+  box.innerHTML=TEAM_OPTS.map(function(t){
+    var on=teamEditSel.indexOf(t)>=0;
+    return '<span class="chip'+(on?' selected':'')+'" data-t="'+t+'" onclick="toggleTeamEdit(this.dataset.t)">'+t+'</span>';
+  }).join('');
+}
+function toggleTeamEdit(t){
+  var i=teamEditSel.indexOf(t);
+  if(i>=0)teamEditSel.splice(i,1);else teamEditSel.push(t);
+  renderTeamEditChips();
+}
+function openTeamEdit(sheetRow,teamStr){
+  teamEditRow=parseInt(sheetRow)||0;
+  teamEditSel=parseTeam(teamStr);
+  renderTeamEditChips();
+  document.getElementById('team-modal').classList.remove('hidden');
+}
+function closeTeamEdit(){document.getElementById('team-modal').classList.add('hidden');}
+async function saveTeamEdit(){
+  if(!tok){toast('Conectate con Google primero');return;}
+  if(!teamEditRow){toast('Sincroniza antes de editar');return;}
+  // keep canonical order M,F,A
+  var ordered=TEAM_OPTS.filter(function(t){return teamEditSel.indexOf(t)>=0;});
+  var val=ordered.join(' - ');
+  var btn=document.getElementById('team-save-btn');
+  btn.textContent='Guardando...';btn.disabled=true;
+  var ok=await updateDbCell(teamEditRow,'A',val);
+  btn.textContent='💾 Guardar';btn.disabled=false;
+  if(ok){
+    // update local cache
+    for(var i=0;i<allRows.length;i++){if(allRows[i]._sheetRow===teamEditRow){allRows[i][COL.TEAM]=val;break;}}
+    toast('✓ Comercial actualizado');
+    closeTeamEdit();
+    if(view==='empresas')renderEmpResults(empQuery);
+  } else {
+    toast('Error al guardar en el Sheet');
+  }
 }
 async function saveDbCompany(){
   if(!tok){toast('Conectate con Google primero');return;}
@@ -799,7 +904,8 @@ async function saveDbCompany(){
     document.getElementById('db-dup-warn').style.display='block';
     return;
   }
-  var row=new Array(40).fill('');
+  var row=new Array(42).fill('');
+  row[COL.TEAM]=dbSelTeam.join(' - ');
   row[COL.CLIENT]=document.getElementById('db-client').value.trim();
   row[COL.REGION]=document.getElementById('db-region').value.trim();
   row[COL.COUNTRY]=document.getElementById('db-country').value.trim();
@@ -813,7 +919,9 @@ async function saveDbCompany(){
   var ok=await appendDbRow(row);
   btn.textContent='💾 Guardar';btn.disabled=false;
   if(ok){
-    allRows.push(row);
+    allRows.forEach(function(r){if(r._sheetRow)r._sheetRow++;});
+    row._sheetRow=2;
+    allRows.unshift(row);
     toast('✓ Empresa agregada a Database');
     closeDbModal();
     if(view==='empresas')renderEmpresas();
@@ -936,7 +1044,9 @@ function renderDemandasList(){
 // ── CONFIG ──────────────────────────────────────────────────────────────────
 var CFG_KEY='peanut_matcher_cfg';
 var cfg=Object.assign({clientId:'',sheetId:'10KFlKkOIKz-l6_wXHiHM_9WL-u97AtDM3MtXmHNI5OQ',sheetName:'Sheet1'},JSON.parse(localStorage.getItem(CFG_KEY)||'{}'));
-var COL={CLIENT:1,REGION:2,COUNTRY:3,COMPANY:4,SIZE:28,TYPE:29,ESTADO:38,GRADO:39};
+var COL={TEAM:0,CLIENT:1,REGION:2,COUNTRY:3,COMPANY:4,SIZE:28,TYPE:29,ESTADO:38,GRADO:39};
+var TEAM_OPTS=['M','F','A'];
+function parseTeam(v){return ((v||'')+'').split(/[-,\/]/).map(function(x){return x.trim().toUpperCase();}).filter(function(x){return TEAM_OPTS.indexOf(x)>=0;});}
 var AV={PROV:0,ORIGEN:1,PROD:2,TIPO:3,GRADO:4,CROP:5,TNS:6,ALFA:7,ESTADO:8,FECHA:9,OBS:10,NEXT:11};
 // Follow up columns (A..U): 0 Date,1 Customer,2 Contact,3 Size,4 Type,5 Origin,6 Packaging,
 // 7 Tns,8 Price,9 Port,10 Country,11 Shipment,12 Supplier,13 Buys from,14 Observations,
@@ -1132,7 +1242,7 @@ async function loadSheetData(){
     var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A2:AP2000'),{headers:{Authorization:'Bearer '+tok}});
     if(!r.ok)throw new Error('HTTP '+r.status);
     var d=await r.json();
-    allRows=(d.values||[]).filter(function(row){return row[COL.TYPE]||row[COL.SIZE]||row[COL.CLIENT]||row[COL.COMPANY];});
+    allRows=(d.values||[]).map(function(row,i){row._sheetRow=i+2;return row;}).filter(function(row){return row[COL.TYPE]||row[COL.SIZE]||row[COL.CLIENT]||row[COL.COMPANY];});
     try{
       var fr=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A2:U2000'),{headers:{Authorization:'Bearer '+tok}});
       if(fr.ok){var fd=await fr.json();fuRows=(fd.values||[]).map(function(row,i){row._sheetRow=i+2;return row;}).filter(function(row){return row[1];});}
@@ -1814,6 +1924,10 @@ function renderEmpresas(){
         '<div class="ac-list hidden" id="emp-ac-list"></div>'+
       '</div>'+
       '<button class="btn primary" style="margin-top:10px;width:100%;justify-content:center;" onclick="openDbModal()">🏢 + Agregar empresa</button>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;align-items:center;">'+
+        '<span style="font-size:11px;color:var(--text3);font-weight:600;">Filtrar comercial:</span>'+
+        TEAM_OPTS.map(function(t){return '<span class="chip'+(empTeamFilter===t?' selected':'')+'" style="padding:5px 14px;font-size:12px;" data-t="'+t+'" onclick="setEmpTeamFilter(this.dataset.t)">'+t+'</span>';}).join('')+
+      '</div>'+
     '</div>'+
     '<div id="emp-results"></div>';
   if(empQuery)renderEmpResults(empQuery);
@@ -1877,11 +1991,14 @@ function selectEmpByIdx(idx){
   if(el)selectEmpByName(el.dataset.name);
 }
 
+var empTeamFilter='';
+function setEmpTeamFilter(t){empTeamFilter=(empTeamFilter===t?'':t);renderEmpResults(empQuery);}
 function renderEmpResults(query){
   var area=document.getElementById('emp-results');if(!area)return;
   if(!query){area.innerHTML='';return;}
   var qLow=query.toLowerCase();
   var dbMatches=allRows.filter(function(r){var n=(r[COL.COMPANY]||r[COL.CLIENT]||'').trim();return n.toLowerCase().indexOf(qLow)>=0||sim(n.toLowerCase(),qLow)>=0.6;});
+  if(empTeamFilter)dbMatches=dbMatches.filter(function(r){return parseTeam(r[COL.TEAM]).indexOf(empTeamFilter)>=0;});
   var fuMatches=fuRows.filter(function(r){var n=(r[1]||'').trim().toLowerCase();return n.indexOf(qLow)>=0||qLow.indexOf(n)>=0||sim(n,qLow)>=0.7;});
   if(!dbMatches.length&&!fuMatches.length){
     area.innerHTML='<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">Sin resultados</div><div class="empty-sub">No se encontro "'+query+'" en Database ni en Follow Up.</div></div>';
@@ -1901,16 +2018,20 @@ function renderEmpResults(query){
       var estadoVal=(row[COL.ESTADO]||'').trim();
       var inact=isInactive(row);
       var gradoVal=(row[COL.GRADO]||'').trim();
+      var teamArr=parseTeam(row[COL.TEAM]);
+      var shRow=row._sheetRow||0;
       html+='<div class="emp-card'+(inact?' inactive':'')+'">'+
         '<div class="emp-card-header">'+
           '<div><div class="emp-name">'+company+' '+(estadoVal?(inact?'<span class="inactive-badge">Inactivo</span>':'<span class="active-badge">Activo</span>'):'')+'</div>'+(meta?'<div class="emp-meta">'+meta+'</div>':'')+' </div>'+
           '<button class="btn primary" style="font-size:12px;padding:6px 12px;" data-company="'+company.replace(/"/g,'&quot;')+'" onclick="openFUModal(this.dataset.company)">+ Follow Up</button>'+
         '</div>'+
-        '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;">'+
+        '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">'+
           dbTypes.map(function(t){return '<span class="mtag ty">'+t+'</span>';}).join('')+
           (dbSize?'<span class="mtag sz">'+dbSize+'</span>':'')+
           (gradoVal?'<span class="mtag gr">Grado '+gradoVal+'</span>':'')+
           (isBF(row)?'<span class="mtag bf">🐦 BF</span>':'')+
+          (teamArr.length?'<span class="mtag team">👤 '+teamArr.join(' - ')+'</span>':'')+
+          (shRow?'<span class="fu-edit-btn" data-row="'+shRow+'" data-team="'+teamArr.join('-')+'" onclick="openTeamEdit(this.dataset.row,this.dataset.team)" title="Editar comercial" style="width:26px;height:26px;">👤</span>':'')+
         '</div>'+
         (fu.length?buildFUPanel(fu):'<div style="font-size:12px;color:var(--text3);padding:8px 0;">Sin registros de Follow Up aun.</div>')+
       '</div>';
