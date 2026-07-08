@@ -529,7 +529,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.8.1</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.8.2</span>
     </div>
   </div>
 </aside>
@@ -1573,7 +1573,7 @@ function parseShipmentValue(s){
   free=free.replace(/^[\s,·]+|[\s,·]+$/g,'').replace(/[,·]\s*[,·]/g,',').replace(/\s{2,}/g,' ').replace(/^[\s,·]+|[\s,·]+$/g,'').trim();
   return free;
 }
-var PKG_BASE=['25kg bags','50kg bags','big bags'];
+var PKG_BASE=['flexitank','25kg bags','50kg bags','big bags'];
 var fuPkgSel=[];   // selected packaging strings
 function getPkgOptions(){
   // base options + any packaging already used in Follow up col G, de-duplicated (case-insensitive)
