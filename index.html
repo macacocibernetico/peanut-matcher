@@ -345,10 +345,22 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
           <label class="mfield-label">Pais <span class="mfield-opt">opcional</span></label>
           <select class="mselect" id="fu-country"><option value=""></option></select>
         </div>
+        <div class="mfield">
+          <label class="mfield-label">Incoterm <span class="mfield-opt">opcional</span></label>
+          <select class="mselect" id="fu-incoterm"><option value=""></option></select>
+        </div>
         <div class="mfield" style="grid-column:1/-1">
           <label class="mfield-label">Shipment period <span class="mfield-opt">elegí uno o varios meses (podés cambiar de año), o escribí abajo</span></label>
           <div id="fu-ship-cal" style="border:1.5px solid var(--border);border-radius:var(--r);padding:10px;margin-bottom:8px;background:var(--bg3);"></div>
           <input class="minput" id="fu-shipment" placeholder="Texto libre (ej: ASAP, Q1, a confirmar...)">
+        </div>
+        <div class="mfield" style="grid-column:1/-1">
+          <label class="mfield-label">Packaging <span class="mfield-opt">elegí uno o varios, o agregá uno nuevo abajo</span></label>
+          <div class="chip-group" id="fu-pkg-chips" style="margin-bottom:8px;"></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input class="minput" id="fu-pkg-new" placeholder="Nuevo packaging (ej: 1000kg bags)">
+            <button type="button" class="btn" onclick="addFuPkgNew()">+ Agregar</button>
+          </div>
         </div>
       </div>
       <div class="mfield">
@@ -471,6 +483,26 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
   </div>
 </div>
 
+<!-- PEDIDO (ORDER TEXT) MODAL -->
+<div class="modal-overlay hidden" id="pedido-modal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <span class="modal-title">Pedido para proveedores</span>
+      <span class="modal-close" onclick="closePedidoModal()">&#215;</span>
+    </div>
+    <div class="modal-body">
+      <div class="mfield">
+        <label class="mfield-label">Texto <span class="mfield-opt">copialo y pegalo donde quieras</span></label>
+        <textarea class="mtextarea" id="pedido-text" style="min-height:200px;font-family:var(--mono);font-size:13px;" readonly></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closePedidoModal()">Cerrar</button>
+      <button class="btn primary" id="pedido-copy-btn" onclick="copyPedido()">📋 Copiar</button>
+    </div>
+  </div>
+</div>
+
 <div class="shell">
 <aside class="sidebar" id="sidebar">
   <div class="logo">
@@ -497,7 +529,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.6.2</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.8.1</span>
     </div>
   </div>
 </aside>
@@ -1012,6 +1044,42 @@ var demQuery='',demSort='desc';
 var _demSearchTimer=null;
 function debouncedDemSearch(v){clearTimeout(_demSearchTimer);_demSearchTimer=setTimeout(function(){demQuery=v;renderDemandasList();},200);}
 function setDemSort(v){demSort=v;renderDemandasList();}
+function generarPedido(idx){
+  var r=fuRows[idx];
+  if(!r){toast('No se encontro la demanda');return;}
+  var client=(r[FU.CUSTOMER]||'').trim();
+  var port=(r[FU.PORT]||'').trim();
+  var country=(r[FU.COUNTRY]||'').trim();
+  var destino=[port,country].filter(Boolean).join(', ');
+  var size=(r[FU.SIZE]||'').trim();
+  var qty=(r[FU.TNS]||'').trim();
+  var incoterm=(r[FU.INCOTERM]||'').trim();
+  var shipment=(r[FU.SHIPMENT]||'').trim();
+  var packaging=(r[FU.PACKAGING]||'').trim();
+  var lines=[
+    'Cliente: '+client,
+    'Destino: '+destino,
+    'Calibre: '+size,
+    'QTY: '+qty+'Tn',
+    'Incoterm: '+incoterm,
+    'Precio: A cotizar',
+    'Shipment: '+shipment,
+    'Packaging: '+packaging
+  ];
+  document.getElementById('pedido-text').value=lines.join('\n');
+  document.getElementById('pedido-modal').classList.remove('hidden');
+}
+function closePedidoModal(){document.getElementById('pedido-modal').classList.add('hidden');}
+function copyPedido(){
+  var ta=document.getElementById('pedido-text');
+  var btn=document.getElementById('pedido-copy-btn');
+  function done(){btn.textContent='✓ Copiado';setTimeout(function(){btn.textContent='📋 Copiar';},1800);}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(done).catch(function(){ta.select();document.execCommand('copy');done();});
+  } else {
+    ta.select();document.execCommand('copy');done();
+  }
+}
 function renderDemandas(){
   var banner='';
   if(!tok)banner='<div class="info-banner">🔐 <strong>Conectate con Google</strong> para cargar las demandas.</div>';
@@ -1088,6 +1156,9 @@ function renderDemandasList(){
           '<span class="edit-btn del" data-idx="'+realIdx+'" onclick="deleteDemanda(parseInt(this.dataset.idx))" title="Eliminar demanda">🗑</span>'+
         '</div>'+
       '</div>'+
+      '<div style="margin-top:10px;">'+
+        '<button class="btn" style="width:100%;justify-content:center;" data-idx="'+realIdx+'" onclick="generarPedido(parseInt(this.dataset.idx))">📄 Generar pedido (texto)</button>'+
+      '</div>'+
     '</div>';
   }).join('')+'</div>';
 }
@@ -1103,7 +1174,8 @@ var AV={PROV:0,ORIGEN:1,PROD:2,TIPO:3,GRADO:4,CROP:5,TNS:6,ALFA:7,ESTADO:8,FECHA
 // Follow up columns (A..U): 0 Date,1 Customer,2 Contact,3 Size,4 Type,5 Origin,6 Packaging,
 // 7 Tns,8 Price,9 Port,10 Country,11 Shipment,12 Supplier,13 Buys from,14 Observations,
 // 15 Grado,16 Afla/Apto BF,17 Team M,18 Contrato,19 Dias,20 Estado
-var FU={DATE:0,CUSTOMER:1,CONTACT:2,SIZE:3,TYPE:4,ORIGIN:5,PACKAGING:6,TNS:7,PRICE:8,PORT:9,COUNTRY:10,SHIPMENT:11,SUPPLIER:12,BUYSFROM:13,OBS:14,GRADO:15,ALFA:16,TEAMM:17,CONTRATO:18,DIAS:19,ESTADO:20};
+var FU={DATE:0,CUSTOMER:1,CONTACT:2,SIZE:3,TYPE:4,ORIGIN:5,PACKAGING:6,TNS:7,PRICE:8,PORT:9,COUNTRY:10,SHIPMENT:11,SUPPLIER:12,BUYSFROM:13,OBS:14,GRADO:15,ALFA:16,TEAMM:17,CONTRATO:18,INCOTERM:19,ESTADO:20};
+var INCOTERMS=['EXW','FCA','FAS','FOB','CFR','CIF','CPT','CIP','DAP','DPU','DDP'];
 function isBF(row){return /\bbf\b/.test(((row[COL.TYPE]||'')+'').toLowerCase());}
 function isInactive(row){return ((row[COL.ESTADO]||'').toLowerCase().trim()).indexOf('inact')>=0;}
 var EU_VALS=['europe','europa','eu','emea','european union'];
@@ -1402,7 +1474,7 @@ function sizeStrToCalibers(s){
   if(hasSplit)out.push('Split');
   return out;
 }
-function fillFuDropdowns(selPort,selCountry){
+function fillFuDropdowns(selPort,selCountry,selIncoterm){
   // Ports: unique from Follow up col J (PORT)
   var ports={},portList=[];
   fuRows.forEach(function(r){var v=(r[FU.PORT]||'').trim();if(v&&!ports[v.toLowerCase()]){ports[v.toLowerCase()]=true;portList.push(v);}});
@@ -1420,10 +1492,16 @@ function fillFuDropdowns(selPort,selCountry){
   // If the current value isn't in the list (e.g. legacy), add it so it shows
   if(selPort&&portList.map(function(x){return x.toLowerCase();}).indexOf(selPort.toLowerCase())<0){portSel.innerHTML+=opt(selPort,selPort);}
   if(selCountry&&ctryList.map(function(x){return x.toLowerCase();}).indexOf(selCountry.toLowerCase())<0){ctrySel.innerHTML+=opt(selCountry,selCountry);}
+  var incSel=document.getElementById('fu-incoterm');
+  if(incSel){
+    incSel.innerHTML='<option value=""></option>'+INCOTERMS.map(function(v){return opt(v,selIncoterm);}).join('');
+    if(selIncoterm&&INCOTERMS.map(function(x){return x.toLowerCase();}).indexOf(selIncoterm.toLowerCase())<0){incSel.innerHTML+=opt(selIncoterm,selIncoterm);}
+  }
 }
 var SHIP_MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var SHIP_ABBR=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 var fuShipSel=[];        // selected months as {m:'Marzo', y:2026}
+var fuShipPrompt=false;  // 'Prompt' shipment flag
 var fuShipYear=(new Date()).getFullYear(); // year currently shown in the calendar
 function shipKey(m,y){return m+' '+y;}
 function isShipOn(m,y){return fuShipSel.some(function(s){return s.m===m&&s.y===y;});}
@@ -1439,6 +1517,9 @@ function renderShipCal(){
     return '<span class="cal-chip">'+s.m.slice(0,3)+' '+s.y+'<span class="x" data-m="'+s.m+'" data-y="'+s.y+'" onclick="removeShipMonth(this.dataset.m,parseInt(this.dataset.y))">×</span></span>';
   }).join('')+'</div>':'';
   box.innerHTML=
+    '<div style="display:flex;justify-content:flex-end;margin-bottom:8px;">'+
+      '<span class="chip'+(fuShipPrompt?' selected':'')+'" style="padding:5px 14px;font-size:12px;" onclick="toggleShipPrompt()">⚡ Prompt</span>'+
+    '</div>'+
     '<div class="shipcal-head">'+
       '<span class="shipcal-nav" onclick="shipYearShift(-1)">‹</span>'+
       '<span class="shipcal-year">'+fuShipYear+'</span>'+
@@ -1448,6 +1529,7 @@ function renderShipCal(){
     selHtml;
 }
 function shipYearShift(d){fuShipYear+=d;renderShipCal();}
+function toggleShipPrompt(){fuShipPrompt=!fuShipPrompt;renderShipCal();}
 function toggleShipMonth(m){
   var i=-1;
   for(var k=0;k<fuShipSel.length;k++){if(fuShipSel[k].m===m&&fuShipSel[k].y===fuShipYear){i=k;break;}}
@@ -1464,6 +1546,7 @@ function buildShipmentValue(){
   var monthsStr=sel.map(function(s){return s.m+' '+s.y;}).join(', ');
   var free=document.getElementById('fu-shipment').value.trim();
   var parts=[];
+  if(fuShipPrompt)parts.push('Prompt');
   if(monthsStr)parts.push(monthsStr);
   if(free)parts.push(free);
   return parts.join(' · ');
@@ -1473,6 +1556,8 @@ function parseShipmentValue(s){
   fuShipSel=[];
   s=(s||'').trim();
   var free=s;
+  fuShipPrompt=/\bprompt\b/i.test(free);
+  free=free.replace(/\bprompt\b/i,'');
   SHIP_MONTHS.forEach(function(m){
     // match "Marzo 2026" (with year) or bare "Marzo" (assume current shown year)
     var reY=new RegExp(m+'\\s+(20\\d\\d)','i');
@@ -1488,6 +1573,47 @@ function parseShipmentValue(s){
   free=free.replace(/^[\s,·]+|[\s,·]+$/g,'').replace(/[,·]\s*[,·]/g,',').replace(/\s{2,}/g,' ').replace(/^[\s,·]+|[\s,·]+$/g,'').trim();
   return free;
 }
+var PKG_BASE=['25kg bags','50kg bags','big bags'];
+var fuPkgSel=[];   // selected packaging strings
+function getPkgOptions(){
+  // base options + any packaging already used in Follow up col G, de-duplicated (case-insensitive)
+  var seen={},out=[];
+  PKG_BASE.forEach(function(p){var k=p.toLowerCase();if(!seen[k]){seen[k]=true;out.push(p);}});
+  fuRows.forEach(function(r){
+    ((r[FU.PACKAGING]||'')+'').split(/[;,]/).forEach(function(seg){
+      var p=seg.trim();if(!p)return;var k=p.toLowerCase();
+      if(!seen[k]){seen[k]=true;out.push(p);}
+    });
+  });
+  // also include currently-selected ones not in the list yet
+  fuPkgSel.forEach(function(p){var k=p.toLowerCase();if(!seen[k]){seen[k]=true;out.push(p);}});
+  return out;
+}
+function renderFuPkgChips(){
+  var box=document.getElementById('fu-pkg-chips');if(!box)return;
+  var opts=getPkgOptions();
+  box.innerHTML=opts.map(function(p){
+    var on=fuPkgSel.some(function(s){return s.toLowerCase()===p.toLowerCase();});
+    return '<span class="chip'+(on?' selected':'')+'" style="padding:5px 12px;font-size:12px;" data-p="'+p.replace(/"/g,'&quot;')+'" onclick="toggleFuPkg(this.dataset.p)">'+p+'</span>';
+  }).join('');
+}
+function toggleFuPkg(p){
+  var i=-1;
+  for(var k=0;k<fuPkgSel.length;k++){if(fuPkgSel[k].toLowerCase()===p.toLowerCase()){i=k;break;}}
+  if(i>=0)fuPkgSel.splice(i,1);else fuPkgSel.push(p);
+  renderFuPkgChips();
+}
+function addFuPkgNew(){
+  var el=document.getElementById('fu-pkg-new');
+  var p=el.value.trim();
+  if(!p){el.focus();return;}
+  if(!fuPkgSel.some(function(s){return s.toLowerCase()===p.toLowerCase();}))fuPkgSel.push(p);
+  el.value='';el.focus();
+  renderFuPkgChips();
+}
+function pkgStrToArr(s){
+  return ((s||'')+'').split(/[;,]/).map(function(x){return x.trim();}).filter(Boolean);
+}
 function openFUModal(prefill,editIdx){
   fuMode=editIdx!==undefined?'edit':'new';
   fuEditIdx=editIdx!==undefined?editIdx:null;
@@ -1501,7 +1627,9 @@ function openFUModal(prefill,editIdx){
   document.getElementById('fu-cal-min').value='';
   document.getElementById('fu-cal-max').value='';
   document.getElementById('fu-shipment').value='';
-  fuShipSel=[];fuShipYear=(new Date()).getFullYear();
+  fuShipSel=[];fuShipYear=(new Date()).getFullYear();fuShipPrompt=false;
+  document.getElementById('fu-pkg-new').value='';
+  fuPkgSel=[];
   document.getElementById('fu-tns').value='';
   document.getElementById('fu-price').value='';
   document.getElementById('fu-supplier').value='';
@@ -1522,6 +1650,7 @@ function openFUModal(prefill,editIdx){
     document.getElementById('fu-price').value=(row[FU.PRICE]||'').trim();
     document.getElementById('fu-supplier').value=(row[FU.BUYSFROM]||row[FU.SUPPLIER]||'').trim();
     document.getElementById('fu-shipment').value=parseShipmentValue((row[FU.SHIPMENT]||'').trim());
+    fuPkgSel=pkgStrToArr(row[FU.PACKAGING]);
     document.getElementById('fu-comment').value=(row[FU.OBS]||'').trim();
     document.getElementById('fu-grado').value=(row[FU.GRADO]||'').trim();
     document.getElementById('fu-alfa').value=(row[FU.ALFA]||'').trim();
@@ -1531,12 +1660,12 @@ function openFUModal(prefill,editIdx){
     document.getElementById('fu-date-display').textContent='Fecha: '+todayStr();
   }
 
-  renderFuTypeChips();renderFuCalibers();renderShipCal();
+  renderFuTypeChips();renderFuCalibers();renderShipCal();renderFuPkgChips();
   if(fuMode==='edit'&&fuEditIdx!==null){
     var er=fuRows[fuEditIdx]||[];
-    fillFuDropdowns((er[FU.PORT]||'').trim(),(er[FU.COUNTRY]||'').trim());
+    fillFuDropdowns((er[FU.PORT]||'').trim(),(er[FU.COUNTRY]||'').trim(),(er[FU.INCOTERM]||'').trim());
   } else {
-    fillFuDropdowns('','');
+    fillFuDropdowns('','','');
   }
   document.getElementById('fu-modal').classList.remove('hidden');
   if(!fuPrefill)setTimeout(function(){inp.focus();},100);
@@ -1593,10 +1722,12 @@ async function saveFURecord(){
   var tns=document.getElementById('fu-tns').value.trim();
   var price=document.getElementById('fu-price').value.trim();
   var supplier=document.getElementById('fu-supplier').value.trim();
+  var incoterm=document.getElementById('fu-incoterm').value.trim();
   var comment=document.getElementById('fu-comment').value.trim();
   var port=document.getElementById('fu-port').value.trim();
   var country=document.getElementById('fu-country').value.trim();
   var shipment=buildShipmentValue();
+  var packaging=fuPkgSel.join('; ');
   var grado=document.getElementById('fu-grado').value.trim();
   var alfa=document.getElementById('fu-alfa').value.trim();
   // Build a 21-column row (A..U) respecting the Follow up sheet layout
@@ -1611,6 +1742,8 @@ async function saveFURecord(){
   rowData[FU.PORT]=port;
   rowData[FU.COUNTRY]=country;
   rowData[FU.SHIPMENT]=shipment;
+  rowData[FU.PACKAGING]=packaging;
+  rowData[FU.INCOTERM]=incoterm;
   rowData[FU.OBS]=comment;
   rowData[FU.GRADO]=grado;
   rowData[FU.ALFA]=alfa;
@@ -1620,7 +1753,7 @@ async function saveFURecord(){
   if(fuMode==='edit'&&fuEditIdx!==null){
     var prev=fuRows[fuEditIdx]||[];
     // keep columns not present in the form so we don't wipe them
-    [FU.CONTACT,FU.ORIGIN,FU.PACKAGING,FU.SUPPLIER,FU.TEAMM,FU.CONTRATO,FU.DIAS,FU.ESTADO].forEach(function(ix){
+    [FU.CONTACT,FU.ORIGIN,FU.SUPPLIER,FU.TEAMM,FU.CONTRATO,FU.ESTADO].forEach(function(ix){
       if((prev[ix]||'')!=='')rowData[ix]=prev[ix];
     });
     var shRow=fuRows[fuEditIdx]._sheetRow||(fuEditIdx+2);
