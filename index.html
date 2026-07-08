@@ -276,6 +276,19 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
   .chip.selected,.chip{min-height:38px;display:inline-flex;align-items:center;}
   .mname-row{gap:6px;}
   .active-badge,.inactive-badge{font-size:9px;padding:2px 7px;}
+  /* Shipment calendar: bigger touch targets */
+  .shipcal-nav{width:38px;height:38px;font-size:18px;}
+  .shipcal-m{padding:12px 4px;font-size:13px;}
+  .shipcal-grid{gap:7px;}
+  /* Order text: avoid iOS zoom + keep readable */
+  #pedido-text{font-size:16px !important;}
+  /* Caliber / packaging builders: let inputs share the row nicely */
+  #db-cal-min,#db-cal-max,#fu-cal-min,#fu-cal-max{flex:1;min-width:0;width:auto !important;}
+  /* Edit-company & pedido modals: comfortable footer buttons */
+  #pedido-copy-btn,#team-save-btn{padding:12px 18px;}
+  /* Caliber pills a touch bigger for the × */
+  .cal-chip{font-size:13px;padding:6px 12px;}
+  .cal-chip .x{font-size:16px;padding:0 2px;}
 }
 </style>
 </head>
@@ -529,7 +542,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.9.1</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.9.2</span>
     </div>
   </div>
 </aside>
