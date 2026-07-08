@@ -489,7 +489,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.5.0</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.5.1</span>
     </div>
   </div>
 </aside>
@@ -888,7 +888,7 @@ async function saveTeamEdit(){
     for(var i=0;i<allRows.length;i++){if(allRows[i]._sheetRow===teamEditRow){allRows[i][COL.TEAM]=val;break;}}
     toast('✓ Comercial actualizado');
     closeTeamEdit();
-    if(view==='empresas')renderEmpResults(empQuery);
+    if(view==='empresas')renderEmpResults();
   } else {
     toast('Error al guardar en el Sheet');
   }
@@ -1919,18 +1919,16 @@ function renderEmpresas(){
     banner+
     '<div class="emp-search-wrap">'+
       '<div class="card-title" style="margin-bottom:12px;">🏢 Empresas</div>'+
-      '<div style="position:relative;">'+
-        '<input class="minput" id="emp-search" placeholder="Buscar empresa..." value="'+empQuery+'" oninput="debouncedEmpSearch(this.value)" onkeydown="onEmpKeydown(event)" autocomplete="off">'+
-        '<div class="ac-list hidden" id="emp-ac-list"></div>'+
-      '</div>'+
+      '<input class="minput" id="emp-search" placeholder="Buscar empresa por nombre, pais, region..." value="'+empQuery.replace(/"/g,'&quot;')+'" oninput="debouncedEmpSearch(this.value)" autocomplete="off">'+
       '<button class="btn primary" style="margin-top:10px;width:100%;justify-content:center;" onclick="openDbModal()">🏢 + Agregar empresa</button>'+
       '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;align-items:center;">'+
-        '<span style="font-size:11px;color:var(--text3);font-weight:600;">Filtrar comercial:</span>'+
-        TEAM_OPTS.map(function(t){return '<span class="chip'+(empTeamFilter===t?' selected':'')+'" style="padding:5px 14px;font-size:12px;" data-t="'+t+'" onclick="setEmpTeamFilter(this.dataset.t)">'+t+'</span>';}).join('')+
+        '<span style="font-size:11px;color:var(--text3);font-weight:600;">Comercial:</span>'+
+        TEAM_OPTS.map(function(t){return '<span class="chip'+(empTeamFilter.indexOf(t)>=0?' selected':'')+'" style="padding:5px 14px;font-size:12px;" data-t="'+t+'" onclick="toggleEmpTeamFilter(this.dataset.t)">'+t+'</span>';}).join('')+
+        (empTeamFilter.length?'<span class="filter-reset" onclick="clearEmpTeamFilter()">✕ Limpiar</span>':'')+
       '</div>'+
     '</div>'+
     '<div id="emp-results"></div>';
-  if(empQuery)renderEmpResults(empQuery);
+  renderEmpResults();
 }
 
 function dedupeNames(dbNames,fuNames){
@@ -1947,67 +1945,60 @@ function dedupeNames(dbNames,fuNames){
 
 var _empSearchTimer=null;
 function debouncedEmpSearch(val){
+  empQuery=val;
   clearTimeout(_empSearchTimer);
-  _empSearchTimer=setTimeout(function(){onEmpSearch(val);},200);
-}
-function onEmpSearch(val){
-  empQuery=val;empAcIdx=-1;
-  var list=document.getElementById('emp-ac-list');
-  if(!list)return;
-  if(val.length<2){list.classList.add('hidden');var r=document.getElementById('emp-results');if(r)r.innerHTML='';return;}
-  var dbNames=getCompanyNames();
-  var fuNames=[];var fuSeen={};
-  fuRows.forEach(function(r){var n=(r[1]||'').trim();if(n&&!fuSeen[n.toLowerCase()]){fuSeen[n.toLowerCase()]=true;fuNames.push(n);}});
-  empAllNames=dedupeNames(dbNames,fuNames);
-  var valLow=val.toLowerCase();
-  var matches=empAllNames.filter(function(n){return n.toLowerCase().indexOf(valLow)>=0||sim(n.toLowerCase(),valLow)>=0.7;}).slice(0,10);
-  if(!matches.length){list.classList.add('hidden');renderEmpResults(val);return;}
-  list.innerHTML=matches.map(function(n){
-    var dbRow=null;for(var j=0;j<allRows.length;j++){if((allRows[j][COL.COMPANY]||allRows[j][COL.CLIENT]||'').trim().toLowerCase()===n.toLowerCase()){dbRow=allRows[j];break;}}
-    var sub=dbRow?[dbRow[COL.COUNTRY],dbRow[COL.REGION]].filter(Boolean).join(' · '):'Solo en Follow Up';
-    return '<div class="ac-item" data-name="'+n.replace(/"/g,'&quot;')+'" onmousedown="selectEmpByName(this.dataset.name)"><div>'+n+'</div><div class="ac-sub">'+sub+'</div></div>';
-  }).join('');
-  list.classList.remove('hidden');
-}
-function onEmpKeydown(e){
-  var list=document.getElementById('emp-ac-list');if(!list)return;
-  var items=list.querySelectorAll('.ac-item');
-  if(e.key==='ArrowDown'){e.preventDefault();empAcIdx=Math.min(empAcIdx+1,items.length-1);items.forEach(function(el,i){el.classList.toggle('active',i===empAcIdx);});}
-  else if(e.key==='ArrowUp'){e.preventDefault();empAcIdx=Math.max(empAcIdx-1,0);items.forEach(function(el,i){el.classList.toggle('active',i===empAcIdx);});}
-  else if(e.key==='Enter'){e.preventDefault();if(empAcIdx>=0){var el=document.querySelectorAll('#emp-ac-list .ac-item')[empAcIdx];if(el)selectEmpByName(el.dataset.name);}else renderEmpResults(document.getElementById('emp-search').value);}
-  else if(e.key==='Escape'){list.classList.add('hidden');}
+  _empSearchTimer=setTimeout(function(){renderEmpResults();},200);
 }
 function selectEmpByName(name){
   if(!name)return;
   var inp=document.getElementById('emp-search');if(inp)inp.value=name;
   empQuery=name;
-  var list=document.getElementById('emp-ac-list');if(list)list.classList.add('hidden');
-  empAcIdx=-1;
-  renderEmpResults(name);
-}
-function selectEmpByIdx(idx){
-  var items=document.querySelectorAll('#emp-ac-list .ac-item');
-  var el=items[idx];
-  if(el)selectEmpByName(el.dataset.name);
+  renderEmpResults();
 }
 
-var empTeamFilter='';
-function setEmpTeamFilter(t){empTeamFilter=(empTeamFilter===t?'':t);renderEmpResults(empQuery);}
-function renderEmpResults(query){
+var empTeamFilter=[];
+function toggleEmpTeamFilter(t){var i=empTeamFilter.indexOf(t);if(i>=0)empTeamFilter.splice(i,1);else empTeamFilter.push(t);renderEmpresas();}
+function clearEmpTeamFilter(){empTeamFilter=[];renderEmpresas();}
+function renderEmpResults(){
   var area=document.getElementById('emp-results');if(!area)return;
-  if(!query){area.innerHTML='';return;}
+  var query=(empQuery||'').trim();
   var qLow=query.toLowerCase();
-  var dbMatches=allRows.filter(function(r){var n=(r[COL.COMPANY]||r[COL.CLIENT]||'').trim();return n.toLowerCase().indexOf(qLow)>=0||sim(n.toLowerCase(),qLow)>=0.6;});
-  if(empTeamFilter)dbMatches=dbMatches.filter(function(r){return parseTeam(r[COL.TEAM]).indexOf(empTeamFilter)>=0;});
-  var fuMatches=fuRows.filter(function(r){var n=(r[1]||'').trim().toLowerCase();return n.indexOf(qLow)>=0||qLow.indexOf(n)>=0||sim(n,qLow)>=0.7;});
-  if(!dbMatches.length&&!fuMatches.length){
-    area.innerHTML='<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">Sin resultados</div><div class="empty-sub">No se encontro "'+query+'" en Database ni en Follow Up.</div></div>';
+  // Start from ALL database rows
+  var dbMatches=allRows.slice();
+  // Text search (name, country, region)
+  if(qLow){
+    dbMatches=dbMatches.filter(function(r){
+      var hay=[(r[COL.COMPANY]||''),(r[COL.CLIENT]||''),(r[COL.COUNTRY]||''),(r[COL.REGION]||'')].join(' ').toLowerCase();
+      var n=(r[COL.COMPANY]||r[COL.CLIENT]||'').trim();
+      return hay.indexOf(qLow)>=0||sim(n.toLowerCase(),qLow)>=0.6;
+    });
+  }
+  // Team filter (multi-select: company shows if it has ANY of the selected commercials)
+  if(empTeamFilter.length){
+    dbMatches=dbMatches.filter(function(r){
+      var tm=parseTeam(r[COL.TEAM]);
+      return empTeamFilter.some(function(t){return tm.indexOf(t)>=0;});
+    });
+  }
+  // FU-only companies: only relevant when there's a text query and no team filter
+  var fuByKey={};
+  if(qLow&&!empTeamFilter.length){
+    var fuMatches=fuRows.filter(function(r){var n=(r[1]||'').trim().toLowerCase();return n.indexOf(qLow)>=0||qLow.indexOf(n)>=0||sim(n,qLow)>=0.7;});
+    fuMatches.forEach(function(r){var k=(r[1]||'').trim().toLowerCase();if(!fuByKey[k])fuByKey[k]=[];fuByKey[k].push(r);});
+  }
+  // Sort alphabetically by company name
+  dbMatches.sort(function(a,b){
+    var na=(a[COL.COMPANY]||a[COL.CLIENT]||'').toLowerCase();
+    var nb=(b[COL.COMPANY]||b[COL.CLIENT]||'').toLowerCase();
+    return na<nb?-1:na>nb?1:0;
+  });
+  var totalShown=dbMatches.length+Object.keys(fuByKey).length;
+  if(!totalShown){
+    area.innerHTML='<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">Sin resultados</div><div class="empty-sub">'+((query||empTeamFilter.length)?'Proba con otra busqueda o quita los filtros.':'No hay empresas cargadas.')+'</div></div>';
     return;
   }
-  // Group FU by lowercase key, prefer DB name
-  var fuByKey={};
-  fuMatches.forEach(function(r){var k=(r[1]||'').trim().toLowerCase();if(!fuByKey[k])fuByKey[k]=[];fuByKey[k].push(r);});
-  var html='';
+  var counter='<div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:10px;">'+dbMatches.length+' empresa'+(dbMatches.length!==1?'s':'')+(allRows.length&&(query||empTeamFilter.length)?' de '+allRows.length:'')+'</div>';
+  var html=counter;
   if(dbMatches.length){
     dbMatches.forEach(function(row){
       var company=(row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
@@ -2036,19 +2027,22 @@ function renderEmpResults(query){
         (fu.length?buildFUPanel(fu):'<div style="font-size:12px;color:var(--text3);padding:8px 0;">Sin registros de Follow Up aun.</div>')+
       '</div>';
     });
-  } else {
-    Object.keys(fuByKey).forEach(function(k){
-      var fu=fuByKey[k];
-      var displayName=fu[0][1].trim();
-      html+='<div class="emp-card">'+
-        '<div class="emp-card-header">'+
-          '<div><div class="emp-name">'+displayName+'</div><div class="emp-meta" style="color:var(--warn);">Solo en Follow Up</div></div>'+
-          '<button class="btn primary" style="font-size:12px;padding:6px 12px;" data-company="'+displayName.replace(/"/g,'&quot;')+'" onclick="openFUModal(this.dataset.company)">+ Follow Up</button>'+
-        '</div>'+
-        buildFUPanel(fu)+
-      '</div>';
-    });
   }
+  // FU-only companies (not in Database) - only when searching by text
+  Object.keys(fuByKey).forEach(function(k){
+    // skip if already shown as a DB company
+    var inDb=dbMatches.some(function(r){return (r[COL.COMPANY]||r[COL.CLIENT]||'').trim().toLowerCase()===k;});
+    if(inDb)return;
+    var fu=fuByKey[k];
+    var displayName=fu[0][1].trim();
+    html+='<div class="emp-card">'+
+      '<div class="emp-card-header">'+
+        '<div><div class="emp-name">'+displayName+'</div><div class="emp-meta" style="color:var(--warn);">Solo en Follow Up</div></div>'+
+        '<button class="btn primary" style="font-size:12px;padding:6px 12px;" data-company="'+displayName.replace(/"/g,'&quot;')+'" onclick="openFUModal(this.dataset.company)">+ Follow Up</button>'+
+      '</div>'+
+      buildFUPanel(fu)+
+    '</div>';
+  });
   area.innerHTML=html;
 }
 
