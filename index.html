@@ -529,7 +529,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.8.2</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.9.1</span>
     </div>
   </div>
 </aside>
@@ -1044,6 +1044,26 @@ var demQuery='',demSort='desc';
 var _demSearchTimer=null;
 function debouncedDemSearch(v){clearTimeout(_demSearchTimer);_demSearchTimer=setTimeout(function(){demQuery=v;renderDemandasList();},200);}
 function setDemSort(v){demSort=v;renderDemandasList();}
+// Split a stored shipment string into {months, extra}
+// months = Prompt + month/year segments; extra = any free-text portion
+function splitShipment(s){
+  s=(s||'').trim();
+  if(!s)return {months:'',extra:''};
+  var MONTHS=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var segs=s.split('·').map(function(x){return x.trim();}).filter(Boolean);
+  var structured=[],free=[];
+  segs.forEach(function(seg){
+    var low=seg.toLowerCase();
+    if(low==='prompt'){structured.push('Prompt');return;}
+    var parts=seg.split(',').map(function(x){return x.trim();}).filter(Boolean);
+    var allMonths=parts.length>0&&parts.every(function(p){
+      var pl=p.toLowerCase();
+      return MONTHS.some(function(m){return pl.indexOf(m)>=0;});
+    });
+    if(allMonths)structured.push(seg);else free.push(seg);
+  });
+  return {months:structured.join(' · '),extra:free.join(' · ')};
+}
 function generarPedido(idx){
   var r=fuRows[idx];
   if(!r){toast('No se encontro la demanda');return;}
@@ -1054,8 +1074,11 @@ function generarPedido(idx){
   var size=(r[FU.SIZE]||'').trim();
   var qty=(r[FU.TNS]||'').trim();
   var incoterm=(r[FU.INCOTERM]||'').trim();
-  var shipment=(r[FU.SHIPMENT]||'').trim();
+  var sp=splitShipment((r[FU.SHIPMENT]||'').trim());
   var packaging=(r[FU.PACKAGING]||'').trim();
+  var obs=(r[FU.OBS]||'').trim();
+  // Comments at the end: shipment free-text + the demand's Comentario field
+  var comments=[sp.extra,obs].filter(Boolean).join(' - ');
   var lines=[
     'Cliente: '+client,
     'Destino: '+destino,
@@ -1063,9 +1086,10 @@ function generarPedido(idx){
     'QTY: '+qty+'Tn',
     'Incoterm: '+incoterm,
     'Precio: A cotizar',
-    'Shipment: '+shipment,
+    'Shipment: '+sp.months,
     'Packaging: '+packaging
   ];
+  if(comments)lines.push('('+comments+')');
   document.getElementById('pedido-text').value=lines.join('\n');
   document.getElementById('pedido-modal').classList.remove('hidden');
 }
@@ -2109,6 +2133,11 @@ function renderEmpresas(){
         '<span style="font-size:11px;color:var(--text3);font-weight:600;">Comercial:</span>'+
         TEAM_OPTS.map(function(t){return '<span class="chip'+(empTeamFilter.indexOf(t)>=0?' selected':'')+'" style="padding:5px 14px;font-size:12px;" data-t="'+t+'" onclick="toggleEmpTeamFilter(this.dataset.t)">'+t+'</span>';}).join('')+
         '<span class="chip'+(empTeamFilter.indexOf('__none__')>=0?' selected':'')+'" style="padding:5px 14px;font-size:12px;" onclick="toggleEmpTeamFilter(\'__none__\')">Sin asignar</span>'+
+        (empTeamFilter.filter(function(t){return t!=='__none__';}).length>=2?
+          '<span style="font-size:11px;color:var(--text3);margin-left:6px;">Coincidir:</span>'+
+          '<span class="chip'+(empTeamMode==='or'?' selected':'')+'" style="padding:5px 12px;font-size:12px;" onclick="setEmpTeamMode(\'or\')" title="Cualquiera de los seleccionados">O (cualquiera)</span>'+
+          '<span class="chip'+(empTeamMode==='and'?' selected':'')+'" style="padding:5px 12px;font-size:12px;" onclick="setEmpTeamMode(\'and\')" title="Todos los seleccionados a la vez">Y (todos)</span>'
+          :'')+
         (empTeamFilter.length?'<span class="filter-reset" onclick="clearEmpTeamFilter()">✕ Limpiar</span>':'')+
       '</div>'+
     '</div>'+
@@ -2142,6 +2171,8 @@ function selectEmpByName(name){
 }
 
 var empTeamFilter=[];
+var empTeamMode='or'; // 'or' = any selected, 'and' = all selected
+function setEmpTeamMode(m){empTeamMode=m;renderEmpresas();}
 function toggleEmpTeamFilter(t){var i=empTeamFilter.indexOf(t);if(i>=0)empTeamFilter.splice(i,1);else empTeamFilter.push(t);renderEmpresas();}
 function clearEmpTeamFilter(){empTeamFilter=[];renderEmpresas();}
 function renderEmpResults(){
@@ -2158,13 +2189,19 @@ function renderEmpResults(){
       return hay.indexOf(qLow)>=0||sim(n.toLowerCase(),qLow)>=0.6;
     });
   }
-  // Team filter (multi-select: company shows if it has ANY of the selected commercials)
+  // Team filter (multi-select with O/Y mode)
   if(empTeamFilter.length){
+    var reals=empTeamFilter.filter(function(t){return t!=='__none__';});
+    var wantsNone=empTeamFilter.indexOf('__none__')>=0;
     dbMatches=dbMatches.filter(function(r){
       var tm=parseTeam(r[COL.TEAM]);
-      var wantNone=empTeamFilter.indexOf('__none__')>=0&&tm.length===0;
-      var wantSome=empTeamFilter.some(function(t){return t!=='__none__'&&tm.indexOf(t)>=0;});
-      return wantNone||wantSome;
+      var noneMatch=wantsNone&&tm.length===0;
+      var realMatch;
+      if(!reals.length){realMatch=false;}
+      else if(empTeamMode==='and'){realMatch=reals.every(function(t){return tm.indexOf(t)>=0;});}
+      else{realMatch=reals.some(function(t){return tm.indexOf(t)>=0;});}
+      // "Sin asignar" is always OR-combined with the commercials
+      return noneMatch||realMatch;
     });
   }
   // FU-only companies: only relevant when there's a text query and no team filter
