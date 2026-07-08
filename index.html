@@ -489,7 +489,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.5.1</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.5.2</span>
     </div>
   </div>
 </aside>
@@ -1924,6 +1924,7 @@ function renderEmpresas(){
       '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;align-items:center;">'+
         '<span style="font-size:11px;color:var(--text3);font-weight:600;">Comercial:</span>'+
         TEAM_OPTS.map(function(t){return '<span class="chip'+(empTeamFilter.indexOf(t)>=0?' selected':'')+'" style="padding:5px 14px;font-size:12px;" data-t="'+t+'" onclick="toggleEmpTeamFilter(this.dataset.t)">'+t+'</span>';}).join('')+
+        '<span class="chip'+(empTeamFilter.indexOf('__none__')>=0?' selected':'')+'" style="padding:5px 14px;font-size:12px;" onclick="toggleEmpTeamFilter(\'__none__\')">Sin asignar</span>'+
         (empTeamFilter.length?'<span class="filter-reset" onclick="clearEmpTeamFilter()">✕ Limpiar</span>':'')+
       '</div>'+
     '</div>'+
@@ -1977,7 +1978,9 @@ function renderEmpResults(){
   if(empTeamFilter.length){
     dbMatches=dbMatches.filter(function(r){
       var tm=parseTeam(r[COL.TEAM]);
-      return empTeamFilter.some(function(t){return tm.indexOf(t)>=0;});
+      var wantNone=empTeamFilter.indexOf('__none__')>=0&&tm.length===0;
+      var wantSome=empTeamFilter.some(function(t){return t!=='__none__'&&tm.indexOf(t)>=0;});
+      return wantNone||wantSome;
     });
   }
   // FU-only companies: only relevant when there's a text query and no team filter
@@ -2021,8 +2024,8 @@ function renderEmpResults(){
           (dbSize?'<span class="mtag sz">'+dbSize+'</span>':'')+
           (gradoVal?'<span class="mtag gr">Grado '+gradoVal+'</span>':'')+
           (isBF(row)?'<span class="mtag bf">🐦 BF</span>':'')+
-          (teamArr.length?'<span class="mtag team">👤 '+teamArr.join(' - ')+'</span>':'')+
-          (shRow?'<span class="fu-edit-btn" data-row="'+shRow+'" data-team="'+teamArr.join('-')+'" onclick="openTeamEdit(this.dataset.row,this.dataset.team)" title="Editar comercial" style="width:26px;height:26px;">👤</span>':'')+
+          (teamArr.length?'<span class="mtag team">👤 '+teamArr.join(' - ')+'</span>':'<span class="mtag" style="background:var(--bg3);color:var(--text3);border:1px dashed var(--border2);">👤 Sin asignar</span>')+
+          (shRow?'<span class="fu-edit-btn" data-row="'+shRow+'" data-team="'+teamArr.join('-')+'" onclick="openTeamEdit(this.dataset.row,this.dataset.team)" title="Asignar/cambiar comercial" style="width:26px;height:26px;">✏️</span>':'')+
         '</div>'+
         (fu.length?buildFUPanel(fu):'<div style="font-size:12px;color:var(--text3);padding:8px 0;">Sin registros de Follow Up aun.</div>')+
       '</div>';
