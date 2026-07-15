@@ -542,7 +542,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v2.9.2</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.1.0</span>
     </div>
   </div>
 </aside>
@@ -706,17 +706,17 @@ async function appendOfertaRow(row){
   // Insert at row 2 (top), pushing existing rows down
   var gid=await getAvailGid();
   if(gid===null||gid===undefined){
-    var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A:L')+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
+    var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A:'+colLetter(Math.max(lastColOf(AV),availHeaderLen-1)))+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
     var rr=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
     return rr.ok;
   }
   var r1=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+':batchUpdate',{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({requests:[{insertDimension:{range:{sheetId:gid,dimension:'ROWS',startIndex:1,endIndex:2},inheritFromBefore:false}}]})});
   if(!r1.ok)return false;
-  var r2=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A2:L2')+'?valueInputOption=USER_ENTERED',{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+  var r2=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A2:'+colLetter(Math.max(lastColOf(AV),availHeaderLen-1))+'2')+'?valueInputOption=USER_ENTERED',{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
   return r2.ok;
 }
 async function updateOfertaRow(sheetRow,row){
-  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A'+sheetRow+':L'+sheetRow)+'?valueInputOption=USER_ENTERED';
+  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A'+sheetRow+':'+colLetter(Math.max(lastColOf(AV),availHeaderLen-1))+sheetRow)+'?valueInputOption=USER_ENTERED';
   var r=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
   return r.ok;
 }
@@ -750,20 +750,25 @@ async function saveOferta(){
   if(!tok){toast('Conectate con Google primero');return;}
   var prov=document.getElementById('of-prov').value.trim();
   if(!prov){toast('Ingresa el proveedor');return;}
-  var prevNext='';
-  if(ofMode==='edit'&&ofEditIdx!==null&&availRows[ofEditIdx])prevNext=(availRows[ofEditIdx][AV.NEXT]||'');
-  var row=[prov,
-    document.getElementById('of-origen').value.trim(),
-    document.getElementById('of-prod').value.trim(),
-    document.getElementById('of-tipo').value.trim(),
-    document.getElementById('of-grado').value.trim(),
-    document.getElementById('of-crop').value.trim(),
-    document.getElementById('of-tns').value.trim(),
-    document.getElementById('of-alfa').value.trim(),
-    document.getElementById('of-estado').value.trim(),
-    todayStr(),
-    document.getElementById('of-obs').value.trim(),
-    prevNext];
+  var lastAv=Math.max(lastColOf(AV),availHeaderLen-1);
+  // On edit, start from a copy of the existing row so unknown/new columns are preserved
+  var row=new Array(lastAv+1).fill('');
+  if(ofMode==='edit'&&ofEditIdx!==null&&availRows[ofEditIdx]){
+    var prevA=availRows[ofEditIdx];
+    for(var i=0;i<=lastAv;i++)row[i]=(prevA[i]!==undefined&&prevA[i]!==null)?prevA[i]:'';
+  }
+  row[AV.PROV]=prov;
+  row[AV.ORIGEN]=document.getElementById('of-origen').value.trim();
+  row[AV.PROD]=document.getElementById('of-prod').value.trim();
+  row[AV.TIPO]=document.getElementById('of-tipo').value.trim();
+  row[AV.GRADO]=document.getElementById('of-grado').value.trim();
+  row[AV.CROP]=document.getElementById('of-crop').value.trim();
+  row[AV.TNS]=document.getElementById('of-tns').value.trim();
+  row[AV.ALFA]=document.getElementById('of-alfa').value.trim();
+  row[AV.ESTADO]=document.getElementById('of-estado').value.trim();
+  row[AV.FECHA]=todayStr();
+  row[AV.OBS]=document.getElementById('of-obs').value.trim();
+  // NEXT preserved automatically by the copy above (not in the form)
   var btn=document.getElementById('of-save-btn');
   btn.textContent='Guardando...';btn.disabled=true;
   var ok=false;
@@ -892,13 +897,13 @@ async function appendDbRow(row){
   // Insert at row 2 (top), pushing existing rows down. Falls back to bottom-append.
   var gid=await getDbGid();
   if(gid===null||gid===undefined){
-    var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A:AZ')+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
+    var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A:'+colLetter(lastColOf(COL)))+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
     var rr=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
     return rr.ok;
   }
   var r1=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+':batchUpdate',{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({requests:[{insertDimension:{range:{sheetId:gid,dimension:'ROWS',startIndex:1,endIndex:2},inheritFromBefore:false}}]})});
   if(!r1.ok)return false;
-  var r2=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A2:AZ2')+'?valueInputOption=USER_ENTERED',{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+  var r2=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A2:'+colLetter(lastColOf(COL))+'2')+'?valueInputOption=USER_ENTERED',{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
   return r2.ok;
 }
 async function updateDbCell(sheetRow,colLetter,value){
@@ -959,7 +964,7 @@ async function saveTeamEdit(){
   btn.textContent='Guardando...';btn.disabled=true;
   // Write each changed field to its column
   var writes=[];
-  writes.push(['A',team,COL.TEAM]);
+  writes.push([colLetter(COL.TEAM),team,COL.TEAM]);
   writes.push([colLetter(COL.MAILDOC),maildoc,COL.MAILDOC]);
   writes.push([colLetter(COL.REGION),region,COL.REGION]);
   writes.push([colLetter(COL.COUNTRY),country,COL.COUNTRY]);
@@ -1001,7 +1006,7 @@ async function saveDbCompany(){
     document.getElementById('db-dup-warn').style.display='block';
     return;
   }
-  var row=new Array(52).fill('');
+  var row=new Array(lastColOf(COL)+1).fill('');
   row[COL.TEAM]=dbSelTeam.join(' - ');
   row[COL.CLIENT]=document.getElementById('db-client').value.trim();
   row[COL.REGION]=document.getElementById('db-region').value.trim();
@@ -1203,15 +1208,42 @@ function renderDemandasList(){
 // ── CONFIG ──────────────────────────────────────────────────────────────────
 var CFG_KEY='peanut_matcher_cfg';
 var cfg=Object.assign({clientId:'',sheetId:'10KFlKkOIKz-l6_wXHiHM_9WL-u97AtDM3MtXmHNI5OQ',sheetName:'Sheet1'},JSON.parse(localStorage.getItem(CFG_KEY)||'{}'));
-var COL={TEAM:0,CLIENT:1,REGION:2,COUNTRY:3,COMPANY:4,SIZE:28,TYPE:29,ESTADO:38,MAILDOC:50};
+var COL={TEAM:0,CLIENT:1,REGION:2,COUNTRY:3,COMPANY:4,SIZE:28,TYPE:29,ESTADO:39,MAILDOC:50};
+var DB_SPEC={TEAM:['team m','team member','team','comercial'],CLIENT:['client','cliente'],REGION:['region'],COUNTRY:['country','pais'],COMPANY:['company','empresa'],SIZE:['size','calibre','calibres'],TYPE:['type','tipo'],ESTADO:['estado del cliente activo inactivo','estado del cliente','estado del cliente activo','estado cliente','estado','conv activo'],MAILDOC:['mails para envio documental','mail para envio documental','mails envio documental','mail documental','mails documental']};
 function colLetter(idx){var s='';idx=idx+1;while(idx>0){var m=(idx-1)%26;s=String.fromCharCode(65+m)+s;idx=Math.floor((idx-1)/26);}return s;}
 var TEAM_OPTS=['M','F','A'];
 function parseTeam(v){return ((v||'')+'').split(/[-,\/]/).map(function(x){return x.trim().toUpperCase();}).filter(function(x){return TEAM_OPTS.indexOf(x)>=0;});}
 var AV={PROV:0,ORIGEN:1,PROD:2,TIPO:3,GRADO:4,CROP:5,TNS:6,ALFA:7,ESTADO:8,FECHA:9,OBS:10,NEXT:11};
+var availHeaderLen=12; // number of columns detected in Availability header row
+
+// ── HEADER MAPPING ENGINE ────────────────────────────────────────────────────
+// Blinds against moving/inserting columns: we locate each field by its header
+// name (row 1) instead of a fixed position. Falls back to the default index.
+function lastColOf(map){var mx=0;Object.keys(map).forEach(function(k){if(typeof map[k]==='number'&&map[k]>mx)mx=map[k];});return mx;}
+function normHdr(s){
+  return (s||'').toString().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,' ').trim();
+}
+function mapHeaders(headerRow,spec,fallback){
+  var norm=(headerRow||[]).map(normHdr);
+  var out={};
+  Object.keys(spec).forEach(function(key){
+    var aliases=spec[key],idx=-1;
+    for(var a=0;a<aliases.length;a++){
+      var pos=norm.indexOf(normHdr(aliases[a]));
+      if(pos>=0){idx=pos;break;}
+    }
+    out[key]=idx>=0?idx:(fallback&&fallback[key]!==undefined?fallback[key]:-1);
+  });
+  return out;
+}
+var AV_SPEC={PROV:['proveedor','supplier'],ORIGEN:['origen','origin'],PROD:['producto','product','calibre'],TIPO:['tipo','type'],GRADO:['grado','grade'],CROP:['crop','cosecha'],TNS:['tn disponibles','tns','toneladas','tn disponible'],ALFA:['alfa lvl','afla lvl','alfa','afla'],ESTADO:['estado','status'],FECHA:['fecha aviso','fecha','date'],OBS:['observaciones','observations','comentarios','obs'],NEXT:['next step','next','proximo paso']};
+var FU_SPEC={DATE:['date','fecha'],CUSTOMER:['customer','cliente','company','empresa'],CONTACT:['contact','contacto'],SIZE:['size','calibre','calibres'],TYPE:['type','tipo'],ORIGIN:['origin','origen'],PACKAGING:['packaging','empaque'],TNS:['tns','toneladas','tn'],PRICE:['price','precio'],PORT:['port','puerto'],COUNTRY:['country','pais'],SHIPMENT:['shipment','shipment period','embarque'],SUPPLIER:['supplier','proveedor'],BUYSFROM:['buys from','buysfrom','compra a','le compra a'],OBS:['observations comentarios','observations','observaciones','comentarios','obs'],GRADO:['grado','grade'],ALFA:['afla apto bf','alfa apto bf','apto bf','alfa','afla'],TEAMM:['team m','team member','team','comercial'],CONTRATO:['contrato','contract'],INCOTERM:['incoterm','incoterms'],DIAS:['dias','days'],ESTADO:['estado','status']};
 // Follow up columns (A..U): 0 Date,1 Customer,2 Contact,3 Size,4 Type,5 Origin,6 Packaging,
 // 7 Tns,8 Price,9 Port,10 Country,11 Shipment,12 Supplier,13 Buys from,14 Observations,
 // 15 Grado,16 Afla/Apto BF,17 Team M,18 Contrato,19 Dias,20 Estado
-var FU={DATE:0,CUSTOMER:1,CONTACT:2,SIZE:3,TYPE:4,ORIGIN:5,PACKAGING:6,TNS:7,PRICE:8,PORT:9,COUNTRY:10,SHIPMENT:11,SUPPLIER:12,BUYSFROM:13,OBS:14,GRADO:15,ALFA:16,TEAMM:17,CONTRATO:18,INCOTERM:19,ESTADO:20};
+var FU={DATE:0,CUSTOMER:1,CONTACT:2,SIZE:3,TYPE:4,ORIGIN:5,PACKAGING:6,TNS:7,PRICE:8,PORT:9,COUNTRY:10,SHIPMENT:11,SUPPLIER:12,BUYSFROM:13,OBS:14,GRADO:15,ALFA:16,TEAMM:17,CONTRATO:18,INCOTERM:19,DIAS:20,ESTADO:21};
 var INCOTERMS=['EXW','FCA','FAS','FOB','CFR','CIF','CPT','CIP','DAP','DPU','DDP'];
 function isBF(row){return /\bbf\b/.test(((row[COL.TYPE]||'')+'').toLowerCase());}
 function isInactive(row){return ((row[COL.ESTADO]||'').toLowerCase().trim()).indexOf('inact')>=0;}
@@ -1400,17 +1432,28 @@ async function loadSheetData(){
   if(!tok){setStatus('err','Sin autenticar');return;}
   setStatus('loading','Cargando...');prog(true);
   try{
-    var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A2:AZ2000'),{headers:{Authorization:'Bearer '+tok}});
+    var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A1:AZ2000'),{headers:{Authorization:'Bearer '+tok}});
     if(!r.ok)throw new Error('HTTP '+r.status);
     var d=await r.json();
-    allRows=(d.values||[]).map(function(row,i){row._sheetRow=i+2;return row;}).filter(function(row){return row[COL.TYPE]||row[COL.SIZE]||row[COL.CLIENT]||row[COL.COMPANY];});
+    var dbAll=d.values||[];
+    // Database: blind by header name (row 1); data starts row 2
+    if(dbAll.length){COL=mapHeaders(dbAll[0],DB_SPEC,COL);}
+    allRows=dbAll.slice(1).map(function(row,i){row._sheetRow=i+2;return row;}).filter(function(row){return row[COL.TYPE]||row[COL.SIZE]||row[COL.CLIENT]||row[COL.COMPANY];});
     try{
-      var fr=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A2:U2000'),{headers:{Authorization:'Bearer '+tok}});
-      if(fr.ok){var fd=await fr.json();fuRows=(fd.values||[]).map(function(row,i){row._sheetRow=i+2;return row;}).filter(function(row){return row[1];});}
+      var fr=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A1:AZ2000'),{headers:{Authorization:'Bearer '+tok}});
+      if(fr.ok){
+        var fd=await fr.json();var fAll=fd.values||[];
+        if(fAll.length){FU=mapHeaders(fAll[0],FU_SPEC,FU);}
+        fuRows=fAll.slice(1).map(function(row,i){row._sheetRow=i+2;return row;}).filter(function(row){return row[FU.CUSTOMER];});
+      }
     }catch(e){console.warn('FU:',e);}
     try{
-      var ar=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A2:L2000'),{headers:{Authorization:'Bearer '+tok}});
-      if(ar.ok){var ad=await ar.json();availRows=(ad.values||[]).map(function(row,i){row._sheetRow=i+2;return row;}).filter(function(row){return row[0];});}
+      var ar=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A1:Z2000'),{headers:{Authorization:'Bearer '+tok}});
+      if(ar.ok){
+        var ad=await ar.json();var aAll=ad.values||[];
+        if(aAll.length){AV=mapHeaders(aAll[0],AV_SPEC,AV);availHeaderLen=aAll[0].length||12;}
+        availRows=aAll.slice(1).map(function(row,i){row._sheetRow=i+2;return row;}).filter(function(row){return row[AV.PROV];});
+      }
     }catch(e){console.warn('Availability:',e);}
     setStatus('ok',allRows.length+' clientes · '+fuRows.length+' follow ups');
     document.getElementById('last-sync').textContent='Sync '+new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
@@ -1440,17 +1483,17 @@ async function appendFURow(row){
   // Insert at row 2 (top), pushing existing rows down. Falls back to bottom-append.
   var gid=await getFuGid();
   if(gid===null||gid===undefined){
-    var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A:U')+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
+    var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A:'+colLetter(lastColOf(FU)))+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
     var rr=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
     return rr.ok;
   }
   var r1=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+':batchUpdate',{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({requests:[{insertDimension:{range:{sheetId:gid,dimension:'ROWS',startIndex:1,endIndex:2},inheritFromBefore:false}}]})});
   if(!r1.ok)return false;
-  var r2=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A2:U2')+'?valueInputOption=USER_ENTERED',{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+  var r2=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A2:'+colLetter(lastColOf(FU))+'2')+'?valueInputOption=USER_ENTERED',{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
   return r2.ok;
 }
 async function updateFURow(sheetRow,row){
-  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A'+sheetRow+':U'+sheetRow)+'?valueInputOption=USER_ENTERED';
+  var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A'+sheetRow+':'+colLetter(lastColOf(FU))+sheetRow)+'?valueInputOption=USER_ENTERED';
   var r=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
   return r.ok;
 }
@@ -1767,8 +1810,9 @@ async function saveFURecord(){
   var packaging=fuPkgSel.join('; ');
   var grado=document.getElementById('fu-grado').value.trim();
   var alfa=document.getElementById('fu-alfa').value.trim();
-  // Build a 21-column row (A..U) respecting the Follow up sheet layout
-  var rowData=new Array(21).fill('');
+  // Build a row sized to the detected Follow up layout (blinded by header name)
+  var lastFu=lastColOf(FU);
+  var rowData=new Array(lastFu+1).fill('');
   rowData[FU.DATE]=todayStr();
   rowData[FU.CUSTOMER]=company;
   rowData[FU.SIZE]=size;
@@ -1789,10 +1833,13 @@ async function saveFURecord(){
   var ok=false;
   if(fuMode==='edit'&&fuEditIdx!==null){
     var prev=fuRows[fuEditIdx]||[];
-    // keep columns not present in the form so we don't wipe them
-    [FU.CONTACT,FU.ORIGIN,FU.SUPPLIER,FU.TEAMM,FU.CONTRATO,FU.ESTADO].forEach(function(ix){
-      if((prev[ix]||'')!=='')rowData[ix]=prev[ix];
-    });
+    // Merge: start from existing row so any column not in the form (incl. new/moved
+    // ones) is preserved, then re-apply the form fields on top.
+    var merged=new Array(Math.max(lastFu+1,prev.length)).fill('');
+    for(var i=0;i<merged.length;i++)merged[i]=(prev[i]!==undefined&&prev[i]!==null)?prev[i]:'';
+    var formFields=[FU.DATE,FU.CUSTOMER,FU.SIZE,FU.TYPE,FU.TNS,FU.PRICE,FU.BUYSFROM,FU.PORT,FU.COUNTRY,FU.SHIPMENT,FU.PACKAGING,FU.INCOTERM,FU.OBS,FU.GRADO,FU.ALFA];
+    formFields.forEach(function(ix){merged[ix]=rowData[ix];});
+    rowData=merged;
     var shRow=fuRows[fuEditIdx]._sheetRow||(fuEditIdx+2);
     ok=await updateFURow(shRow,rowData);
     if(ok){rowData._sheetRow=shRow;fuRows[fuEditIdx]=rowData;toast('✓ Follow Up actualizado');}
