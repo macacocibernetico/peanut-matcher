@@ -221,6 +221,9 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .inactive-badge{display:inline-flex;font-size:10px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:var(--bg3);color:var(--text3);border:1px solid var(--border2);}
 .sem-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .sem-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);}
+.cli-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.cli-act{background:var(--ok-light);color:var(--ok);border:1px solid rgba(52,199,89,.3);}
+.cli-inact{background:rgba(255,59,48,.08);color:#ff3b30;border:1px solid rgba(255,59,48,.3);}
 .sem-pick{display:flex;gap:8px;flex-wrap:wrap;}
 .sem-opt{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;user-select:none;transition:all .12s;}
 .sem-opt:hover{border-color:var(--text3);}
@@ -465,7 +468,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
         <input class="minput" id="edit-maildoc" type="text" placeholder="ej: docs@empresa.com, admin@empresa.com" autocomplete="off">
       </div>
       <div class="mform-grid">
-        <div class="mfield"><label class="mfield-label">Estado</label><select class="mselect" id="edit-estado"><option value="">— sin cambiar —</option><option>Activo</option><option>Inactivo</option></select></div>
+        <div class="mfield"><label class="mfield-label">Estado del cliente <span class="mfield-opt">Activo / Inactivo</span></label><select class="mselect" id="edit-estado"><option value="">— sin cambiar —</option><option>Activo</option><option>Inactivo</option></select></div>
         <div class="mfield"><label class="mfield-label">Region <span class="mfield-opt">opcional</span></label><input class="minput" id="edit-region" placeholder="ej: EUROPA"></div>
         <div class="mfield"><label class="mfield-label">Country <span class="mfield-opt">opcional</span></label><input class="minput" id="edit-country" placeholder="ej: NETHERLANDS"></div>
       </div>
@@ -569,7 +572,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.4.0</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.5.0</span>
     </div>
   </div>
 </aside>
@@ -2486,7 +2489,7 @@ function renderEmpResults(){
       var shRow=row._sheetRow||0;
       html+='<div class="emp-card'+(inact?' inactive':'')+'">'+
         '<div class="emp-card-header">'+
-          '<div><div class="emp-name">'+company+' '+(function(){var se=semaforoOf(estadoVal);return se?'<span class="sem-badge" style="border-color:'+se.color+';color:'+se.color+';"><span class="sem-dot" style="background:'+se.color+';"></span>'+se.label+'</span>':(estadoVal?'<span class="inactive-badge">'+estadoVal+'</span>':'');})()+'</div>'+(meta?'<div class="emp-meta">'+meta+'</div>':'')+' </div>'+
+          '<div><div class="emp-name">'+company+' '+(estadoVal?(inact?'<span class="cli-badge cli-inact"><span class="sem-dot" style="background:#ff3b30;"></span>Inactivo</span>':'<span class="cli-badge cli-act"><span class="sem-dot" style="background:#34c759;"></span>Activo</span>'):'')+'</div>'+(meta?'<div class="emp-meta">'+meta+'</div>':'')+' </div>'+
           '<button class="btn primary" style="font-size:12px;padding:6px 12px;" data-company="'+company.replace(/"/g,'&quot;')+'" onclick="openFUModal(this.dataset.company)">+ Follow Up</button>'+
         '</div>'+
         '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">'+
