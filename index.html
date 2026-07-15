@@ -16,7 +16,7 @@
   --danger:#ff3b30;--danger-light:#fff0ef;
   --warn:#ff9500;--warn-light:#fff8ee;
   --info:#0071e3;--info-light:#e8f2fd;
-  --font:'Inter',sans-serif;--mono:'DM Mono',monospace;
+  --font:Arial,Helvetica,sans-serif;--mono:Arial,Helvetica,sans-serif;
   --r:10px;--rl:14px;--rxl:18px;
   --sh:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06);
   --shl:0 4px 20px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.06);
@@ -219,6 +219,35 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .team-pick-chip.on{background:#4338ca;color:#fff;border-color:#4338ca;}
 .active-badge{display:inline-flex;font-size:10px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:var(--ok-light);color:var(--ok);border:1px solid rgba(52,199,89,.3);}
 .inactive-badge{display:inline-flex;font-size:10px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:var(--bg3);color:var(--text3);border:1px solid var(--border2);}
+.sem-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.sem-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);}
+.sem-pick{display:flex;gap:8px;flex-wrap:wrap;}
+.sem-opt{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;user-select:none;transition:all .12s;}
+.sem-opt:hover{border-color:var(--text3);}
+.sem-opt.on{border-width:2px;}
+.sem-opt .sem-dot{width:12px;height:12px;}
+.fu-line{border:1.5px solid var(--border2);border-radius:var(--r);padding:12px;margin-bottom:10px;background:var(--bg3);position:relative;}
+.fu-line-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.fu-line-title{font-size:12px;font-weight:700;color:var(--text2);font-family:var(--mono);}
+.fu-line-del{width:28px;height:28px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);color:var(--danger);font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.fu-line-del:hover{border-color:var(--danger);background:rgba(255,59,48,.08);}
+.fu-line-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;}
+.fu-line-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+.fu-line-chips .chip{padding:5px 11px;font-size:12px;}
+.fu-line .minput{width:auto;}
+.fu-line-cal{width:78px;}
+.fu-line-num{width:100px;}
+.fu-add-line{width:100%;justify-content:center;border-style:dashed;margin-top:2px;}
+.fu-split-tog{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer;user-select:none;font-weight:600;}
+.fu-split-tog input{width:16px;height:16px;}
+.dem-details{margin-top:10px;border-top:1px solid var(--border);padding-top:8px;}
+.dem-details summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--accent);list-style:none;user-select:none;padding:2px 0;}
+.dem-details summary::-webkit-details-marker{display:none;}
+.dem-details summary:before{content:'▸ ';display:inline-block;transition:transform .15s;}
+.dem-details[open] summary:before{content:'▾ ';}
+.dem-lines{margin-top:8px;display:flex;flex-direction:column;gap:6px;}
+.dem-line{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:7px 10px;background:var(--bg3);border-radius:8px;border:1px solid var(--border2);}
+.dem-line .dl-cal{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--text);min-width:52px;}
 .mcard.inactive,.emp-card.inactive{opacity:.55;}
 .ofcard.of-disp{border-left:4px solid var(--ok);}
 .ofcard.of-def{border-left:4px solid var(--warn);}
@@ -312,19 +341,9 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
         <div class="ac-list hidden" id="ac-list"></div>
       </div>
       <div class="mfield">
-        <label class="mfield-label">Type <span class="mfield-opt">tocá para seleccionar uno o varios</span></label>
-        <div class="chip-group" id="fu-type-chips"></div>
-      </div>
-      <div class="mfield">
-        <label class="mfield-label">Calibres <span class="mfield-opt">agregá cada calibre (ej: 38 / 42)</span></label>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <input class="minput" id="fu-cal-min" type="number" inputmode="numeric" placeholder="desde" style="width:90px;">
-          <span style="color:var(--text3);font-weight:600;">/</span>
-          <input class="minput" id="fu-cal-max" type="number" inputmode="numeric" placeholder="hasta" style="width:90px;">
-          <button type="button" class="btn" onclick="addFuCaliber()">+ Agregar</button>
-          <button type="button" class="btn" onclick="addFuCaliberSplit()" style="border-color:var(--text);">+ Split</button>
-        </div>
-        <div id="fu-cal-list" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;"></div>
+        <label class="mfield-label">Calibres del pedido <span class="mfield-opt">un renglón por calibre: tipo, cantidad y precio</span></label>
+        <div id="fu-lines"></div>
+        <button type="button" class="btn fu-add-line" onclick="addFuLine()">+ Agregar calibre</button>
       </div>
       <div class="mform-grid">
         <div class="mfield">
@@ -339,16 +358,20 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
           </select>
         </div>
         <div class="mfield">
-          <label class="mfield-label">Tns <span class="mfield-opt">opcional</span></label>
-          <input class="minput" id="fu-tns" placeholder="ej: 22" type="number">
+          <label class="mfield-label">Proveedor (Supplier) <span class="mfield-opt">opcional</span></label>
+          <input class="minput" id="fu-supplier" placeholder="ej: Argen Peanuts">
         </div>
         <div class="mfield">
-          <label class="mfield-label">Price USD <span class="mfield-opt">opcional</span></label>
-          <input class="minput" id="fu-price" placeholder="ej: 1180" type="number">
+          <label class="mfield-label">Contacto <span class="mfield-opt">opcional</span></label>
+          <input class="minput" id="fu-contact" placeholder="ej: Juan Pérez">
         </div>
-        <div class="mfield" style="grid-column:1/-1">
-          <label class="mfield-label">Proveedor <span class="mfield-opt">opcional</span></label>
-          <input class="minput" id="fu-supplier" placeholder="ej: Argen Peanuts">
+        <div class="mfield">
+          <label class="mfield-label">Origen deseado <span class="mfield-opt">opcional</span></label>
+          <input class="minput" id="fu-origin" placeholder="ej: Argentina">
+        </div>
+        <div class="mfield">
+          <label class="mfield-label">Team member <span class="mfield-opt">opcional</span></label>
+          <input class="minput" id="fu-teamm" placeholder="ej: M, F">
         </div>
         <div class="mfield">
           <label class="mfield-label">Puerto <span class="mfield-opt">opcional</span></label>
@@ -375,6 +398,10 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
             <button type="button" class="btn" onclick="addFuPkgNew()">+ Agregar</button>
           </div>
         </div>
+      </div>
+      <div class="mfield">
+        <label class="mfield-label">Semáforo <span class="mfield-opt">estado de la relación con el cliente</span></label>
+        <div class="sem-pick" id="fu-sem-pick"></div>
       </div>
       <div class="mfield">
         <label class="mfield-label">Comentario <span class="mfield-opt">opcional</span></label>
@@ -542,7 +569,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.1.0</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.4.0</span>
     </div>
   </div>
 </aside>
@@ -729,7 +756,7 @@ async function deleteOfertaRow(sheetRow){
 async function deleteOferta(idx){
   var r=availRows[idx];
   if(!r)return;
-  if(!tok){toast('Conectate con Google primero');return;}
+  if(!(await guardToken()))return;
   var shRow=r._sheetRow;
   if(!shRow){toast('Sincroniza antes de eliminar esta oferta');return;}
   var prov=(r[AV.PROV]||'').trim();
@@ -747,7 +774,7 @@ async function deleteOferta(idx){
   }
 }
 async function saveOferta(){
-  if(!tok){toast('Conectate con Google primero');return;}
+  if(!(await guardToken()))return;
   var prov=document.getElementById('of-prov').value.trim();
   if(!prov){toast('Ingresa el proveedor');return;}
   var lastAv=Math.max(lastColOf(AV),availHeaderLen-1);
@@ -941,7 +968,7 @@ function openTeamEdit(sheetRow){
 }
 function closeTeamEdit(){document.getElementById('team-modal').classList.add('hidden');}
 async function saveTeamEdit(){
-  if(!tok){toast('Conectate con Google primero');return;}
+  if(!(await guardToken()))return;
   if(!teamEditRow){toast('Sincroniza antes de editar');return;}
   var team=TEAM_OPTS.filter(function(t){return teamEditSel.indexOf(t)>=0;}).join(' - ');
   var maildocRaw=document.getElementById('edit-maildoc').value.trim();
@@ -996,7 +1023,7 @@ async function saveTeamEdit(){
   }
 }
 async function saveDbCompany(){
-  if(!tok){toast('Conectate con Google primero');return;}
+  if(!(await guardToken()))return;
   var company=document.getElementById('db-company').value.trim();
   if(!company){toast('Ingresa el nombre de la empresa');return;}
   var similar=findSimilarCompany(company);
@@ -1038,24 +1065,35 @@ async function deleteFURow(sheetRow){
   var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+':batchUpdate',{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({requests:[{deleteDimension:{range:{sheetId:gid,dimension:'ROWS',startIndex:sheetRow-1,endIndex:sheetRow}}}]})});
   return r.ok;
 }
+async function deleteFURowsByNums(nums){
+  var gid=await getFuGid();
+  if(gid===null||gid===undefined)return false;
+  var sorted=nums.slice().filter(Boolean).sort(function(a,b){return b-a;}); // descending: delete bottom-up
+  if(!sorted.length)return true;
+  var reqs=sorted.map(function(n){return {deleteDimension:{range:{sheetId:gid,dimension:'ROWS',startIndex:n-1,endIndex:n}}};});
+  var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+':batchUpdate',{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({requests:reqs})});
+  return r.ok;
+}
 async function deleteDemanda(idx){
   var r=fuRows[idx];
   if(!r)return;
-  if(!tok){toast('Conectate con Google primero');return;}
-  var shRow=r._sheetRow;
-  if(!shRow){toast('Sincroniza antes de eliminar esta demanda');return;}
+  if(!(await guardToken()))return;
+  var grp=groupOf(r);
+  var nums=grp.map(function(x){return x._sheetRow;}).filter(Boolean);
+  if(!nums.length){toast('Sincroniza antes de eliminar este pedido');return;}
   var company=(r[FU.CUSTOMER]||'').trim();
-  if(!confirm('¿Eliminar la demanda de '+company+'? Esto borra la fila del Sheet y no se puede deshacer.'))return;
+  var msg=nums.length>1
+    ? '¿Eliminar el pedido de '+company+' ('+nums.length+' calibres)? Se borran las '+nums.length+' filas del Sheet y no se puede deshacer.'
+    : '¿Eliminar la demanda de '+company+'? Esto borra la fila del Sheet y no se puede deshacer.';
+  if(!confirm(msg))return;
   prog(true);
-  var okDel=await deleteFURow(shRow);
+  var okDel=await deleteFURowsByNums(nums);
   prog(false);
   if(okDel){
-    fuRows.splice(idx,1);
-    fuRows.forEach(function(x){if(x._sheetRow&&x._sheetRow>shRow)x._sheetRow--;});
-    toast('✓ Demanda eliminada');
-    renderDemandasList();
+    await loadSheetData();
+    toast('✓ '+(nums.length>1?'Pedido eliminado':'Demanda eliminada'));
   } else {
-    toast('Error al eliminar la demanda');
+    toast('Error al eliminar');
   }
 }
 var demQuery='',demSort='desc';
@@ -1085,28 +1123,31 @@ function splitShipment(s){
 function generarPedido(idx){
   var r=fuRows[idx];
   if(!r){toast('No se encontro la demanda');return;}
+  var g=groupOf(r);
+  if(!g.length)g=[r];
   var client=(r[FU.CUSTOMER]||'').trim();
   var port=(r[FU.PORT]||'').trim();
   var country=(r[FU.COUNTRY]||'').trim();
   var destino=[port,country].filter(Boolean).join(', ');
-  var size=(r[FU.SIZE]||'').trim();
-  var qty=(r[FU.TNS]||'').trim();
   var incoterm=(r[FU.INCOTERM]||'').trim();
   var sp=splitShipment((r[FU.SHIPMENT]||'').trim());
   var packaging=(r[FU.PACKAGING]||'').trim();
   var obs=(r[FU.OBS]||'').trim();
-  // Comments at the end: shipment free-text + the demand's Comentario field
   var comments=[sp.extra,obs].filter(Boolean).join(' - ');
   var lines=[
     'Cliente: '+client,
-    'Destino: '+destino,
-    'Calibre: '+size,
-    'QTY: '+qty+'Tn',
-    'Incoterm: '+incoterm,
-    'Precio: A cotizar',
-    'Shipment: '+sp.months,
-    'Packaging: '+packaging
+    'Destino: '+destino
   ];
+  // One "Calibre:" line per caliber, with its quantity
+  g.forEach(function(x){
+    var xs=(x[FU.SIZE]||'').trim();
+    var xtns=(x[FU.TNS]||'').trim();
+    lines.push('Calibre: '+xs+(xtns?' — '+xtns+'Tn':''));
+  });
+  lines.push('Incoterm: '+incoterm);
+  lines.push('Precio: A cotizar');
+  lines.push('Shipment: '+sp.months);
+  lines.push('Packaging: '+packaging);
   if(comments)lines.push('('+comments+')');
   document.getElementById('pedido-text').value=lines.join('\n');
   document.getElementById('pedido-modal').classList.remove('hidden');
@@ -1146,58 +1187,102 @@ function renderDemandas(){
 }
 function renderDemandasList(){
   var area=document.getElementById('demandas-list');if(!area)return;
+  // Group all rows into orders by client+date+port+country+incoterm
+  var gmap={},order=[];
+  fuRows.forEach(function(r){var k=demGroupKey(r);if(!gmap[k]){gmap[k]=[];order.push(k);}gmap[k].push(r);});
+  var groups=order.map(function(k){return gmap[k];});
+  // Filter by query (a group matches if any of its lines matches)
   var q=demQuery.toLowerCase().trim();
-  var rows=fuRows.filter(function(r){
-    if(!q)return true;
-    var hay=[r[FU.CUSTOMER],r[FU.SIZE],r[FU.TYPE],r[FU.TNS],r[FU.PRICE],r[FU.SUPPLIER],r[FU.BUYSFROM],r[FU.OBS],r[FU.GRADO],r[FU.ALFA]].join(' ').toLowerCase();
-    return hay.indexOf(q)>=0;
-  });
-  if(!rows.length){
-    area.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">'+(fuRows.length?'Sin resultados':'Sin demandas cargadas')+'</div><div class="empty-sub">'+(fuRows.length?'Proba con otra busqueda.':'Carga la primera demanda de un cliente.')+'</div></div>';
+  if(q){
+    groups=groups.filter(function(g){return g.some(function(r){
+      var hay=[r[FU.CUSTOMER],r[FU.SIZE],r[FU.TYPE],r[FU.TNS],r[FU.PRICE],r[FU.SUPPLIER],r[FU.BUYSFROM],r[FU.OBS],r[FU.GRADO],r[FU.ALFA]].join(' ').toLowerCase();
+      return hay.indexOf(q)>=0;
+    });});
+  }
+  if(!groups.length){
+    area.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">'+(fuRows.length?'Sin resultados':'Sin demandas cargadas')+'</div><div class="empty-sub">'+(fuRows.length?'Proba con otra busqueda.':'Carga el primer pedido de un cliente.')+'</div></div>';
     return;
   }
-  var sorted=rows.slice().sort(function(a,b){
-    var da=new Date(((a[0]||'').split('/')).reverse().join('-'));
-    var db=new Date(((b[0]||'').split('/')).reverse().join('-'));
+  groups.sort(function(a,b){
+    var da=new Date(((a[0][FU.DATE]||'').split('/')).reverse().join('-'));
+    var db=new Date(((b[0][FU.DATE]||'').split('/')).reverse().join('-'));
     return demSort==='asc'?(da-db):(db-da);
   });
-  var counter='<div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;">'+rows.length+' de '+fuRows.length+' demandas</div>';
-  area.innerHTML=counter+'<div class="match-list">'+sorted.map(function(r){
+  var counter='<div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;">'+groups.length+' pedido'+(groups.length!==1?'s':'')+' · '+fuRows.length+' calibres</div>';
+  area.innerHTML=counter+'<div class="match-list">'+groups.map(function(g){
+    var r=g[0];
     var company=(r[FU.CUSTOMER]||'').trim();
     var fecha=(r[FU.DATE]||'').trim();
-    var size=normSize((r[FU.SIZE]||'').trim());
-    var type=(r[FU.TYPE]||'').trim();
-    var tns=(r[FU.TNS]||'').trim();
-    var price=(r[FU.PRICE]||'').trim();
-    var supplier=(r[FU.BUYSFROM]||r[FU.SUPPLIER]||'').trim();
+    var supplier=(r[FU.SUPPLIER]||r[FU.BUYSFROM]||'').trim();
+    var origin=(r[FU.ORIGIN]||'').trim();
     var comment=(r[FU.OBS]||'').trim();
     var grado=(r[FU.GRADO]||'').trim();
     var alfa=(r[FU.ALFA]||'').trim();
+    var incoterm=(r[FU.INCOTERM]||'').trim();
+    var port=(r[FU.PORT]||'').trim();
+    var country=(r[FU.COUNTRY]||'').trim();
+    var destino=[port,country].filter(Boolean).join(', ');
+    var sem=semaforoOf(r[FU.ESTADO]);
     var init=(company||'?')[0].toUpperCase();
     var realIdx=fuRows.indexOf(r);
+    // total tns across lines
+    var totalTn=0;g.forEach(function(x){var t=parseFloat((x[FU.TNS]||'').toString().replace(',','.'));if(!isNaN(t))totalTn+=t;});
+    var multi=g.length>1;
+    // summary tags
+    var sumTags='';
+    if(multi){
+      sumTags+='<span class="mtag sz">'+g.length+' calibres</span>';
+      if(totalTn>0)sumTags+='<span class="mtag sz">'+(Math.round(totalTn*100)/100)+' tn total</span>';
+    } else {
+      var size=normSize((r[FU.SIZE]||'').trim());
+      var type=(r[FU.TYPE]||'').trim();
+      var tns=(r[FU.TNS]||'').trim();
+      var price=(r[FU.PRICE]||'').trim();
+      if(size)sumTags+='<span class="mtag sz">'+size+'</span>';
+      if(type)sumTags+='<span class="mtag ty">'+type+'</span>';
+      if(tns)sumTags+='<span class="mtag sz">'+tns+' tn</span>';
+      if(price)sumTags+='<span class="mtag gr">USD '+price+'</span>';
+    }
+    if(grado)sumTags+='<span class="mtag gr">Grado '+grado+'</span>';
+    if(alfa)sumTags+='<span class="mtag '+(alfa.toLowerCase()==='eu'?'rg':'sz')+'">'+alfa+'</span>';
+    if(incoterm)sumTags+='<span class="mtag ty">'+incoterm+'</span>';
+    if(origin)sumTags+='<span class="mtag ty">Origen: '+origin+'</span>';
+    if(destino)sumTags+='<span class="mtag rg">📍 '+destino+'</span>';
+    if(supplier)sumTags+='<span class="ftag sp">🏭 '+supplier+'</span>';
+    // expandable per-line detail (only when multi)
+    var detail='';
+    if(multi){
+      detail='<details class="dem-details"><summary>Ver '+g.length+' calibres</summary><div class="dem-lines">'+
+        g.map(function(x){
+          var xs=normSize((x[FU.SIZE]||'').trim())||'—';
+          var xt=(x[FU.TYPE]||'').trim();
+          var xtns=(x[FU.TNS]||'').trim();
+          var xpr=(x[FU.PRICE]||'').trim();
+          return '<div class="dem-line"><span class="dl-cal">'+xs+'</span>'+
+            (xt?'<span class="mtag ty">'+xt+'</span>':'')+
+            (xtns?'<span class="mtag sz">'+xtns+' tn</span>':'')+
+            (xpr?'<span class="mtag gr">USD '+xpr+'</span>':'')+
+          '</div>';
+        }).join('')+
+      '</div></details>';
+    }
     return '<div class="mcard">'+
       '<div class="mcard-top">'+
         '<div class="mavatar fu">'+init+'</div>'+
         '<div class="mbody">'+
           '<div class="mname-row"><div class="mname">'+company+'</div>'+
+            (sem?'<span class="sem-badge" style="border-color:'+sem.color+';color:'+sem.color+';"><span class="sem-dot" style="background:'+sem.color+';"></span>'+sem.label+'</span>':'')+
             (fecha?'<span class="fu-date" style="margin:0;">'+fecha+'</span>':'')+
           '</div>'+
-          '<div class="mtags">'+
-            (size?'<span class="mtag sz">'+size+'</span>':'')+
-            (type?'<span class="mtag ty">'+type+'</span>':'')+
-            (grado?'<span class="mtag gr">Grado '+grado+'</span>':'')+
-            (alfa?'<span class="mtag '+(alfa.toLowerCase()==='eu'?'rg':'sz')+'">'+alfa+'</span>':'')+
-            (tns?'<span class="mtag sz">'+tns+' tn</span>':'')+
-            (price?'<span class="mtag gr">USD '+price+'</span>':'')+
-            (supplier?'<span class="ftag sp">🏭 '+supplier+'</span>':'')+
-          '</div>'+
+          '<div class="mtags">'+sumTags+'</div>'+
           (comment?'<div class="fu-comment" style="margin-top:6px;">"'+comment+'"</div>':'')+
         '</div>'+
         '<div style="display:flex;flex-direction:column;gap:6px;">'+
-          '<span class="edit-btn" data-idx="'+realIdx+'" onclick="openFUModal(\'\',parseInt(this.dataset.idx))" title="Editar demanda">✏️</span>'+
-          '<span class="edit-btn del" data-idx="'+realIdx+'" onclick="deleteDemanda(parseInt(this.dataset.idx))" title="Eliminar demanda">🗑</span>'+
+          '<span class="edit-btn" data-idx="'+realIdx+'" onclick="openFUModal(\'\',parseInt(this.dataset.idx))" title="Editar pedido">✏️</span>'+
+          '<span class="edit-btn del" data-idx="'+realIdx+'" onclick="deleteDemanda(parseInt(this.dataset.idx))" title="Eliminar pedido">🗑</span>'+
         '</div>'+
       '</div>'+
+      detail+
       '<div style="margin-top:10px;">'+
         '<button class="btn" style="width:100%;justify-content:center;" data-idx="'+realIdx+'" onclick="generarPedido(parseInt(this.dataset.idx))">📄 Generar pedido (texto)</button>'+
       '</div>'+
@@ -1247,6 +1332,19 @@ var FU={DATE:0,CUSTOMER:1,CONTACT:2,SIZE:3,TYPE:4,ORIGIN:5,PACKAGING:6,TNS:7,PRI
 var INCOTERMS=['EXW','FCA','FAS','FOB','CFR','CIF','CPT','CIP','DAP','DPU','DDP'];
 function isBF(row){return /\bbf\b/.test(((row[COL.TYPE]||'')+'').toLowerCase());}
 function isInactive(row){return ((row[COL.ESTADO]||'').toLowerCase().trim()).indexOf('inact')>=0;}
+// Semáforo: estado de la relación con el cliente (se guarda en FU Estado)
+var SEMAFORO=[
+  {val:'Cerrado',color:'#34c759',label:'Cerrado'},
+  {val:'En conversación',color:'#ff9f0a',label:'En conversación'},
+  {val:'Inactivo',color:'#ff3b30',label:'Inactivo'}
+];
+function semaforoOf(txt){
+  var t=(txt||'').toString().toLowerCase();
+  if(t.indexOf('inact')>=0)return SEMAFORO[2];
+  if(t.indexOf('conversa')>=0)return SEMAFORO[1];
+  if(t.indexOf('cerrad')>=0||t.indexOf('conect')>=0||t.indexOf('activo')>=0)return SEMAFORO[0];
+  return null;
+}
 var EU_VALS=['europe','europa','eu','emea','european union'];
 function isEU(v){return EU_VALS.indexOf((v||'').toLowerCase().trim())>=0;}
 
@@ -1397,23 +1495,56 @@ var selTypes=new Set(),withEU=false,withSplit=false,withBF=false,soloSplit=false
 var rMin=38,rMax=50,SL=30,SH=100;
 // Modal state
 var fuMode='new',fuEditIdx=null,fuPrefill='';
+var fuEditRows=[]; // rows (of the group) currently being edited
+// A demand "order" groups Follow up rows by client + date + port + country + incoterm
+function demGroupKey(r){
+  return [normHdr(r[FU.CUSTOMER]),(r[FU.DATE]||'').trim(),normHdr(r[FU.PORT]),normHdr(r[FU.COUNTRY]),normHdr(r[FU.INCOTERM])].join('|');
+}
+function groupOf(r){return fuRows.filter(function(x){return demGroupKey(x)===demGroupKey(r);});}
 var acIdx=-1,acNames=[];
 // Empresas
 var empQuery='',empAcIdx=-1,empAllNames=[];
 
 // ── OAUTH ────────────────────────────────────────────────────────────────────
 var SCOPES='https://www.googleapis.com/auth/spreadsheets';
+var tokExp=0;                 // epoch ms when the current token expires
+var pendingTokenResolve=null; // resolver used when refreshing silently
 function initGoogleAuth(){
   if(!cfg.clientId)return;
   if(typeof google==='undefined'||!google.accounts||!google.accounts.oauth2){setTimeout(initGoogleAuth,500);return;}
   tcl=google.accounts.oauth2.initTokenClient({client_id:cfg.clientId,scope:SCOPES,callback:function(resp){
-    if(resp.error){console.error(resp);return;}
-    tok=resp.access_token;updateAuthUI(true);loadSheetData();
+    if(resp.error){console.error(resp);if(pendingTokenResolve){var rj=pendingTokenResolve;pendingTokenResolve=null;rj(new Error(resp.error));}return;}
+    tok=resp.access_token;
+    tokExp=Date.now()+(((resp.expires_in?parseInt(resp.expires_in):3600))*1000);
+    updateAuthUI(true);
+    if(pendingTokenResolve){var rs=pendingTokenResolve;pendingTokenResolve=null;rs();}
+    else{loadSheetData();}
   }});
+}
+function tokenValid(){return !!tok&&Date.now()<(tokExp-120000);} // 2-min safety buffer
+// Ensure a valid token before any Sheets call; refreshes silently if expired
+function ensureToken(){
+  return new Promise(function(resolve,reject){
+    if(tokenValid()){resolve();return;}
+    if(!tcl){reject(new Error('no-client'));return;}
+    pendingTokenResolve=function(err){if(err)reject(err);else resolve();};
+    try{tcl.requestAccessToken({prompt:''});}catch(e){pendingTokenResolve=null;reject(e);}
+  });
+}
+// Returns true if a valid token is ready; otherwise warns and returns false
+async function guardToken(){
+  if(!cfg.clientId){toast('Configura el Client ID primero');return false;}
+  try{await ensureToken();return true;}
+  catch(e){
+    tok=null;tokExp=0;updateAuthUI(false);
+    setStatus('err','Sesión expirada');
+    toast('Tu sesión de Google expiró. Tocá "Conectar con Google" para reconectar.');
+    return false;
+  }
 }
 function handleAuth(){
   if(tok){
-    google.accounts.oauth2.revoke(tok,function(){tok=null;allRows=[];fuRows=[];updateAuthUI(false);setStatus('err','Desconectado');});
+    google.accounts.oauth2.revoke(tok,function(){tok=null;tokExp=0;allRows=[];fuRows=[];updateAuthUI(false);setStatus('err','Desconectado');});
   } else {
     if(!cfg.clientId){showView('config');toast('Configura el Client ID primero');return;}
     if(!tcl){initGoogleAuth();setTimeout(function(){if(tcl)tcl.requestAccessToken();},600);return;}
@@ -1430,6 +1561,7 @@ function updateAuthUI(c){
 // ── DATA ─────────────────────────────────────────────────────────────────────
 async function loadSheetData(){
   if(!tok){setStatus('err','Sin autenticar');return;}
+  if(!(await guardToken()))return;
   setStatus('loading','Cargando...');prog(true);
   try{
     var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(cfg.sheetName+'!A1:AZ2000'),{headers:{Authorization:'Bearer '+tok}});
@@ -1492,6 +1624,21 @@ async function appendFURow(row){
   var r2=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A2:'+colLetter(lastColOf(FU))+'2')+'?valueInputOption=USER_ENTERED',{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
   return r2.ok;
 }
+async function appendFURows(rows){
+  // Insert N rows at the top (row 2), pushing existing rows down. Fallback: bottom append.
+  var n=rows.length;if(!n)return true;
+  var last=colLetter(lastColOf(FU));
+  var gid=await getFuGid();
+  if(gid===null||gid===undefined){
+    var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A:'+last)+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
+    var rr=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:rows})});
+    return rr.ok;
+  }
+  var r1=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+':batchUpdate',{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({requests:[{insertDimension:{range:{sheetId:gid,dimension:'ROWS',startIndex:1,endIndex:1+n},inheritFromBefore:false}}]})});
+  if(!r1.ok)return false;
+  var r2=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A2:'+last+(1+n))+'?valueInputOption=USER_ENTERED',{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:rows})});
+  return r2.ok;
+}
 async function updateFURow(sheetRow,row){
   var url='https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A'+sheetRow+':'+colLetter(lastColOf(FU))+sheetRow)+'?valueInputOption=USER_ENTERED';
   var r=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
@@ -1500,45 +1647,63 @@ async function updateFURow(sheetRow,row){
 function todayStr(){var d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
 
 // ── FU MODAL ─────────────────────────────────────────────────────────────────
-var fuSelTypes=[];   // selected type strings for FU modal
-var fuCalibers=[];   // caliber strings for FU modal
-function renderFuTypeChips(){
-  var box=document.getElementById('fu-type-chips');if(!box)return;
-  box.innerHTML=DB_TYPES.map(function(t){
-    var on=fuSelTypes.indexOf(t)>=0;
-    return '<span class="chip'+(on?' selected':'')+'" data-t="'+t+'" onclick="toggleFuType(this.dataset.t)">'+t+'</span>';
+// ── ORDER LINES (multi-caliber) ──────────────────────────────────────────────
+// Each line = one Follow up row: {min,max,split,types[],tns,price}
+var fuLines=[];
+function blankLine(){return {min:'',max:'',split:false,types:[],tns:'',price:''};}
+function lineSizeStr(l){
+  if(l.split)return 'Split';
+  var mi=(''+l.min).trim(),ma=(''+l.max).trim();
+  if(mi&&ma){var a=parseInt(mi),b=parseInt(ma);if(!isNaN(a)&&!isNaN(b)&&a>b){var t=a;a=b;b=t;return a+'/'+b;}return mi+'/'+ma;}
+  if(mi)return mi;
+  if(ma)return ma;
+  return '';
+}
+function renderFuLines(){
+  var box=document.getElementById('fu-lines');if(!box)return;
+  if(!fuLines.length)fuLines.push(blankLine());
+  box.innerHTML=fuLines.map(function(l,i){
+    var chips=DB_TYPES.map(function(t){
+      var on=l.types.indexOf(t)>=0;
+      return '<span class="chip'+(on?' selected':'')+'" onclick="toggleLineType('+i+',\''+t+'\')">'+t+'</span>';
+    }).join('');
+    var dis=l.split?' disabled':'';
+    return '<div class="fu-line" data-i="'+i+'">'+
+      '<div class="fu-line-head">'+
+        '<span class="fu-line-title">Calibre '+(i+1)+'</span>'+
+        (fuLines.length>1?'<span class="fu-line-del" onclick="removeFuLine('+i+')" title="Quitar">🗑</span>':'')+
+      '</div>'+
+      '<div class="fu-line-row">'+
+        '<input class="minput fu-line-cal" type="number" inputmode="numeric" placeholder="desde" value="'+(l.min||'')+'"'+dis+' oninput="fuLines['+i+'].min=this.value">'+
+        '<span style="color:var(--text3);font-weight:600;">/</span>'+
+        '<input class="minput fu-line-cal" type="number" inputmode="numeric" placeholder="hasta" value="'+(l.max||'')+'"'+dis+' oninput="fuLines['+i+'].max=this.value">'+
+        '<label class="fu-split-tog"><input type="checkbox"'+(l.split?' checked':'')+' onchange="toggleLineSplit('+i+')"> Split</label>'+
+      '</div>'+
+      '<div class="fu-line-chips">'+chips+'</div>'+
+      '<div class="fu-line-row">'+
+        '<input class="minput fu-line-num" type="number" inputmode="numeric" placeholder="Tns" value="'+(l.tns||'')+'" oninput="fuLines['+i+'].tns=this.value">'+
+        '<input class="minput fu-line-num" type="number" inputmode="numeric" placeholder="USD" value="'+(l.price||'')+'" oninput="fuLines['+i+'].price=this.value">'+
+      '</div>'+
+    '</div>';
   }).join('');
 }
-function toggleFuType(t){
-  var i=fuSelTypes.indexOf(t);
-  if(i>=0)fuSelTypes.splice(i,1);else fuSelTypes.push(t);
-  renderFuTypeChips();
+function addFuLine(){fuLines.push(blankLine());renderFuLines();}
+function removeFuLine(i){fuLines.splice(i,1);if(!fuLines.length)fuLines.push(blankLine());renderFuLines();}
+function toggleLineType(i,t){var a=fuLines[i].types,j=a.indexOf(t);if(j>=0)a.splice(j,1);else a.push(t);renderFuLines();}
+function toggleLineSplit(i){fuLines[i].split=!fuLines[i].split;renderFuLines();}
+// Build a line object from an existing Follow up row (edit mode)
+function rowToLine(r){
+  var l=blankLine();
+  var sz=(r[FU.SIZE]||'').trim();
+  if(sz.toLowerCase().indexOf('split')>=0){l.split=true;}
+  else{var ms=sz.match(/[0-9]+/g);if(ms&&ms.length>=2){l.min=ms[0];l.max=ms[1];}else if(ms&&ms.length===1){l.min=ms[0];l.max=ms[0];}}
+  l.types=getTypes(r[FU.TYPE]||'');
+  if((((r[FU.TYPE]||'')+'').toLowerCase()).indexOf('bf')>=0&&l.types.indexOf('BF')<0)l.types.push('BF');
+  l.tns=(r[FU.TNS]||'').trim();
+  l.price=(r[FU.PRICE]||'').trim();
+  return l;
 }
-function renderFuCalibers(){
-  var box=document.getElementById('fu-cal-list');if(!box)return;
-  if(!fuCalibers.length){box.innerHTML='<span style="font-size:11px;color:var(--text3);">Sin calibres agregados</span>';return;}
-  box.innerHTML=fuCalibers.map(function(cal,i){
-    return '<span class="cal-chip">'+cal+'<span class="x" data-i="'+i+'" onclick="removeFuCaliber(parseInt(this.dataset.i))">×</span></span>';
-  }).join('');
-}
-function addFuCaliber(){
-  var miEl=document.getElementById('fu-cal-min'),maEl=document.getElementById('fu-cal-max');
-  var mi=parseInt(miEl.value),ma=parseInt(maEl.value);
-  if(isNaN(mi)){toast('Ingresá el calibre "desde"');miEl.focus();return;}
-  if(isNaN(ma)){ma=mi;}
-  if(mi>ma){var tmp=mi;mi=ma;ma=tmp;}
-  var cal=mi+'/'+ma;
-  if(fuCalibers.indexOf(cal)>=0){toast('Ese calibre ya está agregado');}
-  else fuCalibers.push(cal);
-  miEl.value='';maEl.value='';miEl.focus();
-  renderFuCalibers();
-}
-function addFuCaliberSplit(){
-  if(fuCalibers.indexOf('Split')<0)fuCalibers.push('Split');
-  renderFuCalibers();
-}
-function removeFuCaliber(i){fuCalibers.splice(i,1);renderFuCalibers();}
-// Parse an existing sheet size/type string back into the picker arrays (for edit mode)
+// Parse an existing sheet size string into caliber chips (kept for compatibility)
 function sizeStrToCalibers(s){
   var out=[];s=(s||'').trim();if(!s)return out;
   var hasSplit=s.toLowerCase().indexOf('split')>=0;
@@ -1694,6 +1859,15 @@ function addFuPkgNew(){
 function pkgStrToArr(s){
   return ((s||'')+'').split(/[;,]/).map(function(x){return x.trim();}).filter(Boolean);
 }
+var fuSemaforo=''; // selected semáforo value (SEMAFORO[i].val) or ''
+function renderSemPick(){
+  var box=document.getElementById('fu-sem-pick');if(!box)return;
+  box.innerHTML=SEMAFORO.map(function(s){
+    var on=fuSemaforo===s.val;
+    return '<span class="sem-opt'+(on?' on':'')+'" data-v="'+s.val+'" onclick="toggleSem(this.dataset.v)" style="'+(on?'border-color:'+s.color+';color:'+s.color+';':'')+'"><span class="sem-dot" style="background:'+s.color+';"></span>'+s.label+'</span>';
+  }).join('');
+}
+function toggleSem(v){fuSemaforo=(fuSemaforo===v?'':v);renderSemPick();}
 function openFUModal(prefill,editIdx){
   fuMode=editIdx!==undefined?'edit':'new';
   fuEditIdx=editIdx!==undefined?editIdx:null;
@@ -1703,16 +1877,16 @@ function openFUModal(prefill,editIdx){
   var inp=document.getElementById('fu-company');
   inp.disabled=false;
   inp.value=fuPrefill;
-  fuSelTypes=[];fuCalibers=[];
-  document.getElementById('fu-cal-min').value='';
-  document.getElementById('fu-cal-max').value='';
+  fuLines=[blankLine()];fuEditRows=[];
   document.getElementById('fu-shipment').value='';
   fuShipSel=[];fuShipYear=(new Date()).getFullYear();fuShipPrompt=false;
   document.getElementById('fu-pkg-new').value='';
   fuPkgSel=[];
-  document.getElementById('fu-tns').value='';
-  document.getElementById('fu-price').value='';
+  fuSemaforo='';
   document.getElementById('fu-supplier').value='';
+  document.getElementById('fu-contact').value='';
+  document.getElementById('fu-origin').value='';
+  document.getElementById('fu-teamm').value='';
   document.getElementById('fu-grado').value='';
   document.getElementById('fu-alfa').value='';
   document.getElementById('fu-comment').value='';
@@ -1720,27 +1894,31 @@ function openFUModal(prefill,editIdx){
 
   if(fuMode==='edit'&&fuEditIdx!==null){
     var row=fuRows[fuEditIdx];
-    document.getElementById('fu-modal-title').textContent='Editar Follow Up';
-    inp.value=(row[1]||'').trim();
+    fuEditRows=groupOf(row);                 // all rows of this order
+    if(!fuEditRows.length)fuEditRows=[row];
+    document.getElementById('fu-modal-title').textContent='Editar pedido';
+    inp.value=(row[FU.CUSTOMER]||'').trim();
     inp.disabled=true;
-    fuCalibers=sizeStrToCalibers((row[FU.SIZE]||'').trim());
-    fuSelTypes=getTypes((row[FU.TYPE]||'').trim());
-    if(/\bbf\b/.test(((row[FU.TYPE]||'')+'').toLowerCase())&&fuSelTypes.indexOf('BF')<0)fuSelTypes.push('BF');
-    document.getElementById('fu-tns').value=(row[FU.TNS]||'').trim();
-    document.getElementById('fu-price').value=(row[FU.PRICE]||'').trim();
-    document.getElementById('fu-supplier').value=(row[FU.BUYSFROM]||row[FU.SUPPLIER]||'').trim();
+    // one line per row in the group
+    fuLines=fuEditRows.map(rowToLine);
+    if(!fuLines.length)fuLines=[blankLine()];
+    document.getElementById('fu-supplier').value=(row[FU.SUPPLIER]||row[FU.BUYSFROM]||'').trim();
+    document.getElementById('fu-contact').value=(row[FU.CONTACT]||'').trim();
+    document.getElementById('fu-origin').value=(row[FU.ORIGIN]||'').trim();
+    document.getElementById('fu-teamm').value=(row[FU.TEAMM]||'').trim();
     document.getElementById('fu-shipment').value=parseShipmentValue((row[FU.SHIPMENT]||'').trim());
     fuPkgSel=pkgStrToArr(row[FU.PACKAGING]);
+    var semE=semaforoOf(row[FU.ESTADO]);fuSemaforo=semE?semE.val:'';
     document.getElementById('fu-comment').value=(row[FU.OBS]||'').trim();
     document.getElementById('fu-grado').value=(row[FU.GRADO]||'').trim();
     document.getElementById('fu-alfa').value=(row[FU.ALFA]||'').trim();
-    document.getElementById('fu-date-display').textContent='Fecha original: '+(row[FU.DATE]||'—')+' · Se actualizara a hoy';
+    document.getElementById('fu-date-display').textContent='Pedido con '+fuLines.length+' calibre(s) · Fecha original: '+(row[FU.DATE]||'—')+' · Se actualiza a hoy';
   } else {
-    document.getElementById('fu-modal-title').textContent='Agregar Follow Up';
+    document.getElementById('fu-modal-title').textContent='Agregar pedido';
     document.getElementById('fu-date-display').textContent='Fecha: '+todayStr();
   }
 
-  renderFuTypeChips();renderFuCalibers();renderShipCal();renderFuPkgChips();
+  renderFuLines();renderShipCal();renderFuPkgChips();renderSemPick();
   if(fuMode==='edit'&&fuEditIdx!==null){
     var er=fuRows[fuEditIdx]||[];
     fillFuDropdowns((er[FU.PORT]||'').trim(),(er[FU.COUNTRY]||'').trim(),(er[FU.INCOTERM]||'').trim());
@@ -1794,14 +1972,14 @@ function selectCompanyByIdx(idx){
 
 // ── SAVE FU ──────────────────────────────────────────────────────────────────
 async function saveFURecord(){
-  if(!tok){toast('Conectate con Google primero');return;}
+  if(!(await guardToken()))return;
   var company=document.getElementById('fu-company').value.trim();
   if(!company){toast('Ingresa el nombre de la empresa');return;}
-  var size=fuCalibers.join('; ');
-  var type=fuSelTypes.join('; ');
-  var tns=document.getElementById('fu-tns').value.trim();
-  var price=document.getElementById('fu-price').value.trim();
+  // Shared fields (apply to every caliber line of the order)
   var supplier=document.getElementById('fu-supplier').value.trim();
+  var contact=document.getElementById('fu-contact').value.trim();
+  var origin=document.getElementById('fu-origin').value.trim();
+  var teamm=document.getElementById('fu-teamm').value.trim();
   var incoterm=document.getElementById('fu-incoterm').value.trim();
   var comment=document.getElementById('fu-comment').value.trim();
   var port=document.getElementById('fu-port').value.trim();
@@ -1810,53 +1988,65 @@ async function saveFURecord(){
   var packaging=fuPkgSel.join('; ');
   var grado=document.getElementById('fu-grado').value.trim();
   var alfa=document.getElementById('fu-alfa').value.trim();
-  // Build a row sized to the detected Follow up layout (blinded by header name)
   var lastFu=lastColOf(FU);
-  var rowData=new Array(lastFu+1).fill('');
-  rowData[FU.DATE]=todayStr();
-  rowData[FU.CUSTOMER]=company;
-  rowData[FU.SIZE]=size;
-  rowData[FU.TYPE]=type;
-  rowData[FU.TNS]=tns;
-  rowData[FU.PRICE]=price;
-  rowData[FU.BUYSFROM]=supplier;
-  rowData[FU.PORT]=port;
-  rowData[FU.COUNTRY]=country;
-  rowData[FU.SHIPMENT]=shipment;
-  rowData[FU.PACKAGING]=packaging;
-  rowData[FU.INCOTERM]=incoterm;
-  rowData[FU.OBS]=comment;
-  rowData[FU.GRADO]=grado;
-  rowData[FU.ALFA]=alfa;
+  var today=todayStr();
+  // On edit, carry over columns not present in the form (e.g. Buys from, Contrato, Días)
+  // from the original order so they are not blanked when we rewrite the rows.
+  var carry=(fuMode==='edit'&&fuEditRows&&fuEditRows[0])?fuEditRows[0]:null;
+  var formIdx={};[FU.DATE,FU.CUSTOMER,FU.CONTACT,FU.SIZE,FU.TYPE,FU.ORIGIN,FU.PACKAGING,FU.TNS,FU.PRICE,FU.PORT,FU.COUNTRY,FU.SHIPMENT,FU.SUPPLIER,FU.INCOTERM,FU.OBS,FU.GRADO,FU.ALFA,FU.TEAMM,FU.ESTADO].forEach(function(ix){formIdx[ix]=true;});
+  // Build one sheet row per caliber line
+  var rows=[];
+  fuLines.forEach(function(l){
+    var sizeStr=lineSizeStr(l);
+    var typeStr=(l.types||[]).join('; ');
+    var tns=(''+(l.tns||'')).trim();
+    var price=(''+(l.price||'')).trim();
+    if(!sizeStr&&!typeStr&&!tns&&!price)return; // skip fully empty line
+    var rd=new Array(lastFu+1).fill('');
+    if(carry){for(var i=0;i<=lastFu;i++){if(!formIdx[i]&&carry[i]!==undefined&&carry[i]!==null)rd[i]=carry[i];}}
+    rd[FU.DATE]=today;
+    rd[FU.CUSTOMER]=company;
+    rd[FU.SIZE]=sizeStr;
+    rd[FU.TYPE]=typeStr;
+    rd[FU.TNS]=tns;
+    rd[FU.PRICE]=price;
+    rd[FU.SUPPLIER]=supplier;
+    rd[FU.CONTACT]=contact;
+    rd[FU.ORIGIN]=origin;
+    rd[FU.TEAMM]=teamm;
+    rd[FU.PORT]=port;
+    rd[FU.COUNTRY]=country;
+    rd[FU.SHIPMENT]=shipment;
+    rd[FU.PACKAGING]=packaging;
+    rd[FU.INCOTERM]=incoterm;
+    rd[FU.OBS]=comment;
+    rd[FU.GRADO]=grado;
+    rd[FU.ALFA]=alfa;
+    rd[FU.ESTADO]=fuSemaforo;
+    rows.push(rd);
+  });
+  if(!rows.length){toast('Agregá al menos un calibre con datos');return;}
   var btn=document.getElementById('fu-save-btn');
   btn.textContent='Guardando...';btn.disabled=true;
   var ok=false;
   if(fuMode==='edit'&&fuEditIdx!==null){
-    var prev=fuRows[fuEditIdx]||[];
-    // Merge: start from existing row so any column not in the form (incl. new/moved
-    // ones) is preserved, then re-apply the form fields on top.
-    var merged=new Array(Math.max(lastFu+1,prev.length)).fill('');
-    for(var i=0;i<merged.length;i++)merged[i]=(prev[i]!==undefined&&prev[i]!==null)?prev[i]:'';
-    var formFields=[FU.DATE,FU.CUSTOMER,FU.SIZE,FU.TYPE,FU.TNS,FU.PRICE,FU.BUYSFROM,FU.PORT,FU.COUNTRY,FU.SHIPMENT,FU.PACKAGING,FU.INCOTERM,FU.OBS,FU.GRADO,FU.ALFA];
-    formFields.forEach(function(ix){merged[ix]=rowData[ix];});
-    rowData=merged;
-    var shRow=fuRows[fuEditIdx]._sheetRow||(fuEditIdx+2);
-    ok=await updateFURow(shRow,rowData);
-    if(ok){rowData._sheetRow=shRow;fuRows[fuEditIdx]=rowData;toast('✓ Follow Up actualizado');}
-  } else {
-    ok=await appendFURow(rowData);
-    if(ok){
-      fuRows.forEach(function(r){if(r._sheetRow)r._sheetRow++;});
-      rowData._sheetRow=2;
-      fuRows.unshift(rowData);toast('✓ Follow Up guardado');
+    // Append the new set first (safer: worst case = duplicates, not data loss),
+    // then delete the old group rows (shifted down by the N we just inserted).
+    ok=await appendFURows(rows);
+    if(ok&&fuEditRows.length){
+      var n=rows.length;
+      var nums=fuEditRows.map(function(r){return r._sheetRow;}).filter(Boolean).map(function(x){return x+n;});
+      await deleteFURowsByNums(nums);
     }
+    if(ok)toast('✓ Pedido actualizado');
+  } else {
+    ok=await appendFURows(rows);
+    if(ok)toast(rows.length>1?('✓ Pedido guardado ('+rows.length+' calibres)'):'✓ Demanda guardada');
   }
   btn.textContent='💾 Guardar';btn.disabled=false;
   if(ok){
     closeFUModal();
-    if(view==='matcher'&&lastSearch){lastSearch.results=getMatches();renderResults();}
-    else if(view==='empresas')renderEmpresas();
-    else if(view==='demandas')renderDemandas();
+    await loadSheetData(); // refresh so grouping & sheet rows stay consistent
   } else {toast('Error al guardar en el Sheet');}
 }
 
@@ -2034,7 +2224,7 @@ function buildFURec(row){
   var date=(row[0]||'').trim();
   var sz=normSize((row[FU.SIZE]||'').trim());
   var ty=normType((row[FU.TYPE]||'').trim());
-  var tns=(row[FU.TNS]||'').trim(),price=(row[FU.PRICE]||'').trim(),sp=(row[FU.BUYSFROM]||row[FU.SUPPLIER]||'').trim(),cm=(row[FU.OBS]||'').trim();
+  var tns=(row[FU.TNS]||'').trim(),price=(row[FU.PRICE]||'').trim(),sp=(row[FU.SUPPLIER]||row[FU.BUYSFROM]||'').trim(),cm=(row[FU.OBS]||'').trim();
   var gr=(row[FU.GRADO]||'').trim(),al=(row[FU.ALFA]||'').trim();
   var rowIdx=fuRows.indexOf(row);
   var editBtn=rowIdx>=0?'<span class="fu-edit-btn" onclick="openFUModal(\'\','+rowIdx+')" title="Editar">✏️</span>':'';
@@ -2296,7 +2486,7 @@ function renderEmpResults(){
       var shRow=row._sheetRow||0;
       html+='<div class="emp-card'+(inact?' inactive':'')+'">'+
         '<div class="emp-card-header">'+
-          '<div><div class="emp-name">'+company+' '+(estadoVal?(inact?'<span class="inactive-badge">Inactivo</span>':'<span class="active-badge">Activo</span>'):'')+'</div>'+(meta?'<div class="emp-meta">'+meta+'</div>':'')+' </div>'+
+          '<div><div class="emp-name">'+company+' '+(function(){var se=semaforoOf(estadoVal);return se?'<span class="sem-badge" style="border-color:'+se.color+';color:'+se.color+';"><span class="sem-dot" style="background:'+se.color+';"></span>'+se.label+'</span>':(estadoVal?'<span class="inactive-badge">'+estadoVal+'</span>':'');})()+'</div>'+(meta?'<div class="emp-meta">'+meta+'</div>':'')+' </div>'+
           '<button class="btn primary" style="font-size:12px;padding:6px 12px;" data-company="'+company.replace(/"/g,'&quot;')+'" onclick="openFUModal(this.dataset.company)">+ Follow Up</button>'+
         '</div>'+
         '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">'+
