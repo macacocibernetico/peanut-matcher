@@ -234,6 +234,9 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .ro-field .minput{background:var(--bg3);color:var(--text3);cursor:not-allowed;}
 .name-edit{cursor:pointer;font-size:15px;margin-left:8px;opacity:.65;vertical-align:middle;}
 .name-edit:hover{opacity:1;}
+.sel-field{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:10px 12px;}
+.mselect-hl{border:1.5px solid var(--accent)!important;background:var(--bg1);font-weight:600;font-size:15px;padding-right:34px;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer;}
+.mselect-hl:focus{outline:none;box-shadow:0 0 0 3px rgba(37,99,235,.15);}
 .sem-pick{display:flex;gap:8px;flex-wrap:wrap;}
 .sem-opt{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;user-select:none;transition:all .12s;}
 .sem-opt:hover{border-color:var(--text3);}
@@ -571,7 +574,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.7.0</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.7.2</span>
     </div>
   </div>
 </aside>
@@ -775,8 +778,20 @@ async function deleteOferta(idx){
     toast('Error al eliminar la oferta');
   }
 }
+// Re-read a sheet's header row (row 1) right before writing, so column mapping
+// stays correct even if the user added/moved columns without syncing.
+async function refreshHeaderRow(sheetName){
+  try{
+    var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent(sheetName+'!1:1'),{headers:{Authorization:'Bearer '+tok}});
+    if(!r.ok)return null;
+    var d=await r.json();
+    return (d.values&&d.values[0])?d.values[0]:null;
+  }catch(e){return null;}
+}
 async function saveOferta(){
   if(!(await guardToken()))return;
+  var _ah=await refreshHeaderRow('Availability');
+  if(_ah){AV=mapHeaders(_ah,AV_SPEC,AV);availHeaderLen=_ah.length||availHeaderLen;}
   var prov=document.getElementById('of-prov').value.trim();
   if(!prov){toast('Ingresa el proveedor');return;}
   var lastAv=Math.max(lastColOf(AV),availHeaderLen-1);
@@ -945,29 +960,29 @@ function empEditField(col){
   var h=((dbHeaders[col]!=null?dbHeaders[col]:'')+'').trim();
   if(!h)return '';
   var val=(teamEditRowData[col]!=null?teamEditRowData[col]:'')+'';
-  var letter=colLetter(col);
   var ro=/auto/i.test(h); // formula/auto columns → read-only
   if(col===COL.ESTADO){
-    return '<div class="mfield"><label class="mfield-label">'+h+' <span class="mfield-opt">'+letter+'</span></label>'+
-      '<select class="mselect edit-col" data-col="'+col+'">'+
-        '<option value=""'+(!val?' selected':'')+'>—</option>'+
+    return '<div class="mfield sel-field" style="grid-column:1/-1"><label class="mfield-label">'+h+' <span class="mfield-opt">elegí una opción</span></label>'+
+      '<select class="mselect mselect-hl edit-col" data-col="'+col+'">'+
+        '<option value=""'+(!val?' selected':'')+'>— Sin estado —</option>'+
         '<option'+(/activo/i.test(val)&&!/inact/i.test(val)?' selected':'')+'>Activo</option>'+
         '<option'+(/inact/i.test(val)?' selected':'')+'>Inactivo</option>'+
       '</select></div>';
   }
   if(ro){
-    return '<div class="mfield ro-field" style="grid-column:1/-1"><label class="mfield-label">'+h+' <span class="mfield-opt">'+letter+' · automático</span></label>'+
+    return '<div class="mfield ro-field" style="grid-column:1/-1"><label class="mfield-label">'+h+' <span class="mfield-opt">automático</span></label>'+
       '<input class="minput" value="'+val.replace(/"/g,'&quot;')+'" disabled></div>';
   }
   if(val.length>60){
-    return '<div class="mfield" style="grid-column:1/-1"><label class="mfield-label">'+h+' <span class="mfield-opt">'+letter+'</span></label>'+
+    return '<div class="mfield" style="grid-column:1/-1"><label class="mfield-label">'+h+'</label>'+
       '<textarea class="mtextarea edit-col" data-col="'+col+'" rows="2">'+val.replace(/</g,'&lt;')+'</textarea></div>';
   }
-  return '<div class="mfield"><label class="mfield-label">'+h+' <span class="mfield-opt">'+letter+'</span></label>'+
+  return '<div class="mfield"><label class="mfield-label">'+h+'</label>'+
     '<input class="minput edit-col" data-col="'+col+'" value="'+val.replace(/"/g,'&quot;')+'"></div>';
 }
-function openTeamEdit(sheetRow){
+async function openTeamEdit(sheetRow){
   teamEditRow=parseInt(sheetRow)||0;
+  if(tok){var _dh=await refreshHeaderRow(cfg.sheetName);if(_dh){COL=mapHeaders(_dh,DB_SPEC,COL);dbHeaders=_dh;}}
   var row=null;
   for(var i=0;i<allRows.length;i++){if(allRows[i]._sheetRow===teamEditRow){row=allRows[i];break;}}
   teamEditRowData=row||[];
@@ -1040,6 +1055,8 @@ async function saveTeamEdit(){
 }
 async function saveDbCompany(){
   if(!(await guardToken()))return;
+  var _dh=await refreshHeaderRow(cfg.sheetName);
+  if(_dh){COL=mapHeaders(_dh,DB_SPEC,COL);dbHeaders=_dh;}
   var company=document.getElementById('db-company').value.trim();
   if(!company){toast('Ingresa el nombre de la empresa');return;}
   var similar=findSimilarCompany(company);
@@ -1631,7 +1648,7 @@ async function loadSheetData(){
       }
     }catch(e){console.warn('FU:',e);}
     try{
-      var ar=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A1:Z2000'),{headers:{Authorization:'Bearer '+tok}});
+      var ar=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Availability!A1:AZ2000'),{headers:{Authorization:'Bearer '+tok}});
       if(ar.ok){
         var ad=await ar.json();var aAll=ad.values||[];
         if(aAll.length){AV=mapHeaders(aAll[0],AV_SPEC,AV);availHeaderLen=aAll[0].length||12;}
@@ -2024,6 +2041,8 @@ function selectCompanyByIdx(idx){
 // ── SAVE FU ──────────────────────────────────────────────────────────────────
 async function saveFURecord(){
   if(!(await guardToken()))return;
+  var _fh=await refreshHeaderRow('Follow up');
+  if(_fh){FU=mapHeaders(_fh,FU_SPEC,FU);}
   var company=document.getElementById('fu-company').value.trim();
   if(!company){toast('Ingresa el nombre de la empresa');return;}
   // Shared fields (apply to every caliber line of the order)
