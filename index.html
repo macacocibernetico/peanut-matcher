@@ -413,6 +413,10 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
             <input class="minput" id="fu-pkg-new" placeholder="Nuevo packaging (ej: 1000kg bags)">
             <button type="button" class="btn" onclick="addFuPkgNew()">+ Agregar</button>
           </div>
+          <div style="margin-top:12px;">
+            <label class="mfield-label" style="margin-bottom:6px;">Pallet?</label>
+            <div class="chip-group" id="fu-pallet-chips"></div>
+          </div>
         </div>
       </div>
       <div class="mfield">
@@ -574,7 +578,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.7.2</span>
+      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.8.1</span>
     </div>
   </div>
 </aside>
@@ -1130,9 +1134,19 @@ async function deleteDemanda(idx){
   }
 }
 var demQuery='',demSort='desc';
+var demFilterSem='',demFilterEmp='',demFilterCal='',demFilterInco='';
 var _demSearchTimer=null;
 function debouncedDemSearch(v){clearTimeout(_demSearchTimer);_demSearchTimer=setTimeout(function(){demQuery=v;renderDemandasList();},200);}
 function setDemSort(v){demSort=v;renderDemandasList();}
+function setDemFilterSem(v){demFilterSem=(demFilterSem===v?'':v);renderDemandas();}
+function setDemFilter(kind,v){
+  if(kind==='emp')demFilterEmp=v;
+  else if(kind==='cal')demFilterCal=v;
+  else if(kind==='inco')demFilterInco=v;
+  renderDemandasList();
+}
+function clearDemFilters(){demFilterSem='';demFilterEmp='';demFilterCal='';demFilterInco='';demQuery='';renderDemandas();}
+function demActiveFilterCount(){return (demFilterSem?1:0)+(demFilterEmp?1:0)+(demFilterCal?1:0)+(demFilterInco?1:0);}
 // Split a stored shipment string into {months, extra}
 // months = Prompt + month/year segments; extra = any free-text portion
 function splitShipment(s){
@@ -1165,22 +1179,30 @@ function generarPedido(idx){
   var incoterm=(r[FU.INCOTERM]||'').trim();
   var sp=splitShipment((r[FU.SHIPMENT]||'').trim());
   var packaging=(r[FU.PACKAGING]||'').trim();
+  // Split pallet info out of packaging for a dedicated line
+  var pkgParts=packaging.split(/[;,]/).map(function(x){return x.trim();}).filter(Boolean);
+  var palletTok=pkgParts.filter(isPalletToken);
+  var pkgClean=pkgParts.filter(function(x){return !isPalletToken(x);}).join('; ');
+  var palletLine='';
+  if(palletTok.length){var pl=palletTok[0].toLowerCase();palletLine=(/sin/.test(pl)||/\bno\b/.test(pl))?'Pallet: No':'Pallet: Sí';}
   var obs=(r[FU.OBS]||'').trim();
   var comments=[sp.extra,obs].filter(Boolean).join(' - ');
   var lines=[
     'Cliente: '+client,
     'Destino: '+destino
   ];
-  // One "Calibre:" line per caliber, with its quantity
+  // One "Calibre:" line per caliber, with type (crudo/blancheado) and quantity
   g.forEach(function(x){
     var xs=(x[FU.SIZE]||'').trim();
+    var xt=(x[FU.TYPE]||'').trim();
     var xtns=(x[FU.TNS]||'').trim();
-    lines.push('Calibre: '+xs+(xtns?' — '+xtns+'Tn':''));
+    lines.push('Calibre: '+xs+(xt?' ('+xt+')':'')+(xtns?' — '+xtns+'Tn':''));
   });
   lines.push('Incoterm: '+incoterm);
   lines.push('Precio: A cotizar');
   lines.push('Shipment: '+sp.months);
-  lines.push('Packaging: '+packaging);
+  lines.push('Packaging: '+pkgClean);
+  if(palletLine)lines.push(palletLine);
   if(comments)lines.push('('+comments+')');
   document.getElementById('pedido-text').value=lines.join('\n');
   document.getElementById('pedido-modal').classList.remove('hidden');
@@ -1214,9 +1236,40 @@ function renderDemandas(){
         '<span class="chip'+(demSort==='desc'?' selected':'')+'" style="padding:5px 12px;font-size:11px;" onclick="setDemSort(\'desc\')">Más recientes</span>'+
         '<span class="chip'+(demSort==='asc'?' selected':'')+'" style="padding:5px 12px;font-size:11px;" onclick="setDemSort(\'asc\')">Más antiguas</span>'+
       '</div>'+
+      buildDemFilters()+
     '</div>'+
     '<div id="demandas-list"></div>';
   renderDemandasList();
+}
+function buildDemFilters(){
+  // Collect distinct values from the demands for the dropdowns
+  var emps={},cals={},incos={};
+  fuRows.forEach(function(r){
+    var e=(r[FU.CUSTOMER]||'').trim();if(e)emps[e]=1;
+    var c=normSize((r[FU.SIZE]||'').trim());if(c)cals[c]=1;
+    var i=(r[FU.INCOTERM]||'').trim();if(i)incos[i]=1;
+  });
+  function opts(obj,sel){
+    return Object.keys(obj).sort().map(function(v){
+      return '<option'+(sel===v?' selected':'')+'>'+v.replace(/</g,'&lt;')+'</option>';
+    }).join('');
+  }
+  var semChips=SEMAFORO.map(function(s){
+    var on=demFilterSem===s.val;
+    return '<span class="chip'+(on?' selected':'')+'" style="padding:5px 11px;font-size:11px;'+(on?'border-color:'+s.color+';color:'+s.color+';':'')+'" onclick="setDemFilterSem(\''+s.val+'\')"><span class="sem-dot" style="background:'+s.color+';width:8px;height:8px;margin-right:5px;display:inline-block;"></span>'+s.label+'</span>';
+  }).join('');
+  var n=demActiveFilterCount();
+  return '<div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">'+
+      '<span style="font-size:11px;color:var(--text3);font-weight:600;">Semáforo:</span>'+semChips+
+    '</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'+
+      '<select class="mselect" style="width:auto;min-width:130px;font-size:12px;padding:6px 10px;" onchange="setDemFilter(\'emp\',this.value)"><option value="">Todas las empresas</option>'+opts(emps,demFilterEmp)+'</select>'+
+      '<select class="mselect" style="width:auto;min-width:110px;font-size:12px;padding:6px 10px;" onchange="setDemFilter(\'cal\',this.value)"><option value="">Todos los calibres</option>'+opts(cals,demFilterCal)+'</select>'+
+      '<select class="mselect" style="width:auto;min-width:110px;font-size:12px;padding:6px 10px;" onchange="setDemFilter(\'inco\',this.value)"><option value="">Todos los incoterms</option>'+opts(incos,demFilterInco)+'</select>'+
+      (n>0?'<button class="btn" style="font-size:11px;padding:5px 10px;" onclick="clearDemFilters()">✕ Limpiar ('+n+')</button>':'')+
+    '</div>'+
+  '</div>';
 }
 function renderDemandasList(){
   var area=document.getElementById('demandas-list');if(!area)return;
@@ -1231,6 +1284,19 @@ function renderDemandasList(){
       var hay=[r[FU.CUSTOMER],r[FU.SIZE],r[FU.TYPE],r[FU.TNS],r[FU.PRICE],r[FU.SUPPLIER],r[FU.BUYSFROM],r[FU.OBS],r[FU.GRADO],r[FU.ALFA]].join(' ').toLowerCase();
       return hay.indexOf(q)>=0;
     });});
+  }
+  // Category filters
+  if(demFilterSem){
+    groups=groups.filter(function(g){var s=semaforoOf(g[0][FU.ESTADO]);return s&&s.val===demFilterSem;});
+  }
+  if(demFilterEmp){
+    groups=groups.filter(function(g){return (g[0][FU.CUSTOMER]||'').trim()===demFilterEmp;});
+  }
+  if(demFilterInco){
+    groups=groups.filter(function(g){return (g[0][FU.INCOTERM]||'').trim()===demFilterInco;});
+  }
+  if(demFilterCal){
+    groups=groups.filter(function(g){return g.some(function(r){return normSize((r[FU.SIZE]||'').trim())===demFilterCal;});});
   }
   if(!groups.length){
     area.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">'+(fuRows.length?'Sin resultados':'Sin demandas cargadas')+'</div><div class="empty-sub">'+(fuRows.length?'Proba con otra busqueda.':'Carga el primer pedido de un cliente.')+'</div></div>';
@@ -1887,14 +1953,26 @@ function parseShipmentValue(s){
   return free;
 }
 var PKG_BASE=['flexitank','25kg bags','50kg bags','big bags'];
+var PALLET_OPTS=[{l:'Sí',v:'Pallet: Sí'},{l:'No',v:'Pallet: No'},{l:'No definido',v:''}];
 var fuPkgSel=[];   // selected packaging strings
+var fuPallet='';   // 'Pallet: Sí' | 'Pallet: No' | '' (no definido)
+function isPalletToken(p){return /pallet/i.test(p||'');}
+function renderPalletChips(){
+  var box=document.getElementById('fu-pallet-chips');if(!box)return;
+  box.innerHTML=PALLET_OPTS.map(function(o){
+    var on=fuPallet===o.v;
+    var emo=o.v==='Pallet: Sí'?'🟩 ':(o.v==='Pallet: No'?'🟥 ':'▫️ ');
+    return '<span class="chip'+(on?' selected':'')+'" style="padding:5px 12px;font-size:12px;" data-v="'+o.v+'" onclick="setPallet(this.dataset.v)">'+emo+o.l+'</span>';
+  }).join('');
+}
+function setPallet(v){fuPallet=v;renderPalletChips();}
 function getPkgOptions(){
   // base options + any packaging already used in Follow up col G, de-duplicated (case-insensitive)
   var seen={},out=[];
   PKG_BASE.forEach(function(p){var k=p.toLowerCase();if(!seen[k]){seen[k]=true;out.push(p);}});
   fuRows.forEach(function(r){
     ((r[FU.PACKAGING]||'')+'').split(/[;,]/).forEach(function(seg){
-      var p=seg.trim();if(!p)return;var k=p.toLowerCase();
+      var p=seg.trim();if(!p||isPalletToken(p))return;var k=p.toLowerCase();
       if(!seen[k]){seen[k]=true;out.push(p);}
     });
   });
@@ -1925,7 +2003,14 @@ function addFuPkgNew(){
   renderFuPkgChips();
 }
 function pkgStrToArr(s){
-  return ((s||'')+'').split(/[;,]/).map(function(x){return x.trim();}).filter(Boolean);
+  return ((s||'')+'').split(/[;,]/).map(function(x){return x.trim();}).filter(function(x){return x&&!isPalletToken(x);});
+}
+function palletFromStr(s){
+  var m=((s||'')+'').split(/[;,]/).map(function(x){return x.trim();}).filter(isPalletToken);
+  if(!m.length)return '';
+  var t=m[0].toLowerCase();
+  if(/sin/.test(t)||/:\s*no/.test(t)||/\bno\b/.test(t))return 'Pallet: No';
+  return 'Pallet: Sí';
 }
 var fuSemaforo=''; // selected semáforo value (SEMAFORO[i].val) or ''
 function renderSemPick(){
@@ -1949,7 +2034,7 @@ function openFUModal(prefill,editIdx){
   document.getElementById('fu-shipment').value='';
   fuShipSel=[];fuShipYear=(new Date()).getFullYear();fuShipPrompt=false;
   document.getElementById('fu-pkg-new').value='';
-  fuPkgSel=[];
+  fuPkgSel=[];fuPallet='';
   fuSemaforo='';
   document.getElementById('fu-supplier').value='';
   document.getElementById('fu-contact').value='';
@@ -1975,7 +2060,7 @@ function openFUModal(prefill,editIdx){
     document.getElementById('fu-origin').value=(row[FU.ORIGIN]||'').trim();
     document.getElementById('fu-teamm').value=(row[FU.TEAMM]||'').trim();
     document.getElementById('fu-shipment').value=parseShipmentValue((row[FU.SHIPMENT]||'').trim());
-    fuPkgSel=pkgStrToArr(row[FU.PACKAGING]);
+    fuPkgSel=pkgStrToArr(row[FU.PACKAGING]);fuPallet=palletFromStr(row[FU.PACKAGING]);
     var semE=semaforoOf(row[FU.ESTADO]);fuSemaforo=semE?semE.val:'';
     document.getElementById('fu-comment').value=(row[FU.OBS]||'').trim();
     document.getElementById('fu-grado').value=(row[FU.GRADO]||'').trim();
@@ -1986,7 +2071,7 @@ function openFUModal(prefill,editIdx){
     document.getElementById('fu-date-display').textContent='Fecha: '+todayStr();
   }
 
-  renderFuLines();renderShipCal();renderFuPkgChips();renderSemPick();
+  renderFuLines();renderShipCal();renderFuPkgChips();renderPalletChips();renderSemPick();
   if(fuMode==='edit'&&fuEditIdx!==null){
     var er=fuRows[fuEditIdx]||[];
     fillFuDropdowns((er[FU.PORT]||'').trim(),(er[FU.COUNTRY]||'').trim(),(er[FU.INCOTERM]||'').trim());
@@ -2056,6 +2141,7 @@ async function saveFURecord(){
   var country=document.getElementById('fu-country').value.trim();
   var shipment=buildShipmentValue();
   var packaging=fuPkgSel.join('; ');
+  if(fuPallet)packaging+=(packaging?'; ':'')+fuPallet;
   var grado=document.getElementById('fu-grado').value.trim();
   var alfa=document.getElementById('fu-alfa').value.trim();
   var lastFu=lastColOf(FU);
