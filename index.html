@@ -234,6 +234,14 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .ro-field .minput{background:var(--bg3);color:var(--text3);cursor:not-allowed;}
 .name-edit{cursor:pointer;font-size:15px;margin-left:8px;opacity:.65;vertical-align:middle;}
 .name-edit:hover{opacity:1;}
+#update-gate{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px;}
+#update-gate .ug-box{background:var(--bg1);border:1px solid var(--border);border-radius:16px;max-width:380px;width:100%;padding:28px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+#update-gate .ug-emoji{font-size:44px;margin-bottom:10px;}
+#update-gate .ug-title{font-size:19px;font-weight:800;color:var(--text);margin-bottom:8px;}
+#update-gate .ug-sub{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:20px;}
+#update-gate .ug-btn{width:100%;padding:13px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:15px;font-weight:700;cursor:pointer;}
+#update-gate .ug-btn:hover{filter:brightness(1.06);}
+#update-gate .ug-hint{font-size:11px;color:var(--text3);margin-top:12px;}
 .sel-field{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:10px 12px;}
 .mselect-hl{border:1.5px solid var(--accent)!important;background:var(--bg1);font-weight:600;font-size:15px;padding-right:34px;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer;}
 .mselect-hl:focus{outline:none;box-shadow:0 0 0 3px rgba(37,99,235,.15);}
@@ -578,7 +586,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.8.1</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.8.1</span>
     </div>
   </div>
 </aside>
@@ -601,6 +609,43 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 </div>
 
 <script>
+// ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
+var APP_VERSION='3.8.1';
+// Compares dotted versions: returns true if a < b
+function verLt(a,b){
+  var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
+  for(var i=0;i<Math.max(pa.length,pb.length);i++){var x=pa[i]||0,y=pb[i]||0;if(x<y)return true;if(x>y)return false;}
+  return false;
+}
+var _updateBlocked=false;
+function showUpdateGate(minVer){
+  if(_updateBlocked)return;_updateBlocked=true;
+  var ov=document.createElement('div');
+  ov.id='update-gate';
+  ov.innerHTML=
+    '<div class="ug-box">'+
+      '<div class="ug-emoji">🔄</div>'+
+      '<div class="ug-title">Hay una versión nueva</div>'+
+      '<div class="ug-sub">Estás usando la v'+APP_VERSION+' y ya salió la v'+minVer+'. Actualizá la página para seguir usando el Peanut Matcher con los últimos cambios.</div>'+
+      '<button class="ug-btn" onclick="forceUpdate()">Actualizar ahora</button>'+
+      '<div class="ug-hint">Si el botón no funciona, refrescá con Ctrl/Cmd + Shift + R</div>'+
+    '</div>';
+  document.body.appendChild(ov);
+}
+function forceUpdate(){
+  // Cache-buster in the URL forces GitHub Pages to serve the fresh file
+  try{location.href=location.pathname+'?v='+Date.now();}catch(e){location.reload();}
+}
+async function checkVersion(){
+  try{
+    var url=new URL('version.json',location.href).href+'?t='+Date.now();
+    var r=await fetch(url,{cache:'no-store'});
+    if(!r.ok)return;
+    var d=await r.json();
+    var min=(d&&(d.min||d.version||d.latest))||'';
+    if(min&&verLt(APP_VERSION,min))showUpdateGate(min);
+  }catch(e){/* offline or no file yet: don't block */}
+}
 // ── OFERTAS ──────────────────────────────────────────────────────────────────
 var ofQuery='',ofEstadoF='',ofMode='new',ofEditIdx=null;
 var _ofSearchTimer=null;
@@ -2713,9 +2758,12 @@ function toggleSidebar(){document.getElementById('sidebar').classList.toggle('op
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
 
 window.onload=function(){
+  var vp=document.getElementById('ver-pill');if(vp)vp.textContent='v'+APP_VERSION;
   if(cfg.clientId)initGoogleAuth();
   renderMatcher();
   setStatus('err',cfg.clientId?'Sin autenticar':'Sin configurar');
+  checkVersion();
+  setInterval(checkVersion,300000); // re-check every 5 minutes
 };
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
