@@ -278,6 +278,11 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .ofcard.of-other{border-left:4px solid var(--border2);}
 /* PROGRESS / TOAST */
 #toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 16px;border-radius:10px;font-weight:500;font-size:12px;z-index:999;transition:opacity .3s;pointer-events:none;box-shadow:var(--shl);opacity:0;}
+#undo-bar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 12px 10px 16px;border-radius:12px;font-size:12px;font-weight:600;z-index:1000;display:none;align-items:center;gap:14px;box-shadow:var(--shl);max-width:calc(100vw - 28px);}
+#undo-bar.show{display:flex;}
+#undo-bar button{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.32);border-radius:8px;padding:7px 13px;font-size:12px;font-weight:700;font-family:var(--font);white-space:nowrap;}
+#undo-bar button:hover{background:rgba(255,255,255,.28);}
+@media(max-width:768px){#undo-bar{left:14px;right:14px;transform:none;max-width:none;justify-content:space-between;bottom:14px;}}
 .pbar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#e2a832);z-index:9999;transform-origin:left;transform:scaleX(0);pointer-events:none;}
 .pbar.go{animation:pg 1.5s ease-in-out infinite;}
 @keyframes pg{0%{transform:scaleX(0);opacity:1;}60%{transform:scaleX(.7);opacity:1;}100%{transform:scaleX(1);opacity:0;}}
@@ -348,6 +353,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 <body>
 <div class="pbar" id="pbar"></div>
 <div id="toast"></div>
+<div id="undo-bar"></div>
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
 <!-- FU MODAL -->
@@ -574,6 +580,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
       <div class="nav-item" id="nav-empresas" onclick="showView('empresas')"><span>🏢</span> Empresas</div>
       <div class="nav-item" id="nav-ofertas" onclick="showView('ofertas')"><span>📦</span> Ofertas</div>
       <div class="nav-item" id="nav-demandas" onclick="showView('demandas')"><span>📋</span> Demandas</div>
+      <div class="nav-item" id="nav-agenda" onclick="showView('agenda')"><span>📅</span> Agenda</div>
       <div class="nav-item" id="nav-config" onclick="showView('config')"><span>⚙</span> Configuracion</div>
     </div>
   </nav>
@@ -586,7 +593,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.8.1</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.9.1</span>
     </div>
   </div>
 </aside>
@@ -610,7 +617,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 
 <script>
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='3.8.1';
+var APP_VERSION='3.9.1';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -737,6 +744,9 @@ function renderOfertasList(){
           '<span class="edit-btn del" data-idx="'+realIdx+'" onclick="deleteOferta(parseInt(this.dataset.idx))" title="Eliminar oferta">🗑</span>'+
         '</div>'+
       '</div>'+
+      '<div style="margin-top:10px;">'+
+        '<button class="btn" style="width:100%;justify-content:center;" data-idx="'+realIdx+'" onclick="buscarClientesDeOferta(parseInt(this.dataset.idx))">🔍 Buscar clientes</button>'+
+      '</div>'+
     '</div>';
   }).join('')+'</div>';
 }
@@ -814,14 +824,15 @@ async function deleteOferta(idx){
   var shRow=r._sheetRow;
   if(!shRow){toast('Sincroniza antes de eliminar esta oferta');return;}
   var prov=(r[AV.PROV]||'').trim();
-  if(!confirm('¿Eliminar la oferta de '+prov+'? Esto borra la fila del Sheet y no se puede deshacer.'))return;
+  if(!confirm('¿Eliminar la oferta de '+prov+'? Se borra la fila del Sheet (podés deshacerlo por unos segundos).'))return;
+  var snapOf=r.slice();
   prog(true);
   var okDel=await deleteOfertaRow(shRow);
   prog(false);
   if(okDel){
     availRows.splice(idx,1);
     availRows.forEach(function(x){if(x._sheetRow&&x._sheetRow>shRow)x._sheetRow--;});
-    toast('✓ Oferta eliminada');
+    showUndo('✓ Oferta eliminada',function(){return appendOfertaRow(snapOf);});
     renderOfertasList();
   } else {
     toast('Error al eliminar la oferta');
@@ -1165,15 +1176,17 @@ async function deleteDemanda(idx){
   if(!nums.length){toast('Sincroniza antes de eliminar este pedido');return;}
   var company=(r[FU.CUSTOMER]||'').trim();
   var msg=nums.length>1
-    ? '¿Eliminar el pedido de '+company+' ('+nums.length+' calibres)? Se borran las '+nums.length+' filas del Sheet y no se puede deshacer.'
-    : '¿Eliminar la demanda de '+company+'? Esto borra la fila del Sheet y no se puede deshacer.';
+    ? '¿Eliminar el pedido de '+company+' ('+nums.length+' calibres)? Se borran las '+nums.length+' filas del Sheet (podés deshacerlo por unos segundos).'
+    : '¿Eliminar la demanda de '+company+'? Se borra la fila del Sheet (podés deshacerlo por unos segundos).';
   if(!confirm(msg))return;
+  // Snapshot the rows so the delete can be undone
+  var snap=grp.map(function(x){return x.slice();});
   prog(true);
   var okDel=await deleteFURowsByNums(nums);
   prog(false);
   if(okDel){
     await loadSheetData();
-    toast('✓ '+(nums.length>1?'Pedido eliminado':'Demanda eliminada'));
+    showUndo('✓ '+(nums.length>1?('Pedido eliminado ('+nums.length+' calibres)'):'Demanda eliminada'),function(){return appendFURows(snap);});
   } else {
     toast('Error al eliminar');
   }
@@ -1262,6 +1275,52 @@ function copyPedido(){
   } else {
     ta.select();document.execCommand('copy');done();
   }
+}
+// Take an offer and run the matcher with its type/caliber/alfa already loaded
+function buscarClientesDeOferta(idx){
+  var r=availRows[idx];
+  if(!r){toast('No se encontro la oferta');return;}
+  if(!allRows.length){toast('Primero sincroniza el Sheet');return;}
+  var prod=(r[AV.PROD]||'').trim();
+  var tipo=(r[AV.TIPO]||'').trim();
+  var alfa=(r[AV.ALFA]||'').trim();
+  var prov=(r[AV.PROV]||'').trim();
+  // Types: from the offer's Tipo (fall back to Producto, then to all)
+  var MT=['Raw','Blanched','Roasted','In shell'];
+  var t=getTypes(tipo);
+  if(!t.length)t=getTypes(prod);
+  selTypes=new Set(t.filter(function(x){return MT.indexOf(x)>=0;}));
+  var noType=selTypes.size===0;
+  if(noType)MT.forEach(function(x){selTypes.add(x);});
+  // Calibers: use the offer's range; Split-only offers switch to "Solo Split"
+  var p=parseSize(prod);
+  var badCal=false;
+  withSplit=p.hasSplit;
+  soloSplit=p.hasSplit&&!p.ranges.length;
+  if(p.ranges.length){
+    var lo=Math.min.apply(null,p.ranges.map(function(x){return x[0];}));
+    var hi=Math.max.apply(null,p.ranges.map(function(x){return x[1];}));
+    if(hi<SL||lo>SH){
+      // Caliber falls outside the slider scale: don't invent a range, search wide
+      rMin=SL;rMax=SH;badCal=true;
+    } else {
+      rMin=Math.max(SL,Math.min(lo,SH));
+      rMax=Math.min(SH,Math.max(hi,SL));
+      if(rMin>rMax){var tmp=rMin;rMin=rMax;rMax=tmp;}
+    }
+  } else if(!p.hasSplit){
+    rMin=SL;rMax=SH; // no usable caliber: open the whole range
+    if(prod)badCal=true; // there WAS caliber text but it couldn't be read
+  }
+  // EU-apto offers can also reach European clients
+  withEU=/\beu\b/i.test(alfa)&&!/non/i.test(alfa);
+  // Birdfood offers only make sense for BF-apto clients
+  withBF=/bf/i.test(tipo+' '+prod+' '+alfa);
+  var ctx=[prov,prod,tipo].filter(Boolean).join(' · ');
+  showView('matcher');
+  runSearch(ctx);
+  if(badCal)toast('No pude interpretar el calibre "'+prod+'": busqué con el rango completo');
+  else if(noType)toast('La oferta no tiene Tipo cargado: busqué con todos');
 }
 function renderDemandas(){
   var banner='';
@@ -1773,6 +1832,7 @@ async function loadSheetData(){
     else if(view==='empresas')renderEmpresas();
     else if(view==='ofertas')renderOfertas();
     else if(view==='demandas')renderDemandas();
+    else if(view==='agenda')renderAgenda();
   }catch(e){setStatus('err','Error');prog(false);toast('Error al conectar');console.error(e);}
 }
 function setStatus(s,t){document.getElementById('sheet-dot').className='sdot'+(s==='err'?' err':s==='loading'?' loading':'');document.getElementById('sheet-status-text').textContent=t;}
@@ -2307,12 +2367,13 @@ function showView(v){
   view=v;
   document.querySelectorAll('.nav-item').forEach(function(el){el.classList.remove('active');});
   var el=document.getElementById('nav-'+v);if(el)el.classList.add('active');
-  var titles={matcher:'Buscar Matches',empresas:'Empresas',ofertas:'Ofertas',demandas:'Demandas',config:'Configuracion'};
+  var titles={matcher:'Buscar Matches',empresas:'Empresas',ofertas:'Ofertas',demandas:'Demandas',agenda:'Agenda',config:'Configuracion'};
   document.getElementById('view-title').textContent=titles[v]||v;
   if(v==='matcher')renderMatcher();
   else if(v==='empresas')renderEmpresas();
   else if(v==='ofertas')renderOfertas();
   else if(v==='demandas')renderDemandas();
+  else if(v==='agenda')renderAgenda();
   else renderConfig();
   if(window.innerWidth<=768)closeSidebar();
 }
@@ -2351,15 +2412,17 @@ function toggleBF(){
   el.classList.toggle('eu-on',withBF);ck.innerHTML=withBF?CHK:'';
   sb.textContent=withBF?'Muestra solo clientes aptos BF':'Muestra todos los clientes';
 }
-function runSearch(){
+var ofertaCtx=''; // when the search came from an offer, describe it
+function runSearch(ctx){
   if(selTypes.size===0){toast('Selecciona al menos un tipo');return;}
   if(!allRows.length){toast('Primero sincroniza el Sheet');return;}
   var results=getMatches();
   lastSearch={types:Array.from(selTypes),rMin:rMin,rMax:rMax,split:withSplit,solo:soloSplit,eu:withEU,bf:withBF,results:results};
   rf={region:'',country:'',type:''};
+  ofertaCtx=ctx||'';
   renderResults();
 }
-function clearSearch(){lastSearch=null;selTypes.clear();withEU=false;withSplit=false;withBF=false;soloSplit=false;rMin=38;rMax=50;renderMatcher();}
+function clearSearch(){lastSearch=null;ofertaCtx='';selTypes.clear();withEU=false;withSplit=false;withBF=false;soloSplit=false;rMin=38;rMax=50;renderMatcher();}
 function setF(k,v){rf[k]=v;renderResults();}
 function clearF(){rf={region:'',country:'',type:''};renderResults();}
 
@@ -2559,7 +2622,7 @@ function renderResults(){
     list+='</div>';
   }
 
-  area.innerHTML=stats+
+  area.innerHTML=(ofertaCtx?'<div class="info-banner">🔍 Clientes para la oferta: <strong>'+ofertaCtx+'</strong></div>':'')+stats+
     '<div class="res-header"><div class="res-title">'+fil.length+' match'+(fil.length!==1?'es':'')+' encontrado'+(fil.length!==1?'s':'')+'</div>'+
     '<div class="res-pills">'+types.map(function(t){return '<span class="rpill ac">'+t+'</span>';}).join('')+
     (ss?'<span class="rpill dk">🔒 Solo Split</span>':'<span class="rpill dk">'+rMn+'–'+rMx+'</span>')+
@@ -2722,6 +2785,123 @@ function renderEmpResults(){
   area.innerHTML=html;
 }
 
+// ── AGENDA / SEGUIMIENTOS ────────────────────────────────────────────────────
+// Reads the follow-up date columns that already exist in Database (resolved by
+// header name, so they keep working if the columns move).
+var AG_SPEC={
+  FSEG:['fecha proximo seguimiento','fecha proximo contacto','fecha seguimiento'],
+  ACC:['proxima accion','proximo paso'],
+  FNEXT:['fecha next step','fecha nextstep'],
+  NEXT:['next step']
+};
+function parseDMY(s){
+  s=((s||'')+'').trim();
+  if(!s)return null;
+  var m=s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
+  if(m){
+    var d=parseInt(m[1],10),mo=parseInt(m[2],10),y=parseInt(m[3],10);
+    if(y<100)y+=2000;
+    if(mo<1||mo>12||d<1||d>31)return null;
+    var dt=new Date(y,mo-1,d);
+    return isNaN(dt.getTime())?null:dt;
+  }
+  m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m){
+    var dt2=new Date(parseInt(m[1],10),parseInt(m[2],10)-1,parseInt(m[3],10));
+    return isNaN(dt2.getTime())?null:dt2;
+  }
+  return null;
+}
+function daysFromToday(dt){
+  var t=new Date();t.setHours(0,0,0,0);
+  var d=new Date(dt.getTime());d.setHours(0,0,0,0);
+  return Math.round((d-t)/86400000);
+}
+function fmtDMY(dt){
+  return String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear();
+}
+function agendaItems(){
+  var cF=resolveCol(AG_SPEC.FSEG),cA=resolveCol(AG_SPEC.ACC);
+  var cFN=resolveCol(AG_SPEC.FNEXT),cN=resolveCol(AG_SPEC.NEXT);
+  var out=[];
+  allRows.forEach(function(row){
+    var company=(row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
+    if(!company)return;
+    function push(colDate,colTxt,kind){
+      if(colDate<0)return;
+      var dt=parseDMY(row[colDate]);
+      if(!dt)return;
+      out.push({row:row,company:company,date:dt,days:daysFromToday(dt),kind:kind,txt:colTxt>=0?((row[colTxt]||'')+'').trim():''});
+    }
+    push(cF,cA,'seguimiento');
+    push(cFN,cN,'next');
+  });
+  out.sort(function(a,b){return a.date-b.date;});
+  return out;
+}
+function agendaCard(i){
+  var st=clientStatus(i.row);
+  var badge=st==='inactivo'
+    ? '<span class="cli-badge cli-inact"><span class="sem-dot" style="background:#ff3b30;"></span>Inactivo</span>'
+    : (st==='activo'?'<span class="cli-badge cli-act"><span class="sem-dot" style="background:#34c759;"></span>Activo</span>':'');
+  var team=parseTeam(i.row[COL.TEAM]);
+  var ad=Math.abs(i.days);
+  var when=i.days<0?('Atrasado '+ad+' día'+(ad!==1?'s':'')):(i.days===0?'Hoy':('En '+i.days+' día'+(i.days!==1?'s':'')));
+  var col=i.days<0?'#ff3b30':(i.days<=7?'#ff9f0a':'var(--text3)');
+  var shRow=i.row._sheetRow||0;
+  var comp=i.company.replace(/"/g,'&quot;');
+  return '<div class="mcard">'+
+    '<div class="mcard-top">'+
+      '<div class="mavatar">'+(i.company[0]||'?').toUpperCase()+'</div>'+
+      '<div class="mbody">'+
+        '<div class="mname-row"><div class="mname">'+i.company+'</div>'+badge+
+          '<span class="mtag" style="background:transparent;border:1px solid '+col+';color:'+col+';font-weight:700;">'+when+'</span>'+
+        '</div>'+
+        '<div class="mmeta">'+(i.kind==='seguimiento'?'📅 Próximo seguimiento':'➡ Next step')+': '+fmtDMY(i.date)+'</div>'+
+        (i.txt?'<div class="fu-comment" style="margin-top:6px;">'+i.txt+'</div>':'')+
+        (team.length?'<div class="mtags"><span class="mtag team">👤 '+team.join(' - ')+'</span></div>':'')+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:6px;">'+
+        (shRow?'<span class="edit-btn" data-row="'+shRow+'" onclick="openTeamEdit(this.dataset.row)" title="Editar empresa">✏️</span>':'')+
+        '<span class="edit-btn" data-company="'+comp+'" onclick="openFUModal(this.dataset.company)" title="Cargar pedido">➕</span>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+function renderAgenda(){
+  var banner='';
+  if(!tok)banner='<div class="info-banner">🔐 <strong>Conectate con Google</strong> para ver la agenda.</div>';
+  else if(!allRows.length)banner='<div class="info-banner">📋 Conectado. Haz click en <strong>↻ Sincronizar</strong>.</div>';
+  var items=agendaItems();
+  var venc=items.filter(function(i){return i.days<0;});
+  var hoy=items.filter(function(i){return i.days===0;});
+  var sem=items.filter(function(i){return i.days>0&&i.days<=7;});
+  var prox=items.filter(function(i){return i.days>7;});
+  function sec(lbl,arr,color){
+    if(!arr.length)return '';
+    return '<div class="sec-div" style="margin-top:14px;"><span class="sec-div-lbl" style="color:'+color+'">'+lbl+' ('+arr.length+')</span><div class="sec-div-line" style="background:'+color+';opacity:.3;"></div></div>'+
+      '<div class="match-list">'+arr.map(agendaCard).join('')+'</div>';
+  }
+  var body;
+  if(!items.length){
+    body='<div class="empty"><div class="empty-icon">📅</div><div class="empty-title">Sin seguimientos con fecha</div><div class="empty-sub">Cargá "Fecha próximo seguimiento" o "FECHA NEXT STEP" en la ficha de una empresa (✏️) y aparece acá.</div></div>';
+  } else {
+    body=sec('🔴 Atrasados',venc,'#ff3b30')+sec('🟡 Hoy',hoy,'#ff9f0a')+sec('🗓 Esta semana',sem,'var(--info)')+sec('Más adelante',prox,'var(--text3)');
+  }
+  document.getElementById('content').innerHTML=
+    banner+
+    '<div class="card">'+
+      '<div class="card-title">📅 Agenda de seguimientos</div>'+
+      '<div class="card-sub">Empresas con fecha de próximo seguimiento o next step cargada en Database.</div>'+
+      '<div class="stats-row" style="margin-bottom:0;">'+
+        '<div class="stat-card"><div class="stat-label">Atrasados</div><div class="stat-value" style="color:'+(venc.length?'#ff3b30':'var(--text3)')+'">'+venc.length+'</div><div class="stat-sub">ya pasaron de fecha</div></div>'+
+        '<div class="stat-card"><div class="stat-label">Hoy</div><div class="stat-value" style="color:'+(hoy.length?'#ff9f0a':'var(--text3)')+'">'+hoy.length+'</div><div class="stat-sub">para contactar hoy</div></div>'+
+        '<div class="stat-card"><div class="stat-label">Esta semana</div><div class="stat-value" style="color:'+(sem.length?'var(--info)':'var(--text3)')+'">'+sem.length+'</div><div class="stat-sub">próximos 7 días</div></div>'+
+      '</div>'+
+    '</div>'+
+    body;
+}
+
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 function renderConfig(){
   var c=!!tok;
@@ -2752,6 +2932,29 @@ function saveConfig(){
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
+// ── UNDO ────────────────────────────────────────────────────────────────────
+// After a delete we keep a copy of the rows and offer to write them back.
+var _undoFn=null,_undoTimer=null;
+function showUndo(msg,fn){
+  _undoFn=fn;
+  var bar=document.getElementById('undo-bar');if(!bar)return;
+  bar.innerHTML='<span>'+msg+'</span><button onclick="doUndo()">↩ Deshacer</button>';
+  bar.classList.add('show');
+  clearTimeout(_undoTimer);
+  _undoTimer=setTimeout(hideUndo,12000);
+}
+function hideUndo(){var b=document.getElementById('undo-bar');if(b)b.classList.remove('show');_undoFn=null;}
+async function doUndo(){
+  var fn=_undoFn;hideUndo();
+  if(!fn)return;
+  if(!(await guardToken()))return;
+  prog(true);
+  var okU=false;
+  try{okU=await fn();}catch(e){console.error(e);}
+  prog(false);
+  if(okU){await loadSheetData();toast('✓ Restaurado');}
+  else toast('No se pudo restaurar. Revisá el Sheet.');
+}
 function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';},2800);}
 function prog(on){document.getElementById('pbar').classList.toggle('go',on);}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
