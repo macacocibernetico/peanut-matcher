@@ -598,7 +598,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.10.1</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.10.3</span>
     </div>
   </div>
 </aside>
@@ -622,7 +622,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 
 <script>
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='3.10.1';
+var APP_VERSION='3.10.3';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -1262,7 +1262,11 @@ function generarPedido(idx){
     var xtns=(x[FU.TNS]||'').trim();
     lines.push('Calibre: '+xs+(xt?' ('+xt+')':'')+(xtns?' — '+xtns+'Tn':''));
   });
-  var cropP=FU.CROP>=0?((r[FU.CROP]||'')+'').trim():'';
+  // Crop is shared by the order: take it from whichever row of the group has it
+  var cropP='';
+  if(FU.CROP>=0){
+    for(var ci=0;ci<g.length;ci++){var cv=((g[ci][FU.CROP]||'')+'').trim();if(cv){cropP=cv;break;}}
+  }
   if(cropP)lines.push('Crop: '+cropP);
   lines.push('Incoterm: '+incoterm);
   lines.push('Precio: A cotizar');
@@ -1272,6 +1276,10 @@ function generarPedido(idx){
   if(comments)lines.push('('+comments+')');
   document.getElementById('pedido-text').value=lines.join('\n');
   document.getElementById('pedido-modal').classList.remove('hidden');
+  if(!cropP){
+    if(FU.CROP<0)toast('No encuentro la columna "Crop" en Follow up — tocá ↻ Sincronizar');
+    else toast('Este pedido no tiene Crop cargado: editalo (✏️) y elegí el año');
+  }
 }
 function closePedidoModal(){document.getElementById('pedido-modal').classList.add('hidden');}
 function copyPedido(){
@@ -1429,7 +1437,8 @@ function renderDemandasList(){
     var comment=(r[FU.OBS]||'').trim();
     var grado=(r[FU.GRADO]||'').trim();
     var alfa=(r[FU.ALFA]||'').trim();
-    var crop=FU.CROP>=0?((r[FU.CROP]||'')+'').trim():'';
+    var crop='';
+    if(FU.CROP>=0){for(var ci=0;ci<g.length;ci++){var cv=((g[ci][FU.CROP]||'')+'').trim();if(cv){crop=cv;break;}}}
     var incoterm=(r[FU.INCOTERM]||'').trim();
     var port=(r[FU.PORT]||'').trim();
     var country=(r[FU.COUNTRY]||'').trim();
@@ -1583,6 +1592,16 @@ var FU_SPEC={DATE:['date','fecha'],CUSTOMER:['customer','cliente','company','emp
 // 7 Tns,8 Price,9 Port,10 Country,11 Shipment,12 Supplier,13 Buys from,14 Observations,
 // 15 Grado,16 Afla/Apto BF,17 Team M,18 Contrato,19 Dias,20 Estado
 var FU={DATE:0,CUSTOMER:1,CONTACT:2,SIZE:3,TYPE:4,ORIGIN:5,PACKAGING:6,TNS:7,PRICE:8,PORT:9,COUNTRY:10,SHIPMENT:11,SUPPLIER:12,BUYSFROM:13,OBS:14,GRADO:15,ALFA:16,TEAMM:17,CONTRATO:18,INCOTERM:19,DIAS:20,ESTADO:21};
+// Crop has NO fallback index on purpose: if the header is gone, the field stays
+// disabled instead of inheriting a stale position and writing to the wrong column.
+function applyFuCropStrict(headerRow){
+  var norm=(headerRow||[]).map(normHdr),idx=-1;
+  for(var a=0;a<FU_SPEC.CROP.length;a++){
+    var p=norm.indexOf(normHdr(FU_SPEC.CROP[a]));
+    if(p>=0){idx=p;break;}
+  }
+  FU.CROP=idx;
+}
 var INCOTERMS=['EXW','FCA','FAS','FOB','CFR','CIF','CPT','CIP','DAP','DPU','DDP'];
 function isBF(row){return /\bbf\b/.test(((row[COL.TYPE]||'')+'').toLowerCase());}
 function isInactive(row){return ((row[COL.ESTADO]||'').toLowerCase().trim()).indexOf('inact')>=0;}
@@ -1837,7 +1856,7 @@ async function loadSheetData(){
       var fr=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A1:AZ2000'),{headers:{Authorization:'Bearer '+tok}});
       if(fr.ok){
         var fd=await fr.json();var fAll=fd.values||[];
-        if(fAll.length){FU=mapHeaders(fAll[0],FU_SPEC,FU);}
+        if(fAll.length){FU=mapHeaders(fAll[0],FU_SPEC,FU);applyFuCropStrict(fAll[0]);}
         fuRows=fAll.slice(1).map(function(row,i){row._sheetRow=i+2;return row;}).filter(function(row){return row[FU.CUSTOMER];});
       }
     }catch(e){console.warn('FU:',e);}
@@ -2258,7 +2277,7 @@ function selectCompanyByIdx(idx){
 async function saveFURecord(){
   if(!(await guardToken()))return;
   var _fh=await refreshHeaderRow('Follow up');
-  if(_fh){FU=mapHeaders(_fh,FU_SPEC,FU);}
+  if(_fh){FU=mapHeaders(_fh,FU_SPEC,FU);applyFuCropStrict(_fh);}
   var company=document.getElementById('fu-company').value.trim();
   if(!company){toast('Ingresa el nombre de la empresa');return;}
   // Shared fields (apply to every caliber line of the order)
