@@ -214,6 +214,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 .mtag.bf{background:#ecfdf5;color:#047857;border:1px solid rgba(4,120,87,.2);}
 .ftag.gr{background:rgba(133,77,14,.1);color:#854d0e;}
 .ftag.al{background:rgba(2,132,199,.1);color:#0369a1;}
+.ftag.ct{background:rgba(110,58,176,.1);color:#6e3ab0;}
 .mtag.team{background:#eef2ff;color:#4338ca;border:1px solid rgba(67,56,202,.2);}
 .team-pick-chip{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;user-select:none;font-family:var(--mono);}
 .team-pick-chip.on{background:#4338ca;color:#fff;border-color:#4338ca;}
@@ -388,6 +389,10 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
           </select>
         </div>
         <div class="mfield">
+          <label class="mfield-label">Crop <span class="mfield-opt">año de cosecha pedido</span></label>
+          <select class="mselect" id="fu-crop"><option value=""></option></select>
+        </div>
+        <div class="mfield">
           <label class="mfield-label">Proveedor (Supplier) <span class="mfield-opt">opcional</span></label>
           <input class="minput" id="fu-supplier" placeholder="ej: Argen Peanuts">
         </div>
@@ -467,7 +472,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
         <div class="mfield"><label class="mfield-label">Producto / Calibre <span class="mfield-opt">opcional</span></label><input class="minput" id="of-prod" placeholder="ej: 40/50, Split"></div>
         <div class="mfield"><label class="mfield-label">Tipo <span class="mfield-opt">opcional</span></label><select class="mselect" id="of-tipo"><option value=""></option><option>Raw</option><option>Blanched</option><option>Roasted</option></select></div>
         <div class="mfield"><label class="mfield-label">Grado <span class="mfield-opt">opcional</span></label><input class="minput" id="of-grado" placeholder="ej: A, B"></div>
-        <div class="mfield"><label class="mfield-label">CROP <span class="mfield-opt">opcional</span></label><input class="minput" id="of-crop" placeholder="ej: 2026" type="number"></div>
+        <div class="mfield"><label class="mfield-label">CROP <span class="mfield-opt">año de cosecha</span></label><select class="mselect" id="of-crop"><option value=""></option></select></div>
         <div class="mfield"><label class="mfield-label">Tn disponible <span class="mfield-opt">opcional</span></label><input class="minput" id="of-tns" placeholder="ej: 75" type="number"></div>
         <div class="mfield"><label class="mfield-label">Alfa LVL <span class="mfield-opt">opcional</span></label><select class="mselect" id="of-alfa"><option value=""></option><option>EU</option><option>NON EU</option></select></div>
         <div class="mfield"><label class="mfield-label">Estado</label><select class="mselect" id="of-estado"><option>Disponible</option><option>A Definir</option><option>No disponible</option></select></div>
@@ -593,7 +598,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.9.1</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v3.10.1</span>
     </div>
   </div>
 </aside>
@@ -617,7 +622,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 
 <script>
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='3.9.1';
+var APP_VERSION='3.10.1';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -758,6 +763,7 @@ function openOfertaModal(editIdx){
   document.getElementById('of-tipo').value='';
   document.getElementById('of-alfa').value='';
   document.getElementById('of-estado').value='Disponible';
+  fillCropSelect('of-crop','');
   if(ofMode==='edit'){
     var r=availRows[ofEditIdx]||[];
     document.getElementById('of-modal-title').textContent='Editar oferta';
@@ -766,7 +772,7 @@ function openOfertaModal(editIdx){
     document.getElementById('of-prod').value=(r[AV.PROD]||'').trim();
     document.getElementById('of-tipo').value=(r[AV.TIPO]||'').trim();
     document.getElementById('of-grado').value=(r[AV.GRADO]||'').trim();
-    document.getElementById('of-crop').value=(r[AV.CROP]||'').trim();
+    fillCropSelect('of-crop',(r[AV.CROP]||'').trim());
     document.getElementById('of-tns').value=(r[AV.TNS]||'').trim();
     document.getElementById('of-alfa').value=(r[AV.ALFA]||'').trim();
     document.getElementById('of-estado').value=(r[AV.ESTADO]||'Disponible').trim();
@@ -1256,6 +1262,8 @@ function generarPedido(idx){
     var xtns=(x[FU.TNS]||'').trim();
     lines.push('Calibre: '+xs+(xt?' ('+xt+')':'')+(xtns?' — '+xtns+'Tn':''));
   });
+  var cropP=FU.CROP>=0?((r[FU.CROP]||'')+'').trim():'';
+  if(cropP)lines.push('Crop: '+cropP);
   lines.push('Incoterm: '+incoterm);
   lines.push('Precio: A cotizar');
   lines.push('Shipment: '+sp.months);
@@ -1385,7 +1393,7 @@ function renderDemandasList(){
   var q=demQuery.toLowerCase().trim();
   if(q){
     groups=groups.filter(function(g){return g.some(function(r){
-      var hay=[r[FU.CUSTOMER],r[FU.SIZE],r[FU.TYPE],r[FU.TNS],r[FU.PRICE],r[FU.SUPPLIER],r[FU.BUYSFROM],r[FU.OBS],r[FU.GRADO],r[FU.ALFA]].join(' ').toLowerCase();
+      var hay=[r[FU.CUSTOMER],r[FU.SIZE],r[FU.TYPE],r[FU.TNS],r[FU.PRICE],r[FU.SUPPLIER],r[FU.BUYSFROM],r[FU.OBS],r[FU.GRADO],r[FU.ALFA],(FU.CROP>=0?r[FU.CROP]:'')].join(' ').toLowerCase();
       return hay.indexOf(q)>=0;
     });});
   }
@@ -1421,6 +1429,7 @@ function renderDemandasList(){
     var comment=(r[FU.OBS]||'').trim();
     var grado=(r[FU.GRADO]||'').trim();
     var alfa=(r[FU.ALFA]||'').trim();
+    var crop=FU.CROP>=0?((r[FU.CROP]||'')+'').trim():'';
     var incoterm=(r[FU.INCOTERM]||'').trim();
     var port=(r[FU.PORT]||'').trim();
     var country=(r[FU.COUNTRY]||'').trim();
@@ -1448,6 +1457,7 @@ function renderDemandasList(){
     }
     if(grado)sumTags+='<span class="mtag gr">Grado '+grado+'</span>';
     if(alfa)sumTags+='<span class="mtag '+(alfa.toLowerCase()==='eu'?'rg':'sz')+'">'+alfa+'</span>';
+    if(crop)sumTags+='<span class="mtag ct">CROP '+crop+'</span>';
     if(incoterm)sumTags+='<span class="mtag ty">'+incoterm+'</span>';
     if(origin)sumTags+='<span class="mtag ty">Origen: '+origin+'</span>';
     if(destino)sumTags+='<span class="mtag rg">📍 '+destino+'</span>';
@@ -1525,6 +1535,20 @@ function resolveCol(aliases){
   for(var a=0;a<aliases.length;a++){var p=norm.indexOf(normHdr(aliases[a]));if(p>=0)return p;}
   return -1;
 }
+// Crop (harvest year) options: next year down to 4 back, plus any legacy value
+function cropYears(){
+  var y=(new Date()).getFullYear();
+  return [y+1,y,y-1,y-2,y-3].map(String);
+}
+function fillCropSelect(id,sel){
+  var el=document.getElementById(id);if(!el)return;
+  sel=((sel||'')+'').trim();
+  var ys=cropYears();
+  var html='<option value=""></option>'+ys.map(function(v){return '<option'+(sel===v?' selected':'')+'>'+v+'</option>';}).join('');
+  if(sel&&ys.indexOf(sel)<0)html+='<option selected>'+sel.replace(/</g,'&lt;')+'</option>'; // keep legacy values
+  el.innerHTML=html;
+  el.value=sel;
+}
 function colLetter(idx){var s='';idx=idx+1;while(idx>0){var m=(idx-1)%26;s=String.fromCharCode(65+m)+s;idx=Math.floor((idx-1)/26);}return s;}
 var TEAM_OPTS=['M','F','A'];
 function parseTeam(v){return ((v||'')+'').split(/[-,\/]/).map(function(x){return x.trim().toUpperCase();}).filter(function(x){return TEAM_OPTS.indexOf(x)>=0;});}
@@ -1554,7 +1578,7 @@ function mapHeaders(headerRow,spec,fallback){
   return out;
 }
 var AV_SPEC={PROV:['proveedor','supplier'],ORIGEN:['origen','origin'],PROD:['producto','product','calibre'],TIPO:['tipo','type'],GRADO:['grado','grade'],CROP:['crop','cosecha'],TNS:['tn disponibles','tns','toneladas','tn disponible'],ALFA:['alfa lvl','afla lvl','alfa','afla'],ESTADO:['estado','status'],FECHA:['fecha aviso','fecha','date'],OBS:['observaciones','observations','comentarios','obs'],NEXT:['next step','next','proximo paso']};
-var FU_SPEC={DATE:['date','fecha'],CUSTOMER:['customer','cliente','company','empresa'],CONTACT:['contact','contacto'],SIZE:['size','calibre','calibres'],TYPE:['type','tipo'],ORIGIN:['origin','origen'],PACKAGING:['packaging','empaque'],TNS:['tns','toneladas','tn'],PRICE:['price','precio'],PORT:['port','puerto'],COUNTRY:['country','pais'],SHIPMENT:['shipment','shipment period','embarque'],SUPPLIER:['supplier','proveedor'],BUYSFROM:['buys from','buysfrom','compra a','le compra a'],OBS:['observations comentarios','observations','observaciones','comentarios','obs'],GRADO:['grado','grade'],ALFA:['afla apto bf','alfa apto bf','apto bf','alfa','afla'],TEAMM:['team m','team member','team','comercial'],CONTRATO:['contrato','contract'],INCOTERM:['incoterm','incoterms'],DIAS:['dias','days'],ESTADO:['estado','status']};
+var FU_SPEC={DATE:['date','fecha'],CUSTOMER:['customer','cliente','company','empresa'],CONTACT:['contact','contacto'],SIZE:['size','calibre','calibres'],TYPE:['type','tipo'],ORIGIN:['origin','origen'],PACKAGING:['packaging','empaque'],TNS:['tns','toneladas','tn'],PRICE:['price','precio'],PORT:['port','puerto'],COUNTRY:['country','pais'],SHIPMENT:['shipment','shipment period','embarque'],SUPPLIER:['supplier','proveedor'],BUYSFROM:['buys from','buysfrom','compra a','le compra a'],OBS:['observations comentarios','observations','observaciones','comentarios','obs'],GRADO:['grado','grade'],ALFA:['afla apto bf','alfa apto bf','apto bf','alfa','afla'],TEAMM:['team m','team member','team','comercial'],CONTRATO:['contrato','contract'],INCOTERM:['incoterm','incoterms'],DIAS:['dias','days'],ESTADO:['estado','status'],CROP:['crop','cosecha','crop year','ano cosecha','ano de cosecha']};
 // Follow up columns (A..U): 0 Date,1 Customer,2 Contact,3 Size,4 Type,5 Origin,6 Packaging,
 // 7 Tns,8 Price,9 Port,10 Country,11 Shipment,12 Supplier,13 Buys from,14 Observations,
 // 15 Grado,16 Afla/Apto BF,17 Team M,18 Contrato,19 Dias,20 Estado
@@ -1713,7 +1737,7 @@ function findFU(company){
   if(!fuRows.length||!company)return[];
   var cLow=company.toLowerCase().trim();
   return fuRows.filter(function(r){
-    var n=(r[1]||'').trim().toLowerCase();
+    var n=((r[FU.CUSTOMER]||'')+'').trim().toLowerCase();
     if(n===cLow||n.indexOf(cLow)>=0||cLow.indexOf(n)>=0)return true;
     return sim(cLow,n)>=0.7;
   });
@@ -2147,6 +2171,7 @@ function openFUModal(prefill,editIdx){
   document.getElementById('fu-teamm').value='';
   document.getElementById('fu-grado').value='';
   document.getElementById('fu-alfa').value='';
+  fillCropSelect('fu-crop','');
   document.getElementById('fu-comment').value='';
   document.getElementById('ac-list').classList.add('hidden');
 
@@ -2170,6 +2195,7 @@ function openFUModal(prefill,editIdx){
     document.getElementById('fu-comment').value=(row[FU.OBS]||'').trim();
     document.getElementById('fu-grado').value=(row[FU.GRADO]||'').trim();
     document.getElementById('fu-alfa').value=(row[FU.ALFA]||'').trim();
+    fillCropSelect('fu-crop',FU.CROP>=0?((row[FU.CROP]||'')+'').trim():'');
     document.getElementById('fu-date-display').textContent='Pedido con '+fuLines.length+' calibre(s) · Fecha original: '+(row[FU.DATE]||'—')+' · Se actualiza a hoy';
   } else {
     document.getElementById('fu-modal-title').textContent='Agregar pedido';
@@ -2249,12 +2275,14 @@ async function saveFURecord(){
   if(fuPallet)packaging+=(packaging?'; ':'')+fuPallet;
   var grado=document.getElementById('fu-grado').value.trim();
   var alfa=document.getElementById('fu-alfa').value.trim();
+  var crop=document.getElementById('fu-crop').value.trim();
+  if(crop&&FU.CROP<0)toast('Agregá una columna "Crop" en Follow up para guardar la cosecha');
   var lastFu=lastColOf(FU);
   var today=todayStr();
   // On edit, carry over columns not present in the form (e.g. Buys from, Contrato, Días)
   // from the original order so they are not blanked when we rewrite the rows.
   var carry=(fuMode==='edit'&&fuEditRows&&fuEditRows[0])?fuEditRows[0]:null;
-  var formIdx={};[FU.DATE,FU.CUSTOMER,FU.CONTACT,FU.SIZE,FU.TYPE,FU.ORIGIN,FU.PACKAGING,FU.TNS,FU.PRICE,FU.PORT,FU.COUNTRY,FU.SHIPMENT,FU.SUPPLIER,FU.INCOTERM,FU.OBS,FU.GRADO,FU.ALFA,FU.TEAMM,FU.ESTADO].forEach(function(ix){formIdx[ix]=true;});
+  var formIdx={};[FU.DATE,FU.CUSTOMER,FU.CONTACT,FU.SIZE,FU.TYPE,FU.ORIGIN,FU.PACKAGING,FU.TNS,FU.PRICE,FU.PORT,FU.COUNTRY,FU.SHIPMENT,FU.SUPPLIER,FU.INCOTERM,FU.OBS,FU.GRADO,FU.ALFA,FU.TEAMM,FU.ESTADO,FU.CROP].forEach(function(ix){formIdx[ix]=true;});
   // Build one sheet row per caliber line
   var rows=[];
   fuLines.forEach(function(l){
@@ -2283,6 +2311,7 @@ async function saveFURecord(){
     rd[FU.OBS]=comment;
     rd[FU.GRADO]=grado;
     rd[FU.ALFA]=alfa;
+    if(FU.CROP>=0)rd[FU.CROP]=crop;
     rd[FU.ESTADO]=fuSemaforo;
     rows.push(rd);
   });
@@ -2327,7 +2356,7 @@ function getMatches(){
       if(!szOk&&!dbSize){
         var co0=(row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
         var fuRecs0=findFU(co0);
-        for(var i=0;i<fuRecs0.length;i++){var p0=parseSize((fuRecs0[i][3]||'').trim());if(p0.hasSplit||p0.hasAny){szOk=true;break;}}
+        for(var i=0;i<fuRecs0.length;i++){var p0=parseSize(((fuRecs0[i][FU.SIZE]||'')+'').trim());if(p0.hasSplit||p0.hasAny){szOk=true;break;}}
       }
     } else {
       szOk=sizeOk(dbSize,rMin,rMax,withSplit);
@@ -2335,7 +2364,7 @@ function getMatches(){
       if(!szOk&&!dbSize){
         var co=(row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
         var fuRecs=findFU(co);
-        for(var i=0;i<fuRecs.length;i++){if(sizeOk((fuRecs[i][3]||'').trim(),rMin,rMax,withSplit)){szOk=true;break;}}
+        for(var i=0;i<fuRecs.length;i++){if(sizeOk(((fuRecs[i][FU.SIZE]||'')+'').trim(),rMin,rMax,withSplit)){szOk=true;break;}}
       }
     }
     if(!szOk)return;
@@ -2485,11 +2514,12 @@ function renderMatcher(){
 // ── FU PANEL ──────────────────────────────────────────────────────────────────
 var fuPanelCounter=0;
 function buildFURec(row){
-  var date=(row[0]||'').trim();
+  var date=((row[FU.DATE]||'')+'').trim();
   var sz=normSize((row[FU.SIZE]||'').trim());
   var ty=normType((row[FU.TYPE]||'').trim());
   var tns=(row[FU.TNS]||'').trim(),price=(row[FU.PRICE]||'').trim(),sp=(row[FU.SUPPLIER]||row[FU.BUYSFROM]||'').trim(),cm=(row[FU.OBS]||'').trim();
   var gr=(row[FU.GRADO]||'').trim(),al=(row[FU.ALFA]||'').trim();
+  var cr=FU.CROP>=0?((row[FU.CROP]||'')+'').trim():'';
   var rowIdx=fuRows.indexOf(row);
   var editBtn=rowIdx>=0?'<span class="fu-edit-btn" onclick="openFUModal(\'\','+rowIdx+')" title="Editar">✏️</span>':'';
   return '<div class="fu-rec">'+
@@ -2503,6 +2533,7 @@ function buildFURec(row){
         (sp?'<span class="ftag sp">🏭 '+sp+'</span>':'')+
         (gr?'<span class="ftag gr">Grado '+gr+'</span>':'')+
         (al?'<span class="ftag al">'+al+'</span>':'')+
+        (cr?'<span class="ftag ct">CROP '+cr+'</span>':'')+
       '</div>'+
       (cm?'<div class="fu-comment">"'+cm+'"</div>':'')+
     '</div>'+
@@ -2513,8 +2544,8 @@ function buildFURec(row){
 function buildFUPanel(fuRecords){
   if(!fuRecords||!fuRecords.length)return '';
   var sorted=fuRecords.slice().sort(function(a,b){
-    var da=new Date((a[0]||'').split('/').reverse().join('-'));
-    var db=new Date((b[0]||'').split('/').reverse().join('-'));
+    var da=new Date(((a[FU.DATE]||'')+'').split('/').reverse().join('-'));
+    var db=new Date(((b[FU.DATE]||'')+'').split('/').reverse().join('-'));
     return db-da;
   });
   fuPanelCounter++;
@@ -2721,8 +2752,8 @@ function renderEmpResults(){
   // FU-only companies: only relevant when there's a text query and no team filter
   var fuByKey={};
   if(qLow&&!empTeamFilter.length){
-    var fuMatches=fuRows.filter(function(r){var n=(r[1]||'').trim().toLowerCase();return n.indexOf(qLow)>=0||qLow.indexOf(n)>=0||sim(n,qLow)>=0.7;});
-    fuMatches.forEach(function(r){var k=(r[1]||'').trim().toLowerCase();if(!fuByKey[k])fuByKey[k]=[];fuByKey[k].push(r);});
+    var fuMatches=fuRows.filter(function(r){var n=((r[FU.CUSTOMER]||'')+'').trim().toLowerCase();return n.indexOf(qLow)>=0||qLow.indexOf(n)>=0||sim(n,qLow)>=0.7;});
+    fuMatches.forEach(function(r){var k=((r[FU.CUSTOMER]||'')+'').trim().toLowerCase();if(!fuByKey[k])fuByKey[k]=[];fuByKey[k].push(r);});
   }
   // Sort alphabetically by company name
   dbMatches.sort(function(a,b){
@@ -2773,7 +2804,7 @@ function renderEmpResults(){
     var inDb=dbMatches.some(function(r){return (r[COL.COMPANY]||r[COL.CLIENT]||'').trim().toLowerCase()===k;});
     if(inDb)return;
     var fu=fuByKey[k];
-    var displayName=fu[0][1].trim();
+    var displayName=((fu[0][FU.CUSTOMER]||'')+'').trim();
     html+='<div class="emp-card">'+
       '<div class="emp-card-header">'+
         '<div><div class="emp-name">'+displayName+'</div><div class="emp-meta" style="color:var(--warn);">Solo en Follow Up</div></div>'+
