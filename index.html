@@ -4,10 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#faf6f0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <title>Peanut Matcher 🥜</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🥜%3C/text%3E%3C/svg%3E">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
 :root{
   --bg:#f5f5f7;--bg2:#fff;--bg3:#f0f0f2;--bg4:#e8e8ed;
   --border:#d2d2d7;--border2:#c7c7cc;
@@ -385,6 +387,9 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
   /* utilitarios */
   --overlay:rgba(42,32,24,.45);
   --toast-bg:#2a2018;--toast-fg:#faf6f0;
+  --glass:rgba(255,255,255,.88);
+  --font:'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+  --mono:'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,Arial,sans-serif;
   --sh:0 1px 2px rgba(66,45,25,.06),0 4px 14px rgba(66,45,25,.06);
   --shl:0 6px 24px rgba(66,45,25,.12),0 2px 6px rgba(66,45,25,.06);
   --r:10px;--rl:14px;--rxl:18px;
@@ -411,10 +416,15 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
   --fu-card2:#241d16;
   --overlay:rgba(0,0,0,.62);
   --toast-bg:#f3ece3;--toast-fg:#1e1915;
+  --glass:rgba(30,25,21,.92);
   --sh:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
   --shl:0 8px 28px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.35);
 }
 html{background:var(--bg);}
+/* FIX modo oscuro: estas dos barras tenían el blanco escrito a mano */
+.sidebar,.topbar{background:var(--glass);}
+.sidebar{border-right:1px solid var(--border);}
+.topbar{border-bottom:1px solid var(--border);}
 body{background:var(--bg);color:var(--text);font-variant-numeric:tabular-nums;}
 
 /* ── etiquetas unificadas (mtag + ftag comparten paleta) ── */
@@ -489,7 +499,12 @@ body{background:var(--bg);color:var(--text);font-variant-numeric:tabular-nums;}
 .mtags{gap:6px;margin-top:8px;}
 .mcard{padding:15px 16px;border-radius:var(--rl);}
 .emp-card{border-radius:var(--rl);}
-.mfield-label{letter-spacing:.5px;}
+.mfield-label{letter-spacing:.4px;font-weight:700;}
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;letter-spacing:-.1px;}
+.logo-text{font-weight:800;letter-spacing:-.5px;}
+.mname,.emp-name,.card-title,.topbar-title,.stat-value{letter-spacing:-.4px;}
+.stat-value{font-weight:800;}
+.chip,.btn,.nav-item{font-weight:600;}
 
 /* ── barra de pestañas (solo celular) ── */
 .tabbar{display:none;}
@@ -546,6 +561,15 @@ body{background:var(--bg);color:var(--text);font-variant-numeric:tabular-nums;}
   .dem-filter-row::-webkit-scrollbar{display:none;}
   .dem-filter-row select{flex:0 0 auto;}
 }
+
+/* ── contactos ── */
+.contact-block{border:1px solid var(--border);border-radius:var(--r);padding:12px 12px 2px;margin-bottom:10px;background:var(--bg3);}
+.contact-tag{font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;}
+.contact-hint{font-size:11px;color:var(--text3);line-height:1.5;background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--r);padding:9px 11px;margin-bottom:4px;}
+.ct-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.ct-chip{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:11px;padding:5px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);}
+.ct-chip b{color:var(--text);font-weight:700;}
+@media(max-width:768px){.ct-chip{font-size:12px;width:100%;justify-content:flex-start;}}
 
 /* ── botón de tema ── */
 .icon-btn{padding:7px 10px;font-size:15px;line-height:1;}
@@ -717,7 +741,7 @@ body{background:var(--bg);color:var(--text);font-variant-numeric:tabular-nums;}
       <div class="mfield">
         <label class="mfield-label">Empresa (Company)</label>
         <input class="minput" id="db-company" placeholder="Nombre de la empresa" autocomplete="off" oninput="debouncedDbDup()">
-        <div id="db-dup-warn" style="display:none;background:var(--warn-light);border:1px solid rgba(255,149,0,.25);border-radius:var(--r);padding:9px 12px;font-size:12px;color:#92400e;margin-top:6px;"></div>
+        <div id="db-dup-warn" style="display:none;background:var(--warn-light);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;font-size:12px;color:var(--warn);margin-top:6px;"></div>
       </div>
       <div class="mform-grid">
         <div class="mfield"><label class="mfield-label">Client <span class="mfield-opt">opcional</span></label><input class="minput" id="db-client" placeholder="Nombre del contacto/cliente"></div>
@@ -799,7 +823,7 @@ body{background:var(--bg);color:var(--text);font-variant-numeric:tabular-nums;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.0.0</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.2.0</span>
     </div>
   </div>
 </aside>
@@ -856,7 +880,7 @@ function initTheme(){
 initTheme(); // se aplica ya, antes de pintar, para que no haya destello
 
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='4.0.0';
+var APP_VERSION='4.2.0';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -1297,6 +1321,18 @@ async function openTeamEdit(sheetRow){
   });
   // Primary section
   var primHtml='<div class="mform-grid">'+primary.map(empEditField).join('')+'</div>';
+  // Contacts section: one block per detected letter (A, B, C...)
+  var cg=contactGroups(),letters=Object.keys(cg).sort(),cHtml='';
+  if(letters.length){
+    cHtml='<div class="emp-edit-sec" style="margin-top:18px;">Contactos</div>'+
+      letters.map(function(L){
+        var g=cg[L],cols=[g.name,g.phone,g.mail].filter(function(x){return x!==undefined;});
+        cols.forEach(function(x){seen[x]=true;}); // no repetirlos en "Más opciones"
+        return '<div class="contact-block"><div class="contact-tag">Contacto '+L.toUpperCase()+'</div>'+
+          '<div class="mform-grid">'+cols.map(empEditField).join('')+'</div></div>';
+      }).join('')+
+      '<div class="contact-hint">¿Necesitás más contactos? Agregá en el Sheet las columnas <b>Contact C</b>, <b>Teleph C</b> y <b>Email_C</b> (y D, E... si hacen falta). Aparecen acá solas.</div>';
+  }
   // "Más opciones": every other column with a header, in sheet order
   var restCols=[];
   for(var col=0;col<n;col++){
@@ -1310,7 +1346,7 @@ async function openTeamEdit(sheetRow){
       '<div class="mform-grid">'+restCols.map(empEditField).join('')+'</div></details>';
   }
   document.getElementById('edit-emp-fields').innerHTML=
-    '<div class="emp-edit-sec">Datos principales</div>'+primHtml+moreHtml;
+    '<div class="emp-edit-sec">Datos principales</div>'+primHtml+cHtml+moreHtml;
   document.getElementById('team-modal').classList.remove('hidden');
 }
 function closeTeamEdit(){document.getElementById('team-modal').classList.add('hidden');}
@@ -1759,8 +1795,6 @@ var DB_PRIMARY=[
   ['company','empresa'],
   ['region'],
   ['country','pais'],
-  ['teleph a','telefono a','telefono','phone','tel a','telefono contacto'],
-  ['teleph b','telefono b','tel b'],
   ['product','producto'],
   ['size','calibre'],
   ['type','tipo'],
@@ -1773,6 +1807,22 @@ var DB_PRIMARY=[
   ['comentarios en general','comentarios general'],
   ['mails para envio documental','mail documental']
 ];
+// Agrupa las columnas de contacto por letra: Contact A + Teleph A + Email_A = Contacto A.
+// Detecta cuántos haya (A, B, C, D...) leyendo los encabezados, sin límite fijo.
+function contactGroups(){
+  var out={};
+  (dbHeaders||[]).forEach(function(h,i){
+    var n=normHdr(h),m;
+    m=n.match(/^(?:contact|contacto|nombre contacto)\s*([a-z])$/);
+    if(m){out[m[1]]=out[m[1]]||{};out[m[1]].name=i;return;}
+    m=n.match(/^(?:teleph|telephone|telefono|tel|phone)\s*([a-z])$/);
+    if(m){out[m[1]]=out[m[1]]||{};out[m[1]].phone=i;return;}
+    m=n.match(/^(?:email|mail|correo)\s*([a-z])$/);
+    if(m){out[m[1]]=out[m[1]]||{};out[m[1]].mail=i;return;}
+  });
+  return out;
+}
+function contactLetters(){return Object.keys(contactGroups()).sort();}
 function resolveCol(aliases){
   var norm=dbHeaders.map(normHdr);
   for(var a=0;a<aliases.length;a++){var p=norm.indexOf(normHdr(aliases[a]));if(p>=0)return p;}
@@ -3023,6 +3073,19 @@ function renderEmpResults(){
   }
   var counter='<div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:10px;">'+dbMatches.length+' empresa'+(dbMatches.length!==1?'s':'')+(allRows.length&&(query||empTeamFilter.length)?' de '+allRows.length:'')+'</div>';
   var html=counter;
+  var CG=contactGroups(),CL=Object.keys(CG).sort();
+  function contactChips(row){
+    var esc=function(s){return ((s||'')+'').trim().replace(/</g,'&lt;');};
+    return CL.map(function(L){
+      var g=CG[L];
+      var nm=g.name!==undefined?esc(row[g.name]):'';
+      var ph=g.phone!==undefined?esc(row[g.phone]):'';
+      var em=g.mail!==undefined?esc(row[g.mail]):'';
+      if(!nm&&!ph&&!em)return '';
+      return '<span class="ct-chip"><b>'+(nm||('Contacto '+L.toUpperCase()))+'</b>'+
+        (ph?'<span>📞 '+ph+'</span>':'')+(em?'<span>✉ '+em+'</span>':'')+'</span>';
+    }).filter(Boolean).join('');
+  }
   if(dbMatches.length){
     dbMatches.forEach(function(row){
       var company=(row[COL.COMPANY]||row[COL.CLIENT]||'').trim();
@@ -3049,6 +3112,7 @@ function renderEmpResults(){
           (teamArr.length?'<span class="mtag team">👤 '+teamArr.join(' - ')+'</span>':'<span class="mtag" style="background:var(--bg3);color:var(--text3);border:1px dashed var(--border2);">👤 Sin asignar</span>')+
           ((row[COL.MAILDOC]||'').trim()?'<span class="mtag" style="background:var(--tag-rg-bg);color:var(--tag-rg-fg);border:1px solid transparent;">✉ '+(row[COL.MAILDOC]||'').trim()+'</span>':'')+
         '</div>'+
+        (function(){var cc=contactChips(row);return cc?'<div class="ct-row">'+cc+'</div>':'';})()+
         (fu.length?buildFUPanel(fu):'<div style="font-size:12px;color:var(--text3);padding:8px 0;">Sin registros de Follow Up aun.</div>')+
       '</div>';
     });
