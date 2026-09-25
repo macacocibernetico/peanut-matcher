@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.38.0**
+**Versión actual: 4.40.0**
 
 ---
 
@@ -299,6 +299,27 @@ desde la app.
 
 ## Historial
 
+- **4.40.0** — Logo de Latinut en lugar del 🥜.
+  - Isotipo (globo con flecha) recortado del logo oficial, cuadrado, PNG con fondo
+    transparente, embebido en base64: 128 px en `.logo-img` (se muestra a 40×40,
+    nítido en retina) y como `apple-touch-icon`; 64 px como favicon. Título de la
+    pestaña: "Peanut Matcher · Latinut".
+  - En `[data-theme="dark"]` lleva `filter:brightness(1.35) saturate(1.1)` porque la
+    punta bordó de la flecha se perdía contra el fondo oscuro.
+  - Para cambiarlo: reemplazar los tres `data:image/png;base64,...` (favicon,
+    apple-touch-icon y `.logo-img`). El logo completo con "LATINUT AGRO FOODS" no
+    entra legible en ese espacio: por eso va solo el isotipo.
+- **4.39.0** — Oportunidades sale del menú (nav lateral y tabbar móvil).
+  - `showView('oport')` redirige a Demandas. `updateOppBadge` quedó vacía (no hay
+    contador) y así tampoco se recalculan los cruces en cada sync.
+  - **El motor sigue en el código** (`computeOpps`, `renderOportunidades`,
+    Descartes, `tools/tests/oportunidades.js`) por si se vuelve a usar: para
+    reactivar, restaurar `nav-oport`/`tab-oport` con sus contadores
+    (`opp-count`/`tab-opp-count`) y el cuerpo de `updateOppBadge`.
+  - Deploy: desde 4.38 la app vive en GitHub Pages
+    (https://macacocibernetico.github.io/peanut-matcher/). Netlify quedó con un
+    redirect (`_redirects` 301 + `version.json` min 99.0.0). Se publica subiendo
+    `index.html` + `version.json` al repo; ya no se arrastra ZIP a Netlify.
 - **4.38.0** — Link de configuración para el equipo (Configuración → 🔗 Link para el equipo).
   - `cfgShareLink()` arma `origen+ruta#cfg=<base64url(JSON)>` con `CFG_SHARE_KEYS`
     (clientId, sheetId, sheetName, calcSheetId, oppPct, oppUsd). Va en el **hash**:
