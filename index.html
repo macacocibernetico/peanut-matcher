@@ -814,6 +814,33 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 .sup-card-fields b{color:var(--text3);font-weight:600;}
 .sup-only{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;
   border:1px dashed var(--border2);border-radius:var(--r);margin-bottom:6px;font-size:13px;color:var(--text2);}
+.cal-card{padding:14px;}
+.cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.cal-nav .btn{padding:6px 12px;}
+.cal-title{font-size:17px;font-weight:700;color:var(--text);min-width:150px;text-align:center;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid var(--border);border-left:1px solid var(--border);}
+.cal-dow{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;padding:6px;text-align:center;
+  border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2);}
+.cal-cell{min-height:92px;padding:4px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;overflow:hidden;background:var(--bg);}
+.cal-cell:hover{background:var(--bg2);}
+.cal-cell.fuera{opacity:.45;}
+.cal-cell.sel{box-shadow:inset 0 0 0 2px var(--accent);}
+.cal-num{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:3px;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;}
+.cal-cell.hoy .cal-num{background:var(--accent);color:#fff;}
+.cal-pill{font-size:10.5px;line-height:1.35;color:var(--text2);background:var(--bg2);border-left:3px solid var(--accent);
+  border-radius:3px;padding:1px 4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cal-more{font-size:10px;color:var(--text3);font-weight:600;padding-left:2px;}
+.cal-dots{display:none;gap:3px;justify-content:center;margin-top:2px;}
+.cal-dots span{width:6px;height:6px;border-radius:50%;display:inline-block;}
+@media(max-width:768px){
+  .cal-cell{min-height:52px;}
+  .cal-pills{display:none;}
+  .cal-dots{display:flex;}
+}
+.agev-row{display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-left:4px solid var(--accent);
+  border-radius:var(--r);padding:8px 10px;margin-bottom:6px;background:var(--bg);}
+.agev-row-main{flex:1;min-width:0;cursor:pointer;display:flex;flex-direction:column;gap:2px;}
+.agev-row .agev-hora{font-size:11px;}
 .agenda-subtabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
 .agenda-subtab{font-size:13px;font-weight:600;padding:8px 14px;border-radius:var(--r);border:1px solid var(--border2);
   background:var(--bg2);color:var(--text3);cursor:pointer;}
@@ -1251,7 +1278,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.36.0</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.38.0</span>
     </div>
   </div>
 </aside>
@@ -1346,7 +1373,7 @@ function initTheme(){
 initTheme(); // se aplica ya, antes de pintar, para que no haya destello
 
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='4.36.0';
+var APP_VERSION='4.38.0';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -3012,7 +3039,9 @@ async function getTabGid(title){
     (d.sheets||[]).forEach(function(sh){
       if(sh.properties&&sh.properties.title===title)found=sh.properties.sheetId;
     });
-    _tabGids[title]=found;
+    // Solo cacheamos si la encontramos: si la pestaña se crea después (Agenda,
+    // Descartes), un null cacheado hacía fallar el borrado hasta recargar la app.
+    if(found!==null)_tabGids[title]=found;
     return found;
   }catch(e){return null;}
 }
@@ -3197,12 +3226,14 @@ async function saveAgendaEv(){
     toast('✓ Evento guardado');
   } else toast('No se pudo guardar. ¿Tenés permiso de edición en la planilla?');
 }
-async function deleteAgendaEv(){
+// Se llama desde el modal (sin idx: usa el abierto) o desde el 🗑 de una lista (con idx).
+async function deleteAgendaEv(idx){
+  if(idx!==undefined&&idx!==null&&!isNaN(idx))agendaEvIdx=parseInt(idx);
   if(agendaEvIdx===null)return;
   if(!(await guardToken()))return;
   var row=agendaEvRows[agendaEvIdx];
   if(!row||!row._sheetRow){toast('Sincronizá antes de eliminar');return;}
-  if(!confirm('¿Eliminar este evento de la agenda?'))return;
+  if(!confirm('¿Eliminar el evento «'+(((row[AGEV.TITULO]||'')+'').trim()||'sin título')+'» del '+(((row[AGEV.FECHA]||'')+'').trim())+'?'))return;
   var gid=await getTabGid(AGEV_TAB);
   if(gid===null){toast('No pude ubicar la hoja Agenda');return;}
   prog(true);
@@ -3239,39 +3270,108 @@ function agendaEvChip(x){
     (r[AGEV.EMPRESA]?'<span class="agev-emp">'+(/prov/i.test(r[AGEV.TIPOEMP]||'')?'📦 ':'👤 ')+esc(r[AGEV.EMPRESA])+'</span>':'')+
   '</div>';
 }
-var agendaSub='seg'; // 'seg' = seguimientos de clientes (como antes) | 'eventos' = calendario del equipo
+var agendaSub='eventos'; // 'eventos' = calendario del equipo (arranca acá) | 'seg' = seguimientos
 function setAgendaSub(v){agendaSub=v;renderAgenda();}
+// ── Calendario mensual (estilo Google Calendar) ──
+var agendaMes=null;      // Date: día 1 del mes que se está viendo
+var agendaDiaSel='';     // DD/MM/YYYY del día elegido (se lista abajo de la grilla)
+var MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var DIAS_SEM=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+function agendaMesMove(n){var m=agendaMes||new Date();agendaMes=new Date(m.getFullYear(),m.getMonth()+n,1);agendaDiaSel='';renderAgenda();}
+function agendaMesHoy(){var h=new Date();agendaMes=new Date(h.getFullYear(),h.getMonth(),1);agendaDiaSel=fmtDMY(h);renderAgenda();}
+function agendaSelDia(dmy){agendaDiaSel=dmy;renderAgenda();}
+// Color por persona (siempre el mismo para el mismo nombre), con variables del tema.
+var PERS_COLORS=['var(--accent)','var(--info)','var(--sem-ok)','var(--sem-warn)','var(--sem-bad)','var(--text2)'];
+function persColor(p){var l=agendaPersonasList(),i=l.indexOf(((p||'')+'').trim());return PERS_COLORS[(i<0?0:i)%PERS_COLORS.length];}
+// Todos los eventos (con filtro de persona) agrupados por DD/MM/YYYY, armado una vez por render.
+function agendaEvPorDia(){
+  var m=Object.create(null);
+  agendaEvRows.forEach(function(r,i){
+    if(agendaFiltroPersona&&((r[AGEV.PERSONA]||'')+'').trim()!==agendaFiltroPersona)return;
+    var d=parseDMY(r[AGEV.FECHA]);if(!d)return;
+    var k=fmtDMY(d);(m[k]=m[k]||[]).push({r:r,i:i});
+  });
+  Object.keys(m).forEach(function(k){m[k].sort(function(a,b){return ((a.r[AGEV.HORA]||'')+'').localeCompare((b.r[AGEV.HORA]||''));});});
+  return m;
+}
+function agendaEvFila(x){
+  var r=x.r,rec=/^s/i.test(((r[AGEV.RECORDATORIO]||'')+'').trim());
+  return '<div class="agev-row" style="border-left-color:'+persColor(r[AGEV.PERSONA])+';">'+
+    '<div class="agev-row-main" data-i="'+x.i+'" onclick="openAgendaEv(this.dataset.i)">'+
+      '<span class="agev-hora">'+(r[AGEV.HORA]?esc(r[AGEV.HORA]):'Todo el día')+'</span>'+
+      '<span class="agev-tit">'+(rec?'🔔 ':'')+esc(r[AGEV.TITULO])+'</span>'+
+      '<span class="agev-pers">'+esc(r[AGEV.PERSONA])+'</span>'+
+      (r[AGEV.EMPRESA]?'<span class="agev-emp">'+(/prov/i.test(r[AGEV.TIPOEMP]||'')?'📦 ':'👤 ')+esc(r[AGEV.EMPRESA])+'</span>':'')+
+      (r[AGEV.NOTAS]?'<span class="agev-emp">'+esc(r[AGEV.NOTAS])+'</span>':'')+
+    '</div>'+
+    '<span class="edit-btn" data-i="'+x.i+'" onclick="openAgendaEv(this.dataset.i)" title="Editar">✏️</span>'+
+    '<span class="edit-btn del" data-i="'+x.i+'" onclick="deleteAgendaEv(this.dataset.i)" title="Eliminar evento">🗑</span>'+
+  '</div>';
+}
 function renderAgendaEventos(){
   var area=document.getElementById('content');
-  var hoy=new Date();
-  var dias=[];
-  for(var i=0;i<7;i++){var d=new Date(hoy);d.setDate(hoy.getDate()+i);dias.push(d);}
+  var hoy=new Date(),hoyDmy=fmtDMY(hoy);
+  if(!agendaMes)agendaMes=new Date(hoy.getFullYear(),hoy.getMonth(),1);
+  if(!agendaDiaSel&&agendaMes.getMonth()===hoy.getMonth()&&agendaMes.getFullYear()===hoy.getFullYear())agendaDiaSel=hoyDmy;
+  var porDia=agendaEvPorDia();
   var personas=agendaPersonasList();
-  var chips='<span class="chip'+(!agendaFiltroPersona?' selected':'')+'" onclick="setAgendaFiltroPersona(\'\')">Todos</span>'+
-    personas.map(function(p){return '<span class="chip'+(agendaFiltroPersona===p?' selected':'')+'" onclick="setAgendaFiltroPersona(\''+attrEsc(p)+'\')">'+esc(p)+'</span>';}).join('');
-  var semana=dias.map(function(d){
-    var dmy=fmtDMY(d);
-    var evs=agendaEvDe(dmy);
-    var esHoy=(dmy===fmtDMY(hoy));
-    var nombreDia=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()];
-    return '<div class="agev-day'+(esHoy?' hoy':'')+'">'+
-      '<div class="agev-day-head"><span>'+nombreDia+' '+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'</span>'+
-        '<span class="edit-btn" onclick="openAgendaEv(null,\''+dmy+'\')" title="Agregar evento">+</span></div>'+
-      (evs.length?evs.map(agendaEvChip).join(''):'<div class="agev-empty">Sin eventos</div>')+
+  var chips='<span class="chip'+(!agendaFiltroPersona?' selected':'')+'" style="padding:5px 12px;font-size:12px;" onclick="setAgendaFiltroPersona(\'\')">Todos</span>'+
+    personas.map(function(p){return '<span class="chip'+(agendaFiltroPersona===p?' selected':'')+'" style="padding:5px 12px;font-size:12px;" onclick="setAgendaFiltroPersona(\''+attrEsc(p)+'\')"><span class="sem-dot" style="background:'+persColor(p)+';width:8px;height:8px;margin-right:5px;display:inline-block;"></span>'+esc(p)+'</span>';}).join('');
+  // Grilla: semanas de lunes a domingo que cubren el mes
+  var y=agendaMes.getFullYear(),mo=agendaMes.getMonth();
+  var primero=new Date(y,mo,1),offset=(primero.getDay()+6)%7; // 0 = lunes
+  var inicio=new Date(y,mo,1-offset);
+  var ultimo=new Date(y,mo+1,0);
+  var celdas=offset+ultimo.getDate();var semanas=Math.ceil(celdas/7);
+  var head=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map(function(d){return '<div class="cal-dow">'+d+'</div>';}).join('');
+  var cells='';
+  for(var c=0;c<semanas*7;c++){
+    var d=new Date(inicio.getFullYear(),inicio.getMonth(),inicio.getDate()+c);
+    var dmy=fmtDMY(d),evs=porDia[dmy]||[];
+    var cls='cal-cell'+(d.getMonth()!==mo?' fuera':'')+(dmy===hoyDmy?' hoy':'')+(dmy===agendaDiaSel?' sel':'');
+    var pills=evs.slice(0,3).map(function(x){
+      return '<div class="cal-pill" style="border-left-color:'+persColor(x.r[AGEV.PERSONA])+';" title="'+attrEsc((x.r[AGEV.HORA]?x.r[AGEV.HORA]+' · ':'')+x.r[AGEV.TITULO]+' · '+x.r[AGEV.PERSONA])+'">'+
+        (x.r[AGEV.HORA]?'<b>'+esc(x.r[AGEV.HORA])+'</b> ':'')+esc(x.r[AGEV.TITULO])+'</div>';
+    }).join('');
+    cells+='<div class="'+cls+'" data-d="'+dmy+'" onclick="agendaSelDia(this.dataset.d)">'+
+      '<div class="cal-num">'+d.getDate()+'</div>'+
+      '<div class="cal-pills">'+pills+(evs.length>3?'<div class="cal-more">+'+(evs.length-3)+' más</div>':'')+'</div>'+
+      (evs.length?'<div class="cal-dots">'+evs.slice(0,4).map(function(x){return '<span style="background:'+persColor(x.r[AGEV.PERSONA])+';"></span>';}).join('')+'</div>':'')+
     '</div>';
-  }).join('');
+  }
+  // Panel del día elegido
+  var panel='';
+  if(agendaDiaSel){
+    var ds=parseDMY(agendaDiaSel),lst=porDia[agendaDiaSel]||[];
+    panel='<div class="card" style="margin-top:14px;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">'+
+        '<div class="card-title" style="margin:0;">'+(ds?DIAS_SEM[ds.getDay()]+' '+agendaDiaSel:agendaDiaSel)+(agendaDiaSel===hoyDmy?' <span style="font-size:11px;color:var(--accent);">· hoy</span>':'')+'</div>'+
+        '<button class="btn" data-d="'+agendaDiaSel+'" onclick="openAgendaEv(null,this.dataset.d)">+ Agregar evento este día</button>'+
+      '</div>'+
+      (lst.length?lst.map(agendaEvFila).join(''):'<div class="agev-empty">No hay eventos'+(agendaFiltroPersona?' de '+esc(agendaFiltroPersona):'')+' este día.</div>')+
+    '</div>';
+  }
   area.innerHTML=
     agendaSubTabsHtml()+
     '<div class="card" style="margin-bottom:14px;">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">'+
         '<div><div class="card-title">🗓 Calendario del equipo</div>'+
-        '<div class="card-sub" style="margin-bottom:0;">Cada uno carga lo suyo; todos ven el calendario de todos. Próximos 7 días.</div></div>'+
-        '<button class="btn primary" onclick="openAgendaEv()">+ Nuevo evento</button>'+
+        '<div class="card-sub" style="margin-bottom:0;">Cada uno carga lo suyo; todos ven el de todos. Tocá un día para ver sus eventos.</div></div>'+
+        '<button class="btn primary" onclick="openAgendaEv(null,agendaDiaSel)">+ Nuevo evento</button>'+
       '</div>'+
       '<div class="chips-wrap" style="margin-top:10px;">'+chips+'</div>'+
     '</div>'+
     (agendaEvTabMissing?'<div class="info-banner">Todavía no hay hoja "Agenda" en la planilla — se crea sola al guardar el primer evento.</div>':'')+
-    '<div class="agev-week">'+semana+'</div>';
+    '<div class="card cal-card">'+
+      '<div class="cal-nav">'+
+        '<button class="btn" onclick="agendaMesMove(-1)" title="Mes anterior">‹</button>'+
+        '<div class="cal-title">'+MESES[mo]+' '+y+'</div>'+
+        '<button class="btn" onclick="agendaMesMove(1)" title="Mes siguiente">›</button>'+
+        '<button class="btn" style="margin-left:auto;" onclick="agendaMesHoy()">Hoy</button>'+
+      '</div>'+
+      '<div class="cal-grid">'+head+cells+'</div>'+
+    '</div>'+
+    panel;
 }
 
 // ── OPORTUNIDADES: UI ───────────────────────────────────────────────────────
@@ -3711,6 +3811,37 @@ var CFG_KEY='peanut_matcher_cfg';
 var cfg=Object.assign({clientId:'',sheetId:'10KFlKkOIKz-l6_wXHiHM_9WL-u97AtDM3MtXmHNI5OQ',sheetName:'Sheet1',calcSheetId:''},JSON.parse(localStorage.getItem(CFG_KEY)||'{}'));
 cfg.sheetId=sheetIdFrom(cfg.sheetId);
 cfg.calcSheetId=sheetIdFrom(cfg.calcSheetId);
+// ── Link de configuración para el equipo ──
+// Va en el hash (#cfg=...): el navegador NO lo manda a ningún servidor. Al abrirlo
+// se aplica la config, se guarda y se borra el hash de la barra de direcciones.
+var CFG_SHARE_KEYS=['clientId','sheetId','sheetName','calcSheetId','oppPct','oppUsd'];
+function cfgShareLink(){
+  var o={};CFG_SHARE_KEYS.forEach(function(k){if(cfg[k]!==undefined&&cfg[k]!=='')o[k]=cfg[k];});
+  var b64=btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  return location.origin+location.pathname+'#cfg='+b64;
+}
+var cfgDesdeLink=false;
+(function(){
+  var m=(location.hash||'').match(/^#cfg=([A-Za-z0-9\-_]+)/);
+  if(!m)return;
+  try{
+    var s=m[1].replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';
+    var o=JSON.parse(decodeURIComponent(escape(atob(s))));
+    CFG_SHARE_KEYS.forEach(function(k){if(o[k]!==undefined)cfg[k]=o[k];});
+    cfg.sheetId=sheetIdFrom(cfg.sheetId);cfg.calcSheetId=sheetIdFrom(cfg.calcSheetId);
+    localStorage.setItem(CFG_KEY,JSON.stringify(cfg));
+    cfgDesdeLink=true;
+  }catch(e){console.warn('Link de config inválido:',e);}
+  try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+  setTimeout(function(){if(cfgDesdeLink)toast('✓ App configurada desde el link. Tocá "Conectar con Google".');},900);
+})();
+function copyCfgLink(){
+  var link=cfgShareLink(),inp=document.getElementById('cfg-share-link');
+  if(inp){inp.value=link;inp.select();}
+  function ok(){toast('✓ Link copiado: mandáselo a los chicos');}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(link).then(ok).catch(function(){document.execCommand('copy');ok();});
+  else{document.execCommand('copy');ok();}
+}
 // La pestaña "Database suppliers" está en el mismo archivo que la Database.
 function supSheetId(){return cfg.sheetId;}
 var COL={TEAM:0,CLIENT:1,REGION:2,COUNTRY:3,COMPANY:4,SIZE:28,TYPE:29,ESTADO:39,MAILDOC:50};
@@ -5610,10 +5741,35 @@ function agendaCard(i){
     '</div>'+
   '</div>';
 }
+// Tarjeta de Seguimientos para un evento del Calendario del equipo.
+function agendaEvCard(i){
+  var r=i.r,ad=Math.abs(i.days);
+  var when=i.days<0?('Atrasado '+ad+' día'+(ad!==1?'s':'')):(i.days===0?'Hoy':('En '+i.days+' día'+(i.days!==1?'s':'')));
+  var col=i.days<0?'var(--sem-bad)':(i.days<=7?'var(--sem-warn)':'var(--text3)');
+  var rec=/^s/i.test(((r[AGEV.RECORDATORIO]||'')+'').trim());
+  var tit=((r[AGEV.TITULO]||'')+'').trim()||'Evento';
+  return '<div class="mcard" style="border-left:3px solid '+persColor(r[AGEV.PERSONA])+';">'+
+    '<div class="mcard-top">'+
+      '<div class="mavatar">🗓</div>'+
+      '<div class="mbody">'+
+        '<div class="mname-row"><div class="mname">'+(rec?'🔔 ':'')+esc(tit)+'</div>'+
+          '<span class="mtag" style="background:transparent;border:1px solid '+col+';color:'+col+';font-weight:700;">'+when+'</span>'+
+        '</div>'+
+        '<div class="mmeta">🗓 Calendario: '+fmtDMY(i.date)+(r[AGEV.HORA]?' · '+esc(r[AGEV.HORA]):'')+' · 👤 '+esc(r[AGEV.PERSONA])+'</div>'+
+        (r[AGEV.EMPRESA]?'<div class="mmeta">'+(/prov/i.test(r[AGEV.TIPOEMP]||'')?'📦 ':'👤 ')+esc(r[AGEV.EMPRESA])+'</div>':'')+
+        (r[AGEV.NOTAS]?'<div class="fu-comment" style="margin-top:6px;">'+esc(r[AGEV.NOTAS])+'</div>':'')+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:6px;">'+
+        '<span class="edit-btn" data-i="'+i.idx+'" onclick="openAgendaEv(this.dataset.i)" title="Editar evento">✏️</span>'+
+        '<span class="edit-btn del" data-i="'+i.idx+'" onclick="deleteAgendaEv(this.dataset.i)" title="Eliminar evento">🗑</span>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
 function agendaSubTabsHtml(){
   return '<div class="agenda-subtabs">'+
-    '<span class="agenda-subtab'+(agendaSub==='seg'?' on':'')+'" onclick="setAgendaSub(\'seg\')">📋 Seguimientos</span>'+
     '<span class="agenda-subtab'+(agendaSub==='eventos'?' on':'')+'" onclick="setAgendaSub(\'eventos\')">🗓 Calendario del equipo</span>'+
+    '<span class="agenda-subtab'+(agendaSub==='seg'?' on':'')+'" onclick="setAgendaSub(\'seg\')">📋 Seguimientos</span>'+
   '</div>';
 }
 function renderAgenda(){
@@ -5621,7 +5777,19 @@ function renderAgenda(){
   var banner='';
   if(!tok)banner='<div class="info-banner">🔐 <strong>Conectate con Google</strong> para ver la agenda.</div>';
   else if(!allRows.length)banner='<div class="info-banner">📋 Conectado. Haz click en <strong>↻ Sincronizar</strong>.</div>';
+  // Seguimientos = fechas de la Database + eventos del Calendario del equipo.
+  // Del calendario entran los de hoy en adelante y, de los pasados, solo los que
+  // tienen 🔔 recordatorio de los últimos 7 días (si no, cada reunión vieja
+  // quedaría para siempre como "atrasada").
   var items=agendaItems();
+  agendaEvRows.forEach(function(r,idx){
+    if(agendaFiltroPersona&&((r[AGEV.PERSONA]||'')+'').trim()!==agendaFiltroPersona)return;
+    var dt=parseDMY(r[AGEV.FECHA]);if(!dt)return;
+    var days=daysFromToday(dt),rec=/^s/i.test(((r[AGEV.RECORDATORIO]||'')+'').trim());
+    if(days<0&&!(rec&&days>=-7))return;
+    items.push({ev:true,idx:idx,r:r,date:dt,days:days});
+  });
+  items.sort(function(a,b){return (a.date-b.date)||(((a.ev&&a.r[AGEV.HORA])||'')+'').localeCompare(((b.ev&&b.r[AGEV.HORA])||'')+'');});
   var venc=items.filter(function(i){return i.days<0;});
   var hoy=items.filter(function(i){return i.days===0;});
   var sem=items.filter(function(i){return i.days>0&&i.days<=7;});
@@ -5629,11 +5797,11 @@ function renderAgenda(){
   function sec(lbl,arr,color){
     if(!arr.length)return '';
     return '<div class="sec-div" style="margin-top:14px;"><span class="sec-div-lbl" style="color:'+color+'">'+lbl+' ('+arr.length+')</span><div class="sec-div-line" style="background:'+color+';opacity:.3;"></div></div>'+
-      '<div class="match-list">'+arr.map(agendaCard).join('')+'</div>';
+      '<div class="match-list">'+arr.map(function(i){return i.ev?agendaEvCard(i):agendaCard(i);}).join('')+'</div>';
   }
   var body;
   if(!items.length){
-    body='<div class="empty"><div class="empty-icon">📅</div><div class="empty-title">Sin seguimientos con fecha</div><div class="empty-sub">Cargá "Fecha próximo seguimiento" o "FECHA NEXT STEP" en la ficha de una empresa (✏️) y aparece acá.</div></div>';
+    body='<div class="empty"><div class="empty-icon">📅</div><div class="empty-title">Sin seguimientos con fecha</div><div class="empty-sub">Cargá un evento en el Calendario del equipo, o "Fecha próximo seguimiento" / "FECHA NEXT STEP" en la ficha de una empresa (✏️), y aparece acá.</div></div>';
   } else {
     body=sec('🔴 Atrasados',venc,'var(--sem-bad)')+sec('🟡 Hoy',hoy,'var(--sem-warn)')+sec('🗓 Esta semana',sem,'var(--info)')+sec('Más adelante',prox,'var(--text3)');
   }
@@ -5642,7 +5810,11 @@ function renderAgenda(){
     banner+
     '<div class="card">'+
       '<div class="card-title">📅 Agenda de seguimientos</div>'+
-      '<div class="card-sub">Empresas con fecha de próximo seguimiento o next step cargada en Database.</div>'+
+      '<div class="card-sub">Eventos del Calendario del equipo + empresas con fecha de próximo seguimiento o next step en Database.</div>'+
+      '<div class="chips-wrap" style="margin:0 0 12px;">'+
+        '<span class="chip'+(!agendaFiltroPersona?' selected':'')+'" style="padding:5px 12px;font-size:12px;" onclick="setAgendaFiltroPersona(\'\')">Todos</span>'+
+        agendaPersonasList().map(function(p){return '<span class="chip'+(agendaFiltroPersona===p?' selected':'')+'" style="padding:5px 12px;font-size:12px;" onclick="setAgendaFiltroPersona(\''+attrEsc(p)+'\')">'+esc(p)+'</span>';}).join('')+
+      '</div>'+
       '<div class="stats-row" style="margin-bottom:0;">'+
         '<div class="stat-card"><div class="stat-label">Atrasados</div><div class="stat-value" style="color:'+(venc.length?'var(--sem-bad)':'var(--text3)')+'">'+venc.length+'</div><div class="stat-sub">ya pasaron de fecha</div></div>'+
         '<div class="stat-card"><div class="stat-label">Hoy</div><div class="stat-value" style="color:'+(hoy.length?'var(--sem-warn)':'var(--text3)')+'">'+hoy.length+'</div><div class="stat-sub">para contactar hoy</div></div>'+
@@ -5974,6 +6146,10 @@ function renderConfig(){
     '<div class="cfg-field"><div class="cfg-label">Pestana de Database</div><input class="cfg-input" id="cfg-sheetName" value="'+cfg.sheetName+'" placeholder="Sheet1"></div>'+
     '<div class="cfg-field"><div class="cfg-label">ID del Sheet de precios (calculadora) <span style="opacity:.7">— link o ID; vacío si está en el mismo</span></div><input class="cfg-input" id="cfg-calcSheetId" value="'+(cfg.calcSheetId||'')+'" placeholder="1AbC... (el del forwarder)"></div>'+
     '<div class="cfg-save"><button class="btn primary" onclick="saveConfig()">Guardar y conectar</button></div></div>'+
+    '<div class="cfg-sec"><div class="cfg-title">🔗 Link para el equipo</div>'+
+    '<div class="cfg-desc">Mandale este link a los chicos: al abrirlo, la app queda configurada sola (Client ID, Sheet, pestaña de Database, Sheet de precios y márgenes de Oportunidades). Después solo tienen que tocar <b>Conectar con Google</b> con su cuenta. Guardá los cambios de arriba antes de copiarlo.</div>'+
+    '<div class="cfg-field"><input class="cfg-input" id="cfg-share-link" readonly value="'+attrEsc(cfgShareLink())+'"></div>'+
+    '<div class="cfg-save"><button class="btn primary" onclick="copyCfgLink()">📋 Copiar link</button></div></div>'+
     '<div class="cfg-sec" style="border:2px solid '+(c?'rgba(52,199,89,.3)':'rgba(0,113,227,.2)')+';">'+
     '<div class="cfg-title">'+(c?'✅ Google conectado':'🔐 Cuenta Google')+'</div>'+
     '<div class="cfg-desc">'+(c?'Autenticado correctamente.':'Autenticarte con Google para leer el Sheet en tiempo real.')+'</div>'+

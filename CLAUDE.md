@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.36.0**
+**Versión actual: 4.38.0**
 
 ---
 
@@ -70,7 +70,8 @@ Google Sheets privado vía Sheets API v4. Auth con Google Identity Services
 (token en memoria, no se persiste). Lectura y escritura.
 
 Config en `localStorage` bajo `peanut_matcher_cfg`: `clientId`, `sheetId`,
-`sheetName`, `calcSheetId`, `oppPct`, `oppUsd`.
+`sheetName`, `calcSheetId`, `oppPct`, `oppUsd`. Se puede precargar con el link
+`#cfg=` de Configuración (ver 4.38.0).
 
 ### Hojas
 
@@ -298,6 +299,34 @@ desde la app.
 
 ## Historial
 
+- **4.38.0** — Link de configuración para el equipo (Configuración → 🔗 Link para el equipo).
+  - `cfgShareLink()` arma `origen+ruta#cfg=<base64url(JSON)>` con `CFG_SHARE_KEYS`
+    (clientId, sheetId, sheetName, calcSheetId, oppPct, oppUsd). Va en el **hash**:
+    el navegador no lo manda a ningún servidor. No lleva tokens ni contraseñas (el
+    token de Google no se persiste nunca; cada uno se conecta con su cuenta).
+  - Al cargar la app, un IIFE justo después de armar `cfg` lee `#cfg=`, aplica esas
+    claves, guarda en localStorage, borra el hash (`history.replaceState`) y avisa
+    con un toast (`cfgDesdeLink`). Corre antes de `initGoogleAuth`.
+  - El link usa `location.origin`: hay que copiarlo desde la URL donde lo van a
+    usar (GitHub Pages), no desde otra.
+  - `crosscheck.py` marca como handler roto cualquier `onclick="this.metodo()"`
+    (lo lee como una función global que no existe). Usar una función propia.
+- **4.37.0** — Agenda: calendario mensual, Seguimientos con eventos, borrar eventos.
+  - Calendario del equipo es una grilla mensual lun→dom estilo Google Calendar
+    (`renderAgendaEventos`): ‹ › cambia de mes (`agendaMesMove`), "Hoy"
+    (`agendaMesHoy`). Cada celda muestra hasta 3 eventos + "+N más"; en celular
+    (<768px) solo puntitos de color. Tocar un día (`agendaSelDia`) lista abajo sus
+    eventos con ✏️ y 🗑 (`agendaEvFila`). Los eventos se agrupan una vez por
+    render (`agendaEvPorDia`). Color fijo por persona (`persColor`, variables).
+  - Pestañas: Calendario a la izquierda y por defecto (`agendaSub='eventos'`),
+    Seguimientos a la derecha.
+  - Seguimientos = fechas de Database + eventos de la Agenda (`agendaEvCard`).
+    Del calendario entran hoy en adelante y, de los pasados, solo los que tienen 🔔
+    de los últimos 7 días. El filtro por persona también aplica acá.
+  - `deleteAgendaEv(idx)` acepta el índice (🗑 desde listas) además del modal.
+  - Fix: `getTabGid` cacheaba `null` si la pestaña todavía no existía (Agenda,
+    Descartes se crean solas) y el borrado fallaba con "No pude ubicar la hoja"
+    hasta recargar. Ahora solo cachea cuando la encuentra.
 - **4.36.0** — Suppliers: diagnóstico cuando no cargan + rango con comillas.
   - `loadSuppliers` deja en `supDiag` qué pasó (no pudo abrir el archivo / no
     encontró la pestaña, listando las que ve / encontró la pestaña pero no la pudo
