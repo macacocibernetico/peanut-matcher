@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.40.0**
+**Versión actual: 4.41.0**
 
 ---
 
@@ -299,6 +299,23 @@ desde la app.
 
 ## Historial
 
+- **4.41.0** — Demandas: "Proveedor (Supplier)" pasa a varios chips validados.
+  - El input libre es ahora chips + input con `<datalist>` + "+ Agregar" (Enter también).
+    Solo entran nombres que existen en `provNamesList()` (Availability + Database
+    suppliers), comparados con `normHdr` (sin mayúsculas/tildes) y guardados con el
+    nombre canónico. Elegir del desplegable lo agrega solo (`checkFuSup(event)`).
+    Estado en `fuSupSel` ([{name,ok}]), índice `fuSupIdx` armado al abrir el modal.
+  - Se guarda en `FU.SUPPLIER` separado por `"; "` (`supSplit` lo parte). Los datos
+    viejos "A, B" / "A / B" se separan solos si cada parte existe.
+  - Un proveedor viejo de texto libre que no existe en la lista se muestra en rojo y
+    **bloquea el guardado** hasta quitarlo (✕) o cambiarlo. Si no hay lista cargada
+    (no sincronizó) no se puede validar y esos se dejan pasar.
+  - Texto escrito sin agregar: al guardar, si es válido se agrega; si no, bloquea.
+  - Ficha: `dFieldHtml` + `supPillsHtml` (pastillas). Compacta: `.csup` con hasta 2
+    pastillas + "+N" y tooltip con todos.
+  - `.crow` ahora tiene `flex-wrap`: en escritorio sigue en una línea (~31 px); si el
+    ancho no alcanza, baja precio/acciones a una segunda línea en vez de cortar el
+    nombre del cliente (`.cname{min-width:110px}`).
 - **4.40.0** — Logo de Latinut en lugar del 🥜.
   - Isotipo (globo con flecha) recortado del logo oficial, cuadrado, PNG con fondo
     transparente, embebido en base64: 128 px en `.logo-img` (se muestra a 40×40,

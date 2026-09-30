@@ -705,14 +705,27 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 .dlabel{font-size:9.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);margin-bottom:2px;}
 .dvalue{font-size:13px;font-weight:600;color:var(--text);line-height:1.35;word-break:break-word;}
 .clist{display:flex;flex-direction:column;gap:0;}
-.crow{display:flex;align-items:center;gap:8px;padding:6px 11px;background:var(--bg2);
+.crow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:6px 11px;background:var(--bg2);
   border:1px solid var(--border);border-radius:8px;box-shadow:var(--sh);}
 .crow .cdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.crow .cname{font-weight:700;font-size:12.5px;flex:1 1 120px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.crow .cname{font-weight:700;font-size:12.5px;flex:1 1 120px;min-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .crow .ccal{font-weight:700;font-size:12px;color:var(--accent);flex:0 0 auto;font-variant-numeric:tabular-nums;}
 .crow .ctn,.crow .cinco{font-size:11.5px;color:var(--text2);flex:0 0 auto;}
 .crow .cdest{font-size:11.5px;color:var(--text3);flex:1 1 100px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .crow .cdate{font-size:10.5px;color:var(--text3);flex:0 0 auto;}
+.crow .csup{flex:0 0 auto;max-width:230px;display:flex;gap:4px;align-items:center;}
+.crow .csup .sup-pill{max-width:100px;font-size:10px;padding:0 7px;}
+.sup-pill{display:inline-block;font-size:10.5px;font-weight:600;color:var(--text2);background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;padding:1px 8px;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;}
+.sup-pill.more{color:var(--text3);}
+.sup-pills{display:flex;flex-wrap:wrap;gap:4px;}
+.fu-sup-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
+.fu-sup-chips:empty{display:none;}
+.fu-sup-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2);background:var(--bg3);
+  border:1px solid var(--border2);border-radius:14px;padding:3px 6px 3px 10px;}
+.fu-sup-chip .x{cursor:pointer;color:var(--text3);font-size:11px;padding:0 3px;}
+.fu-sup-chip .x:hover{color:var(--sem-bad);}
+.fu-sup-chip.bad{border-color:var(--sem-bad);color:var(--sem-bad);}
 .crow .cprice{flex:0 0 auto;margin-left:6px;font-family:var(--mono);font-size:10px;color:var(--text3);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;}
 .crow .cprice b{font-size:13px;color:var(--accent);font-weight:800;letter-spacing:-.2px;margin-left:3px;}
 .crow .cprice.np{font-style:italic;}
@@ -916,8 +929,14 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
           <select class="mselect" id="fu-crop"><option value=""></option></select>
         </div>
         <div class="mfield">
-          <label class="mfield-label">Proveedor (Supplier) <span class="mfield-opt">opcional</span></label>
-          <input class="minput" id="fu-supplier" placeholder="ej: Argen Peanuts">
+          <label class="mfield-label">Proveedor (Supplier) <span class="mfield-opt">opcional · uno o varios, de la lista</span></label>
+          <div class="fu-sup-chips" id="fu-sup-chips"></div>
+          <div style="display:flex;gap:6px;">
+            <input class="minput" id="fu-supplier" list="fu-sup-list" autocomplete="off" placeholder="Buscá el proveedor en la lista" style="flex:1;" oninput="checkFuSup(event)" onkeydown="if(event.key==='Enter'){event.preventDefault();addFuSup();}">
+            <button type="button" class="btn" onclick="addFuSup()">+ Agregar</button>
+          </div>
+          <datalist id="fu-sup-list"></datalist>
+          <div class="agev-emp-hint" id="fu-sup-hint"></div>
         </div>
         <div class="mfield">
           <label class="mfield-label">Contacto <span class="mfield-opt">opcional</span></label>
@@ -1281,7 +1300,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.40.0</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.41.0</span>
     </div>
   </div>
 </aside>
@@ -1375,7 +1394,7 @@ function initTheme(){
 initTheme(); // se aplica ya, antes de pintar, para que no haya destello
 
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='4.40.0';
+var APP_VERSION='4.41.0';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -2563,6 +2582,78 @@ function dField(lbl,val){
   if(!v)return '';
   return '<div class="dfield"><div class="dlabel">'+lbl+'</div><div class="dvalue">'+v+'</div></div>';
 }
+// ── Proveedor(es) del pedido (columna Supplier): varios, y todos tienen que existir ──
+// Se guardan separados por "; ". La lista válida es provNamesList (Availability +
+// Database suppliers). Al abrir el modal se arma un índice para no recalcularlo.
+var fuSupSel=[],fuSupIdx=Object.create(null),fuSupList=[];
+function supSplit(v){
+  return ((v||'')+'').split(/\s*;\s*/).map(function(p){return p.trim();}).filter(Boolean);
+}
+function fuSupCanon(txt){return fuSupIdx[normHdr(txt)]||'';}
+function fuSupInit(valor){
+  fuSupList=provNamesList();
+  fuSupIdx=Object.create(null);
+  fuSupList.forEach(function(n){fuSupIdx[normHdr(n)]=n;});
+  document.getElementById('fu-sup-list').innerHTML=fuSupList.map(function(n){return '<option value="'+attrEsc(n)+'">';}).join('');
+  fuSupSel=[];
+  supSplit(valor).forEach(function(p){
+    var c=fuSupCanon(p);
+    if(c){fuSupPush(c,true);return;}
+    // "A, B" o "A / B" cargados a mano: si cada parte existe, los separamos
+    var partes=p.split(/\s*,\s*|\s+\/\s+/).filter(Boolean),todas=partes.length>1;
+    var canon=partes.map(function(x){var cc=fuSupCanon(x);if(!cc)todas=false;return cc;});
+    if(todas)canon.forEach(function(cc){fuSupPush(cc,true);});
+    else fuSupPush(p,!fuSupList.length); // sin lista cargada no se puede validar: se deja pasar
+  });
+  renderFuSup();
+}
+function fuSupPush(name,ok){
+  if(fuSupSel.some(function(c){return normHdr(c.name)===normHdr(name);}))return false;
+  fuSupSel.push({name:name,ok:ok});return true;
+}
+function renderFuSup(){
+  document.getElementById('fu-sup-chips').innerHTML=fuSupSel.map(function(c,i){
+    return '<span class="fu-sup-chip'+(c.ok?'':' bad')+'"'+(c.ok?'':' title="No existe en la lista de proveedores: quitalo o reemplazalo"')+'>'+esc(c.name)+
+      '<span class="x" data-i="'+i+'" onclick="removeFuSup(this.dataset.i)" title="Quitar">✕</span></span>';
+  }).join('');
+  checkFuSup();
+}
+function removeFuSup(i){fuSupSel.splice(parseInt(i),1);renderFuSup();}
+function checkFuSup(ev){
+  var inp=document.getElementById('fu-supplier'),hint=document.getElementById('fu-sup-hint');
+  var txt=inp.value.trim(),canon=txt?fuSupCanon(txt):'';
+  // Elegir una opción del desplegable dispara un "input" sin tecla: se agrega sola.
+  if(ev&&canon&&(ev.inputType==='insertReplacementText'||!ev.inputType)){addFuSup();return;}
+  var malos=fuSupSel.filter(function(c){return !c.ok;});
+  var msg='',cls='agev-emp-hint';
+  if(txt){
+    if(!fuSupList.length){msg='⚠ No hay proveedores cargados. Sincronizá (↻) y volvé a abrir.';cls+=' bad';}
+    else if(canon){msg='✓ '+canon+' — tocá Agregar o Enter';cls+=' ok';}
+    else{msg='✗ No existe ese proveedor. Elegilo de la lista.';cls+=' bad';}
+  } else if(malos.length){
+    msg='⚠ En rojo: no existen en la lista. Quitalos (✕) para poder guardar.';cls+=' bad';
+  }
+  hint.textContent=msg;hint.className=cls;
+}
+function addFuSup(){
+  var inp=document.getElementById('fu-supplier'),txt=inp.value.trim();
+  if(!txt)return;
+  var c=fuSupCanon(txt);
+  if(!c){checkFuSup();toast('✗ «'+txt+'» no es un proveedor existente: elegilo de la lista');return;}
+  if(!fuSupPush(c,true))toast('Ya está agregado');
+  inp.value='';renderFuSup();inp.focus();
+}
+// HTML de las pastillas para ficha y vista compacta (max = cuántas mostrar; el resto "+N").
+function supPillsHtml(valor,max){
+  var l=supSplit(valor);if(!l.length)return '';
+  var mostrar=max?l.slice(0,max):l,resto=l.length-mostrar.length;
+  return mostrar.map(function(n){return '<span class="sup-pill">'+esc(n)+'</span>';}).join('')+
+    (resto>0?'<span class="sup-pill more" title="'+attrEsc(l.slice(max).join(', '))+'">+'+resto+'</span>':'');
+}
+function dFieldHtml(lbl,html){
+  if(!html)return '';
+  return '<div class="dfield"><div class="dlabel">'+lbl+'</div><div class="dvalue sup-pills">'+html+'</div></div>';
+}
 // Separa el packaging del token de pallet
 function pkgSplit(raw){
   var parts=((raw==null?'':raw)+'').split(/[;,]/).map(function(x){return x.trim();}).filter(Boolean);
@@ -2620,7 +2711,7 @@ function demFichaCard(g){
     dField('Crop',crop)+
     dField('Packaging',pk.pkg)+
     dField('Pallet',pk.pallet)+
-    dField('Proveedor',((r[FU.SUPPLIER]||r[FU.BUYSFROM]||'')+'').trim());
+    dFieldHtml('Proveedor',supPillsHtml(((r[FU.SUPPLIER]||r[FU.BUYSFROM]||'')+'').trim()));
   var comment=esc(notaDe(g));
   var cliSt=statusDe(g);
   var cliBadge=cliSt==='activo'
@@ -2706,6 +2797,8 @@ function demCompactRow(g){
     '<span class="ctn num">'+(tn>0?(Math.round(tn*100)/100)+' tn':'—')+'</span>'+
     '<span class="cdest">'+(esc(r[FU.COUNTRY])||'—')+'</span>'+
     '<span class="cinco">'+(esc(incoWithPort(r[FU.INCOTERM],r[FU.PORT]))||'—')+'</span>'+
+    (function(){var sv=((r[FU.SUPPLIER]||r[FU.BUYSFROM]||'')+'').trim();
+      return sv?'<span class="csup" title="'+attrEsc('Proveedor: '+supSplit(sv).join(', '))+'">'+supPillsHtml(sv,2)+'</span>':'';})()+
     '<span class="cdate">'+esc(r[FU.DATE])+'</span>'+
     (function(){
       var ps=g.map(function(x){return priceNum(x[FU.PRICE]);}).filter(function(n){return n!==null;});
@@ -4789,6 +4882,7 @@ function openFUModal(prefill,editIdx){
   fuPkgSel=[];fuPallet='';
   fuSemaforo='En conversación'; // demanda nueva arranca "En conversación"
   document.getElementById('fu-supplier').value='';
+  fuSupInit('');
   document.getElementById('fu-contact').value='';
   document.getElementById('fu-origin').value='';
   document.getElementById('fu-teamm').value='';
@@ -4811,7 +4905,7 @@ function openFUModal(prefill,editIdx){
     var dud=fuEditRows.filter(function(x){return priceAmbiguo(x[FU.PRICE]);});
     if(dud.length)alert('⚠ Precio con más de un número\n\n'+dud.map(function(x){return '• '+(((x[FU.SIZE]||'')+'').trim()||'Calibre')+': «'+(((x[FU.PRICE]||'')+'').trim())+'»';}).join('\n')+
       '\n\nLa app usa solo el primer número. Cargá un solo precio en cada calibre antes de guardar.');
-    document.getElementById('fu-supplier').value=(row[FU.SUPPLIER]||row[FU.BUYSFROM]||'').trim();
+    fuSupInit((row[FU.SUPPLIER]||row[FU.BUYSFROM]||'').trim());
     document.getElementById('fu-contact').value=(row[FU.CONTACT]||'').trim();
     document.getElementById('fu-origin').value=(row[FU.ORIGIN]||'').trim();
     document.getElementById('fu-teamm').value=(row[FU.TEAMM]||'').trim();
@@ -4888,7 +4982,16 @@ async function saveFURecord(){
   var company=document.getElementById('fu-company').value.trim();
   if(!company){toast('Ingresa el nombre de la empresa');return;}
   // Shared fields (apply to every caliber line of the order)
-  var supplier=document.getElementById('fu-supplier').value.trim();
+  // Proveedores: si quedó texto sin agregar tiene que ser válido; los que no existen bloquean el guardado.
+  var pendSup=document.getElementById('fu-supplier').value.trim();
+  if(pendSup){
+    var cs=fuSupCanon(pendSup);
+    if(!cs){toast('✗ «'+pendSup+'» no es un proveedor existente: elegilo de la lista o borralo');document.getElementById('fu-supplier').focus();return;}
+    fuSupPush(cs,true);document.getElementById('fu-supplier').value='';renderFuSup();
+  }
+  var supMalos=fuSupSel.filter(function(c){return !c.ok;});
+  if(supMalos.length){toast('✗ Proveedor que no existe: '+supMalos.map(function(c){return c.name;}).join(', ')+'. Quitalo (✕) o reemplazalo por uno de la lista');return;}
+  var supplier=fuSupSel.map(function(c){return c.name;}).join('; ');
   var contact=document.getElementById('fu-contact').value.trim();
   var origin=document.getElementById('fu-origin').value.trim();
   var teamm=document.getElementById('fu-teamm').value.trim();
