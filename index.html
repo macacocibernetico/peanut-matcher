@@ -1300,7 +1300,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.41.0</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.44.0</span>
     </div>
   </div>
 </aside>
@@ -1394,7 +1394,7 @@ function initTheme(){
 initTheme(); // se aplica ya, antes de pintar, para que no haya destello
 
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='4.41.0';
+var APP_VERSION='4.44.0';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -2302,7 +2302,7 @@ function openSem(idx){
   document.getElementById('sem-title').textContent='Estado · '+(((r[FU.CUSTOMER]||'')+'').trim()||'Demanda');
   document.getElementById('sem-sub').textContent='Cambiar el estado NO modifica la fecha del pedido.';
   document.getElementById('sem-opts').innerHTML=
-    SEMAFORO.map(function(s){
+    semOpts().map(function(s){
       var on=act&&act.val===s.val;
       return '<span class="sem-opt'+(on?' on':'')+'" data-v="'+s.val+'" onclick="saveSem(this.dataset.v)" style="'+(on?'border-color:'+s.color+';color:'+s.color+';':'')+'"><span class="sem-dot" style="background:'+s.color+';"></span>'+s.label+'</span>';
     }).join('')+
@@ -2365,13 +2365,13 @@ function chipsRowHtml(g,realIdx){
 }
 var chipsIdx=null,chipsBuf=[];
 var provAcIdx=-1;
+// Proveedores "reales" = SOLO los de la Database suppliers, con el nombre tal cual
+// está escrito ahí (mayúsculas incluidas). Availability no cuenta: ahí puede haber
+// variantes de escritura del mismo proveedor.
 function provNamesList(){
-  var set={},out=[];
-  (availRows||[]).forEach(function(r){var n=((r[AV.PROV]||'')+'').trim();if(n&&!set[n]){set[n]=true;out.push(n);}});
-  // + los de la Database suppliers (sin duplicar por mayúsculas/tildes)
-  var norm=Object.create(null);out.forEach(function(n){norm[normHdr(n)]=true;});
+  var norm=Object.create(null),out=[];
   (supRows||[]).forEach(function(r){var n=supName(r);if(n&&!norm[normHdr(n)]){norm[normHdr(n)]=true;out.push(n);}});
-  return out.sort();
+  return out.sort(function(a,b){return a.localeCompare(b);});
 }
 function openChips(idx){
   chipsIdx=parseInt(idx);
@@ -2528,7 +2528,7 @@ function buildDemFilters(){
       return '<option'+(sel===v?' selected':'')+'>'+v.replace(/</g,'&lt;')+'</option>';
     }).join('');
   }
-  var semChips=SEMAFORO.map(function(s){
+  var semChips=semOpts().map(function(s){
     var on=demFilterSem===s.val;
     return '<span class="chip'+(on?' selected':'')+'" style="padding:5px 11px;font-size:11px;'+(on?'border-color:'+s.color+';color:'+s.color+';':'')+'" onclick="setDemFilterSem(\''+s.val+'\')"><span class="sem-dot" style="background:'+s.color+';width:8px;height:8px;margin-right:5px;display:inline-block;"></span>'+s.label+'</span>';
   }).join('');
@@ -4110,15 +4110,17 @@ function applyFuChipsStrict(headerRow){
 var CHIP_ESTADOS=[
   {val:'pendiente',label:'Pendiente',color:'var(--sem-warn)'},
   {val:'rechazado',label:'Rechazado',color:'var(--sem-bad)'},
-  {val:'cerrado',label:'Cerrado',color:'var(--sem-ok)'}
+  {val:'interesado',label:'Interesado',color:'var(--sem-ok)'}
 ];
 function chipEstadoInfo(v){for(var i=0;i<CHIP_ESTADOS.length;i++){if(CHIP_ESTADOS[i].val===v)return CHIP_ESTADOS[i];}return CHIP_ESTADOS[0];}
 function parseChips(str){
   return ((str||'')+'').split('||').map(function(s){return s.trim();}).filter(Boolean).map(function(s){
     var i=s.lastIndexOf(':');
     if(i<0)return {name:s.trim(),estado:'pendiente'};
-    var nm=s.slice(0,i).trim(),es=s.slice(i+1).trim();
-    return {name:nm,estado:(chipEstadoInfo(es)?es:'pendiente')};
+    var nm=s.slice(0,i).trim(),es=s.slice(i+1).trim().toLowerCase();
+    if(es==='cerrado')es='interesado'; // se llamaba "Cerrado" hasta 4.43.0
+    var ok=CHIP_ESTADOS.some(function(e){return e.val===es;});
+    return {name:nm,estado:ok?es:'pendiente'};
   }).filter(function(c){return c.name;});
 }
 function serializeChips(arr){return arr.map(function(c){return c.name+':'+c.estado;}).join('||');}
@@ -4145,14 +4147,26 @@ var SEMAFORO=[
   {val:'Cerrado',color:'var(--sem-ok)',label:'Cerrado'},
   {val:'Inactivo',color:'var(--sem-bad)',label:'Inactivo'},
   {val:'Consulta de precios',color:'var(--info)',label:'Consulta de precios'},
-  {val:'En conversación',color:'var(--sem-warn)',label:'En conversación'}
+  {val:'Demanda auténtica',color:'var(--sem-warn)',label:'Demanda auténtica'}
 ];
-function semByVal(v){for(var i=0;i<SEMAFORO.length;i++){if(SEMAFORO[i].val===v)return SEMAFORO[i];}return null;}
+// El apartado "Ofertas a clientes" no tiene "demandas" ni "consultas de precios":
+//  - "Demanda auténtica" se muestra y guarda como "En conversación" (como siempre).
+//  - "Consulta de precios" no se ofrece (si una fila vieja ya lo tiene, se sigue viendo).
+function semVariant(s){
+  if(s.val==='Demanda auténtica'&&view==='ofcli')return {val:'En conversación',color:s.color,label:'En conversación'};
+  return s;
+}
+// Opciones que se pueden ELEGIR en el apartado actual (chips, filtro, modal de estado).
+function semOpts(){
+  return SEMAFORO.filter(function(s){return !(view==='ofcli'&&s.val==='Consulta de precios');}).map(semVariant);
+}
+function semByVal(v){for(var i=0;i<SEMAFORO.length;i++){var s=semVariant(SEMAFORO[i]);if(SEMAFORO[i].val===v||s.val===v)return s;}return null;}
 function semaforoOf(txt){
-  var t=(txt||'').toString().toLowerCase();
+  var t=(txt||'').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); // sin tildes
   if(t.indexOf('consulta')>=0)return semByVal('Consulta de precios');
   if(t.indexOf('inact')>=0)return semByVal('Inactivo');
-  if(t.indexOf('conversa')>=0)return semByVal('En conversación');
+  // "En conversación" (nombre viejo) y "Demanda auténtica" son el mismo estado
+  if(t.indexOf('conversa')>=0||t.indexOf('autentic')>=0)return semByVal('Demanda auténtica');
   if(t.indexOf('cerrad')>=0||t.indexOf('conect')>=0||t.indexOf('activo')>=0)return semByVal('Cerrado');
   return null;
 }
@@ -4860,7 +4874,7 @@ function palletFromStr(s){
 var fuSemaforo=''; // selected semáforo value (SEMAFORO[i].val) or ''
 function renderSemPick(){
   var box=document.getElementById('fu-sem-pick');if(!box)return;
-  box.innerHTML=SEMAFORO.map(function(s){
+  box.innerHTML=semOpts().map(function(s){
     var on=fuSemaforo===s.val;
     return '<span class="sem-opt'+(on?' on':'')+'" data-v="'+s.val+'" onclick="toggleSem(this.dataset.v)" style="'+(on?'border-color:'+s.color+';color:'+s.color+';':'')+'"><span class="sem-dot" style="background:'+s.color+';"></span>'+s.label+'</span>';
   }).join('');
@@ -4880,7 +4894,7 @@ function openFUModal(prefill,editIdx){
   fuShipSel=[];fuShipYear=(new Date()).getFullYear();fuShipPrompt=false;
   document.getElementById('fu-pkg-new').value='';
   fuPkgSel=[];fuPallet='';
-  fuSemaforo='En conversación'; // demanda nueva arranca "En conversación"
+  fuSemaforo=semByVal('Demanda auténtica').val; // arranca "Demanda auténtica" (en Ofertas a clientes: "En conversación")
   document.getElementById('fu-supplier').value='';
   fuSupInit('');
   document.getElementById('fu-contact').value='';

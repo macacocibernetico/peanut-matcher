@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.41.0**
+**Versión actual: 4.44.0**
 
 ---
 
@@ -299,6 +299,35 @@ desde la app.
 
 ## Historial
 
+- **4.44.0** — Interés (semáforo) por apartado.
+  - **Demandas**: "En conversación" pasa a **"Demanda auténtica"** (`SEMAFORO` val
+    `Demanda auténtica`). Los pedidos que ya dicen "En conversación" en la planilla
+    se siguen reconociendo (`semaforoOf` acepta `conversa`/`autentic`, sin tildes) y se
+    reescriben con el nombre nuevo recién cuando se les cambia el estado.
+  - **Ofertas a clientes**: ya no ofrece "Consulta de precios", y en vez de "Demanda
+    auténtica" usa **"En conversación"** (una oferta no es una "demanda"). Se hace con
+    `semVariant`/`semOpts` según `view==='ofcli'`; los 3 lugares que listan opciones
+    (filtro, modal de estado `openSem`, picker del form `renderSemPick`) usan
+    `semOpts()`. Una fila vieja con "Consulta de precios" se sigue viendo, solo que
+    no se puede elegir.
+  - `semaforoOf` ahora depende de `view` (global) además de `SEMAFORO`: el test
+    `orden-demandas.js` define `view` y evalúa `semVariant`/`semOpts`.
+- **4.43.0** — Chips de proveedores ofrecidos: el estado verde "Cerrado" pasa a
+  **"Interesado"** (`CHIP_ESTADOS`, val `interesado`), porque "cerrado" ya significa
+  otra cosa en el semáforo de la demanda. Estados: Pendiente (amarillo) / Rechazado
+  (rojo) / Interesado (verde). `parseChips` convierte los `:cerrado` ya guardados en
+  la columna "Proveedores ofrecidos" a `interesado` al leerlos (se reescriben así
+  la próxima vez que se guarde ese pedido; no hace falta tocar la planilla).
+- **4.42.0** — Proveedores = solo Database suppliers, con su escritura original.
+  - `provNamesList()` ya NO mira Availability: devuelve únicamente los de
+    `supRows` (columna nombre, ej. "Company"), tal cual están escritos ahí
+    (mayúsculas incluidas). Lo usan el campo Supplier de Demandas (4.41), los
+    chips "Proveedores ofrecidos" (4.26) y la empresa tipo Proveedor de la Agenda.
+  - Lo que se guarda es siempre el nombre de la Database: si alguien escribe
+    "villa franca" queda "VILLA FRANCA". Un pedido viejo con "Villa Franca" se
+    convierte a "VILLA FRANCA" al abrirlo y guardarlo.
+  - Un proveedor que solo está en Availability ya no es válido hasta cargarlo en
+    Empresas → Suppliers (➕ Pasar a Database).
 - **4.41.0** — Demandas: "Proveedor (Supplier)" pasa a varios chips validados.
   - El input libre es ahora chips + input con `<datalist>` + "+ Agregar" (Enter también).
     Solo entran nombres que existen en `provNamesList()` (Availability + Database
@@ -493,8 +522,8 @@ desde la app.
   compacto `Nombre:estado||Nombre2:estado2` (`FU.CHIPS`, `applyFuChipsStrict`,
   `parseChips`/`serializeChips`). Desde la ficha (👥 + Gestionar proveedores) se
   agrega un proveedor (autocompleta con los de Availability) y cada chip tiene
-  3 estados clickeables: Pendiente (amarillo) / Rechazado (rojo) / Cerrado
-  (verde). Se guarda en todas las filas del pedido (mismo patrón que la nota).
+  3 estados clickeables: Pendiente (amarillo) / Rechazado (rojo) / Interesado
+  (verde, antes "Cerrado"). Se guarda en todas las filas del pedido (mismo patrón que la nota).
   La vista compacta muestra un contador 👥N si el pedido tiene chips cargados.
   Como CROP/CLASE: sin la columna en la hoja, queda deshabilitado (avisa).
 - **4.25.0** — Dos fixes/features en Demandas:
