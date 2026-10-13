@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.44.0**
+**Versión actual: 4.45.0**
 
 ---
 
@@ -299,6 +299,16 @@ desde la app.
 
 ## Historial
 
+- **4.45.0** — Estado por calibre y puertos nuevos en Demandas.
+  - **Estado por calibre**: antes el semáforo era uno por pedido (`semDe` tomaba el
+    primero). Ahora cada fila de Follow up (calibre) guarda su propio Estado: en el
+    modal cada línea tiene sus chips de estado (`l.sem`, `setLineSem`), y "Estado de
+    todos los calibres" queda como atajo (`toggleSem`). En la ficha cada calibre
+    tiene un punto clickeable (`openSem(idx,true)`, solo esa fila); el badge del
+    encabezado muestra los estados distintos (`semsDe`) y cambia todo el pedido. En
+    compacta, un punto por estado. El filtro por estado matchea si algún calibre lo tiene.
+  - **Puertos/países nuevos**: los selects `fu-port`/`fu-country` tenían solo valores ya
+    cargados; se agregó la opción "➕ Nuevo puerto…/país…" (`onFuNewOpt`).
 - **4.44.0** — Interés (semáforo) por apartado.
   - **Demandas**: "En conversación" pasa a **"Demanda auténtica"** (`SEMAFORO` val
     `Demanda auténtica`). Los pedidos que ya dicen "En conversación" en la planilla

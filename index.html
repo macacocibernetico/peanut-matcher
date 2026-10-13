@@ -952,11 +952,11 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
         </div>
         <div class="mfield">
           <label class="mfield-label">Puerto <span class="mfield-opt">opcional</span></label>
-          <select class="mselect" id="fu-port"><option value=""></option></select>
+          <select class="mselect" id="fu-port" onchange="onFuNewOpt(this,'puerto')"><option value=""></option></select>
         </div>
         <div class="mfield">
           <label class="mfield-label">Pais <span class="mfield-opt">opcional</span></label>
-          <select class="mselect" id="fu-country"><option value=""></option></select>
+          <select class="mselect" id="fu-country" onchange="onFuNewOpt(this,'país')"><option value=""></option></select>
         </div>
         <div class="mfield">
           <label class="mfield-label">Incoterm <span class="mfield-opt">opcional</span></label>
@@ -981,7 +981,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
         </div>
       </div>
       <div class="mfield">
-        <label class="mfield-label">Semáforo <span class="mfield-opt">estado de la relación con el cliente</span></label>
+        <label class="mfield-label">Estado de todos los calibres <span class="mfield-opt">atajo: cada calibre tiene su propio estado arriba</span></label>
         <div class="sem-pick" id="fu-sem-pick"></div>
       </div>
       <div class="mfield">
@@ -1300,7 +1300,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.44.0</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.45.0</span>
     </div>
   </div>
 </aside>
@@ -1394,7 +1394,7 @@ function initTheme(){
 initTheme(); // se aplica ya, antes de pintar, para que no haya destello
 
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='4.44.0';
+var APP_VERSION='4.45.0';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -2292,15 +2292,25 @@ function semDe(g){
   }
   return null;
 }
-var semIdx=null;
-function openSem(idx){
-  semIdx=parseInt(idx);
+// Estados distintos del pedido (cada calibre puede tener el suyo), en orden de aparición
+function semsDe(g){
+  var out=[],seen={};
+  for(var i=0;i<g.length;i++){
+    var s=semaforoOf(g[i][FU.ESTADO]);
+    if(s&&!seen[s.val]){seen[s.val]=true;out.push(s);}
+  }
+  return out;
+}
+var semIdx=null,semSolo=false;
+function openSem(idx,solo){
+  semIdx=parseInt(idx);semSolo=!!solo;
   var r=fuRows[semIdx];
   if(!r){toast('No encontré la demanda');return;}
-  var g=groupOf(r);if(!g.length)g=[r];
+  var g=semSolo?[r]:groupOf(r);if(!g.length)g=[r];
   var act=semDe(g);
-  document.getElementById('sem-title').textContent='Estado · '+(((r[FU.CUSTOMER]||'')+'').trim()||'Demanda');
-  document.getElementById('sem-sub').textContent='Cambiar el estado NO modifica la fecha del pedido.';
+  var cal=semSolo?normSize(((r[FU.SIZE]||'')+'').trim()):'';
+  document.getElementById('sem-title').textContent='Estado · '+(((r[FU.CUSTOMER]||'')+'').trim()||'Demanda')+(cal?' · calibre '+cal:'');
+  document.getElementById('sem-sub').textContent=semSolo?'Solo cambia este calibre. No modifica la fecha del pedido.':'Cambia el estado de TODOS los calibres del pedido. No modifica la fecha.';
   document.getElementById('sem-opts').innerHTML=
     semOpts().map(function(s){
       var on=act&&act.val===s.val;
@@ -2317,7 +2327,7 @@ async function saveSem(val){
   var _fh=await refreshHeaderRow('Follow up');
   if(_fh){FU=mapHeaders(_fh,FU_SPEC,FU);applyFuCropStrict(_fh);applyFuClaseStrict(_fh);applyFuChipsStrict(_fh);}
   if(FU.ESTADO<0){toast('No encuentro la columna Estado en Follow up');return;}
-  var g=groupOf(r);if(!g.length)g=[r];
+  var g=semSolo?[r]:groupOf(r);if(!g.length)g=[r];
   var nums=g.map(function(x){return x._sheetRow;}).filter(Boolean);
   if(!nums.length){toast('Sincronizá antes de cambiar el estado');return;}
   prog(true);
@@ -2685,8 +2695,10 @@ function demFichaCard(g){
   var init=(company||'?')[0].toUpperCase();
   var totalTn=sumTn(g,FU.TNS);
   var filas=g.map(function(x){
+    var xs=semaforoOf(x[FU.ESTADO]),xi=fuRows.indexOf(x);
+    var xdot='<span class="sem-dot sem-click" data-idx="'+xi+'" onclick="openSem(this.dataset.idx,true)" title="'+attrEsc(xs?('Estado de este calibre: '+xs.label):'Poner estado a este calibre')+'" style="background:'+(xs?xs.color:'var(--border2)')+';margin-right:6px;"></span>';
     return '<tr>'+
-      '<td>'+(normSize(((x[FU.SIZE]||'')+'').trim())||'—')+'</td>'+
+      '<td>'+xdot+(normSize(((x[FU.SIZE]||'')+'').trim())||'—')+'</td>'+
       '<td>'+(esc(x[FU.TYPE])||'—')+'</td>'+
       '<td class="num">'+(esc(x[FU.TNS])||'—')+'</td>'+
       '<td class="num price'+(fmtPrice(x[FU.PRICE])?'':' empty')+'">'+(fmtPrice(x[FU.PRICE])||'—')+precioWarn(x[FU.PRICE])+'</td>'+
@@ -2727,7 +2739,7 @@ function demFichaCard(g){
           cliBadge+
           (isBirdfood(g)?'<span class="bf-badge">Birdfood</span>':'')+
           (sem
-            ? '<span class="sem-badge sem-click" data-idx="'+realIdx+'" onclick="openSem(this.dataset.idx)" title="Cambiar estado" style="border-color:'+sem.color+';color:'+sem.color+';"><span class="sem-dot" style="background:'+sem.color+';"></span>'+sem.label+'</span>'
+            ? semsDe(g).map(function(sv){return '<span class="sem-badge sem-click" data-idx="'+realIdx+'" onclick="openSem(this.dataset.idx)" title="Cambiar estado de todo el pedido" style="border-color:'+sv.color+';color:'+sv.color+';"><span class="sem-dot" style="background:'+sv.color+';"></span>'+sv.label+'</span>';}).join('')
             : '<span class="sem-badge sem-click sem-none" data-idx="'+realIdx+'" onclick="openSem(this.dataset.idx)" title="Poner estado"><span class="sem-dot" style="background:var(--border2);"></span>Sin estado</span>')+
           (fecha?'<span class="fu-date" style="margin:0;">'+fecha+'</span>':'')+
         '</div>'+
@@ -2790,7 +2802,8 @@ function demCompactRow(g){
   var cal=g.map(function(x){var s=normSize(((x[FU.SIZE]||'')+'').trim());if(!s)return '';var t=((x[FU.TYPE]||'')+'').trim();return s+(t?' '+esc(t):'');}).filter(Boolean).join(' · ')||'—';
   var tn=sumTn(g,FU.TNS);
   return '<div class="crow">'+
-    '<span class="cdot sem-click" data-idx="'+realIdx+'" onclick="openSem(this.dataset.idx)" title="Cambiar estado" style="background:'+(sem?sem.color:'var(--border2)')+';"></span>'+
+    (function(){var ss=semsDe(g);if(!ss.length)ss=[{color:'var(--border2)',label:''}];
+      return ss.map(function(sv){return '<span class="cdot sem-click" data-idx="'+realIdx+'" onclick="openSem(this.dataset.idx)" title="'+attrEsc(sv.label?('Cambiar estado ('+sv.label+')'):'Poner estado')+'" style="background:'+sv.color+';"></span>';}).join('');})()+
     '<span class="cname">'+esc(r[FU.CUSTOMER])+'</span>'+
     (isBirdfood(g)?'<span class="cbf">Birdfood</span>':'')+
     '<span class="ccal">'+cal+'</span>'+
@@ -3630,7 +3643,7 @@ function renderDemandasList(){
   // Category filters
   if(demFilterSem){
     if(demFilterSem==='__none__')groups=groups.filter(function(g){return !semDe(g);});
-    else groups=groups.filter(function(g){var s=semDe(g);return s&&s.val===demFilterSem;});
+    else groups=groups.filter(function(g){return semsDe(g).some(function(s){return s.val===demFilterSem;});});
   }
   if(demFilterEmp){
     groups=groups.filter(function(g){return (g[0][FU.CUSTOMER]||'').trim()===demFilterEmp;});
@@ -4636,7 +4649,7 @@ function todayStr(){var d=new Date();return String(d.getDate()).padStart(2,'0')+
 // ── ORDER LINES (multi-caliber) ──────────────────────────────────────────────
 // Each line = one Follow up row: {min,max,split,types[],tns,price}
 var fuLines=[];
-function blankLine(){return {min:'',max:'',split:false,types:[],tns:'',price:''};}
+function blankLine(sem){return {min:'',max:'',split:false,types:[],tns:'',price:'',sem:sem||''};}
 function lineSizeStr(l){
   if(l.split)return 'Split';
   // Normaliza a entero: descarta cualquier resto raro (decimales, espacios)
@@ -4669,6 +4682,11 @@ function renderFuLines(){
         '<label class="fu-split-tog"><input type="checkbox"'+(l.split?' checked':'')+' onchange="toggleLineSplit('+i+')"> Split</label>'+
       '</div>'+
       '<div class="fu-line-chips">'+chips+'</div>'+
+      '<div class="fu-line-sub">Estado <b>de este calibre</b></div>'+
+      '<div class="fu-line-chips">'+semOpts().map(function(s){
+        var on=l.sem===s.val;
+        return '<span class="sem-opt'+(on?' on':'')+'" style="padding:5px 11px;font-size:12px;'+(on?'border-color:'+s.color+';color:'+s.color+';':'')+'" data-v="'+s.val+'" onclick="setLineSem('+i+',this.dataset.v)"><span class="sem-dot" style="background:'+s.color+';"></span>'+s.label+'</span>';
+      }).join('')+'</div>'+
       '<div class="fu-line-sub">Cantidad y precio <b>de este calibre</b></div>'+
       '<div class="fu-line-row">'+
         '<input class="minput fu-line-num" type="number" inputmode="numeric" placeholder="Tns" value="'+(l.tns||'')+'" oninput="fuLines['+i+'].tns=this.value">'+
@@ -4680,7 +4698,8 @@ function renderFuLines(){
     '</div>';
   }).join('');
 }
-function addFuLine(){fuLines.push(blankLine());renderFuLines();}
+function addFuLine(){fuLines.push(blankLine(fuLines.length?fuLines[fuLines.length-1].sem:fuSemaforo));renderFuLines();renderSemPick();}
+function setLineSem(i,v){fuLines[i].sem=(fuLines[i].sem===v?'':v);renderFuLines();renderSemPick();}
 function removeFuLine(i){fuLines.splice(i,1);if(!fuLines.length)fuLines.push(blankLine());renderFuLines();}
 function toggleLineType(i,t){var a=fuLines[i].types,j=a.indexOf(t);if(j>=0)a.splice(j,1);else a.push(t);renderFuLines();}
 function toggleLineSplit(i){fuLines[i].split=!fuLines[i].split;renderFuLines();}
@@ -4694,6 +4713,7 @@ function rowToLine(r){
   if((((r[FU.TYPE]||'')+'').toLowerCase()).indexOf('bf')>=0&&l.types.indexOf('BF')<0)l.types.push('BF');
   l.tns=(r[FU.TNS]||'').trim();
   l.price=(r[FU.PRICE]||'').trim();
+  var se=semaforoOf(r[FU.ESTADO]);l.sem=se?se.val:'';
   return l;
 }
 // Parse an existing sheet size string into caliber chips (kept for compatibility)
@@ -4730,6 +4750,8 @@ function fillFuDropdowns(selPort,selCountry,selIncoterm){
   // If the current value isn't in the list (e.g. legacy), add it so it shows
   if(selPort&&portList.map(function(x){return x.toLowerCase();}).indexOf(selPort.toLowerCase())<0){portSel.innerHTML+=opt(selPort,selPort);}
   if(selCountry&&ctryList.map(function(x){return x.toLowerCase();}).indexOf(selCountry.toLowerCase())<0){ctrySel.innerHTML+=opt(selCountry,selCountry);}
+  portSel.innerHTML+='<option value="__new__">➕ Nuevo puerto…</option>';
+  ctrySel.innerHTML+='<option value="__new__">➕ Nuevo país…</option>';
   var incSel=document.getElementById('fu-incoterm');
   if(incSel){
     incSel.innerHTML='<option value=""></option>'+INCOTERMS.map(function(v){return opt(v,selIncoterm);}).join('');
@@ -4874,12 +4896,14 @@ function palletFromStr(s){
 var fuSemaforo=''; // selected semáforo value (SEMAFORO[i].val) or ''
 function renderSemPick(){
   var box=document.getElementById('fu-sem-pick');if(!box)return;
+  // "todos" queda marcado solo si todos los calibres comparten estado
+  fuSemaforo=fuLines.length&&fuLines.every(function(l){return l.sem===fuLines[0].sem;})?fuLines[0].sem:'';
   box.innerHTML=semOpts().map(function(s){
     var on=fuSemaforo===s.val;
     return '<span class="sem-opt'+(on?' on':'')+'" data-v="'+s.val+'" onclick="toggleSem(this.dataset.v)" style="'+(on?'border-color:'+s.color+';color:'+s.color+';':'')+'"><span class="sem-dot" style="background:'+s.color+';"></span>'+s.label+'</span>';
   }).join('');
 }
-function toggleSem(v){fuSemaforo=(fuSemaforo===v?'':v);renderSemPick();}
+function toggleSem(v){var nv=(fuSemaforo===v?'':v);fuLines.forEach(function(l){l.sem=nv;});renderFuLines();renderSemPick();}
 function openFUModal(prefill,editIdx){
   fuMode=editIdx!==undefined?'edit':'new';
   fuEditIdx=editIdx!==undefined?editIdx:null;
@@ -4889,7 +4913,7 @@ function openFUModal(prefill,editIdx){
   var inp=document.getElementById('fu-company');
   inp.disabled=false;
   inp.value=fuPrefill;
-  fuLines=[blankLine()];fuEditRows=[];
+  fuLines=[blankLine(semByVal('Demanda auténtica').val)];fuEditRows=[];
   document.getElementById('fu-shipment').value='';
   fuShipSel=[];fuShipYear=(new Date()).getFullYear();fuShipPrompt=false;
   document.getElementById('fu-pkg-new').value='';
@@ -4925,7 +4949,6 @@ function openFUModal(prefill,editIdx){
     document.getElementById('fu-teamm').value=(row[FU.TEAMM]||'').trim();
     document.getElementById('fu-shipment').value=parseShipmentValue((row[FU.SHIPMENT]||'').trim());
     fuPkgSel=pkgStrToArr(row[FU.PACKAGING]);fuPallet=palletFromStr(row[FU.PACKAGING]);
-    var semE=semaforoOf(row[FU.ESTADO]);fuSemaforo=semE?semE.val:'';
     document.getElementById('fu-comment').value=(row[FU.OBS]||'').trim();
     document.getElementById('fu-grado').value=(row[FU.GRADO]||'').trim();
     document.getElementById('fu-alfa').value=(row[FU.ALFA]||'').trim();
@@ -4945,6 +4968,20 @@ function openFUModal(prefill,editIdx){
   }
   document.getElementById('fu-modal').classList.remove('hidden');
   if(!fuPrefill)setTimeout(function(){inp.focus();},100);
+}
+// "➕ Nuevo puerto/país…": pide el nombre, lo suma a la lista y lo deja elegido
+function onFuNewOpt(sel,que){
+  if(sel.value!=='__new__')return;
+  var v=prompt('Nombre del nuevo '+que+':','');
+  v=(v||'').replace(/\s+/g,' ').trim();
+  if(!v){sel.value=sel.dataset.prev||'';return;}
+  var ex=null;
+  for(var i=0;i<sel.options.length;i++){if(sel.options[i].value.toLowerCase()===v.toLowerCase()){ex=sel.options[i];break;}}
+  if(!ex){
+    ex=document.createElement('option');ex.value=v;ex.textContent=v;
+    sel.insertBefore(ex,sel.options[sel.options.length-1]);
+  }
+  sel.value=ex.value;sel.dataset.prev=ex.value;
 }
 function closeFUModal(){document.getElementById('fu-modal').classList.add('hidden');}
 
@@ -5059,7 +5096,7 @@ async function saveFURecord(){
     rd[FU.GRADO]=grado;
     rd[FU.ALFA]=alfa;
     if(FU.CROP>=0)rd[FU.CROP]=crop;
-    rd[FU.ESTADO]=fuSemaforo;
+    rd[FU.ESTADO]=l.sem||'';
     // Clase: en edición se conserva la original (carry); en alta se setea según la sección.
     if(FU.CLASE>=0)rd[FU.CLASE]=(carry&&carry[FU.CLASE])?carry[FU.CLASE]:(activeClase()==='oferta'?'Oferta a cliente':'Demanda');
     rows.push(rd);
