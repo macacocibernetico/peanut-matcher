@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.45.0**
+**Versión actual: 4.46.0**
 
 ---
 
@@ -299,6 +299,18 @@ desde la app.
 
 ## Historial
 
+- **4.46.0** — Fix: demandas "Inactivas" que volvían a activas solas.
+  - **Causa**: los pedidos nuevos se insertan ARRIBA (fila 2) de Follow up y cada sesión
+    guarda el `_sheetRow` de cuando sincronizó. Si otra persona cargaba un pedido, las
+    filas bajaban y las escrituras por número de fila (estado, nota, chips, mover, borrar)
+    caían en OTRO pedido; además, editar un pedido con datos viejos reescribía el estado
+    viejo (y los chips) por encima del cambio de otro.
+  - **Fix**: `fuResolve(rows)` relee Follow up y re-ubica cada fila por contenido
+    (`fuRowId`: cliente+fecha+calibre+tipo+tn+precio) antes de escribir o borrar; si el
+    pedido cambió o no está, aborta con aviso ("tocá Sync"). Se usa en `saveSem`,
+    `saveChips`, `saveNota`, `moverClase`, `deleteDemanda` y en la edición del pedido, que
+    además toma de la planilla las columnas que el formulario no toca y el estado de los
+    calibres que no se tocaron (`l.sem0`). Test nuevo: `tools/tests/escrituras-seguras.js`.
 - **4.45.0** — Estado por calibre y puertos nuevos en Demandas.
   - **Estado por calibre**: antes el semáforo era uno por pedido (`semDe` tomaba el
     primero). Ahora cada fila de Follow up (calibre) guarda su propio Estado: en el

@@ -1300,7 +1300,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.45.0</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.46.0</span>
     </div>
   </div>
 </aside>
@@ -1394,7 +1394,7 @@ function initTheme(){
 initTheme(); // se aplica ya, antes de pintar, para que no haya destello
 
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='4.45.0';
+var APP_VERSION='4.46.0';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -2060,6 +2060,7 @@ async function deleteDemanda(idx){
   if(!r)return;
   if(!(await guardToken()))return;
   var grp=groupOf(r);
+  if(!(await fuResolve(grp))){toast('El pedido cambió en la planilla (otra persona lo modificó o movió). Tocá Sync y probá de nuevo');return;}
   var nums=grp.map(function(x){return x._sheetRow;}).filter(Boolean);
   if(!nums.length){toast('Sincroniza antes de eliminar este pedido');return;}
   var company=(r[FU.CUSTOMER]||'').trim();
@@ -2275,6 +2276,37 @@ function buscarClientesDeOferta(idx){
   if(badCal)toast('No pude interpretar el calibre "'+prod+'": busqué con el rango completo');
   else if(noType)toast('La oferta no tiene Tipo cargado: busqué con todos');
 }
+// ── ESCRITURAS SEGURAS SOBRE Follow up ──────────────────────────────────────
+// Los pedidos nuevos se insertan ARRIBA (fila 2), así que cuando otra persona carga
+// algo, todas las filas bajan y el _sheetRow que tiene cada sesión queda viejo: escribir
+// ahí pisa OTRO pedido (y el estado "Inactivo" se perdía o caía en el pedido equivocado).
+// Antes de escribir/borrar se relee la planilla y se re-ubica cada fila por su contenido.
+function fuRowId(x){
+  return [FU.CUSTOMER,FU.DATE,FU.SIZE,FU.TYPE,FU.TNS,FU.PRICE].map(function(c){return c>=0?normHdr(x[c]||''):'';}).join('|');
+}
+// Devuelve {live:[filas actuales equivalentes]} y actualiza _sheetRow de las filas locales;
+// null si alguna ya no está igual en la planilla.
+async function fuResolve(rows){
+  try{
+    var r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+cfg.sheetId+'/values/'+encodeURIComponent('Follow up!A1:AZ2000'),{headers:{Authorization:'Bearer '+tok}});
+    if(!r.ok)return null;
+    var all=(await r.json()).values||[];
+    if(!all.length)return null;
+    var live=all.slice(1).map(function(row,i){row._sheetRow=i+2;return row;});
+    var used={},out=[];
+    for(var k=0;k<rows.length;k++){
+      var key=fuRowId(rows[k]),best=null;
+      for(var j=0;j<live.length;j++){
+        if(used[j]||fuRowId(live[j])!==key)continue;
+        if(best===null||Math.abs(live[j]._sheetRow-(rows[k]._sheetRow||0))<Math.abs(live[best]._sheetRow-(rows[k]._sheetRow||0)))best=j;
+      }
+      if(best===null)return null;
+      used[best]=true;out.push(live[best]);
+    }
+    for(var m=0;m<rows.length;m++)rows[m]._sheetRow=out[m]._sheetRow;
+    return {live:out};
+  }catch(e){console.warn('fuResolve:',e);return null;}
+}
 // ── NOTA AL PIE (Observations / Comentarios) ────────────────────────────────
 // Escribe SOLO esa celda, sin reescribir el resto del pedido.
 async function updateFuCell(sheetRow,letra,valor){
@@ -2328,6 +2360,7 @@ async function saveSem(val){
   if(_fh){FU=mapHeaders(_fh,FU_SPEC,FU);applyFuCropStrict(_fh);applyFuClaseStrict(_fh);applyFuChipsStrict(_fh);}
   if(FU.ESTADO<0){toast('No encuentro la columna Estado en Follow up');return;}
   var g=semSolo?[r]:groupOf(r);if(!g.length)g=[r];
+  if(!(await fuResolve(g))){toast('El pedido cambió en la planilla (otra persona lo modificó o movió). Tocá Sync y probá de nuevo');return;}
   var nums=g.map(function(x){return x._sheetRow;}).filter(Boolean);
   if(!nums.length){toast('Sincronizá antes de cambiar el estado');return;}
   prog(true);
@@ -2433,6 +2466,7 @@ async function saveChips(){
   if(_fh){FU=mapHeaders(_fh,FU_SPEC,FU);applyFuCropStrict(_fh);applyFuClaseStrict(_fh);applyFuChipsStrict(_fh);}
   if(!(FU.CHIPS>=0)){toast('No encuentro la columna "Proveedores ofrecidos" en Follow up');return;}
   var g=groupOf(r);if(!g.length)g=[r];
+  if(!(await fuResolve(g))){toast('El pedido cambió en la planilla (otra persona lo modificó o movió). Tocá Sync y probá de nuevo');return;}
   var nums=g.map(function(x){return x._sheetRow;}).filter(Boolean);
   if(!nums.length){toast('Sincronizá antes de editar');return;}
   var txt=serializeChips(chipsBuf);
@@ -2474,6 +2508,7 @@ async function saveNota(){
   if(FU.OBS<0){toast('No encuentro la columna de Observaciones en Follow up');return;}
   var txt=document.getElementById('nota-text').value.trim();
   var g=groupOf(r);if(!g.length)g=[r];
+  if(!(await fuResolve(g))){toast('El pedido cambió en la planilla (otra persona lo modificó o movió). Tocá Sync y probá de nuevo');return;}
   var nums=g.map(function(x){return x._sheetRow;}).filter(Boolean);
   if(!nums.length){toast('Sincronizá antes de editar la nota');return;}
   var btn=document.getElementById('nota-save-btn');
@@ -2783,6 +2818,7 @@ async function moverClase(idx){
   if(_fh){FU=mapHeaders(_fh,FU_SPEC,FU);applyFuCropStrict(_fh);applyFuClaseStrict(_fh);applyFuChipsStrict(_fh);}
   if(FU.CLASE<0){toast('Agregá una columna "Clase" en Follow up para poder mover');return;}
   var g=groupOf(r);if(!g.length)g=[r];
+  if(!(await fuResolve(g))){toast('El pedido cambió en la planilla (otra persona lo modificó o movió). Tocá Sync y probá de nuevo');return;}
   var nums=g.map(function(x){return x._sheetRow;}).filter(Boolean);
   if(!nums.length){toast('Sincronizá antes de mover');return;}
   prog(true);
@@ -4714,6 +4750,7 @@ function rowToLine(r){
   l.tns=(r[FU.TNS]||'').trim();
   l.price=(r[FU.PRICE]||'').trim();
   var se=semaforoOf(r[FU.ESTADO]);l.sem=se?se.val:'';
+  l.src=r;l.sem0=l.sem;
   return l;
 }
 // Parse an existing sheet size string into caliber chips (kept for compatibility)
@@ -5065,6 +5102,15 @@ async function saveFURecord(){
   // On edit, carry over columns not present in the form (e.g. Buys from, Contrato, Días)
   // from the original order so they are not blanked when we rewrite the rows.
   var carry=(fuMode==='edit'&&fuEditRows&&fuEditRows[0])?fuEditRows[0]:null;
+  // Edición: releer la planilla. Se re-ubican las filas (por si se movieron) y se toman de
+  // ahí las columnas que el formulario no toca, y el estado de los calibres que no cambiaste,
+  // para no pisar lo que otra persona haya hecho mientras tenías el pedido abierto.
+  var fuRes=null;
+  if(fuMode==='edit'&&fuEditIdx!==null&&fuEditRows.length){
+    fuRes=await fuResolve(fuEditRows);
+    if(!fuRes){toast('El pedido cambió en la planilla (otra persona lo modificó o movió). Tocá Sync y probá de nuevo');return;}
+    carry=fuRes.live[0];
+  }
   if(carry){var fOrig=((carry[FU.DATE]||'')+'').trim();if(fOrig)fechaPedido=fOrig;}
   var formIdx={};[FU.DATE,FU.CUSTOMER,FU.CONTACT,FU.SIZE,FU.TYPE,FU.ORIGIN,FU.PACKAGING,FU.TNS,FU.PRICE,FU.PORT,FU.COUNTRY,FU.SHIPMENT,FU.SUPPLIER,FU.INCOTERM,FU.OBS,FU.GRADO,FU.ALFA,FU.TEAMM,FU.ESTADO,FU.CROP].forEach(function(ix){formIdx[ix]=true;});
   // Build one sheet row per caliber line
@@ -5096,7 +5142,9 @@ async function saveFURecord(){
     rd[FU.GRADO]=grado;
     rd[FU.ALFA]=alfa;
     if(FU.CROP>=0)rd[FU.CROP]=crop;
-    rd[FU.ESTADO]=l.sem||'';
+    var est=l.sem||'';
+    if(fuRes&&l.src&&l.sem===l.sem0){var li=fuEditRows.indexOf(l.src);if(li>=0&&fuRes.live[li])est=((fuRes.live[li][FU.ESTADO]||'')+'').trim();}
+    rd[FU.ESTADO]=est;
     // Clase: en edición se conserva la original (carry); en alta se setea según la sección.
     if(FU.CLASE>=0)rd[FU.CLASE]=(carry&&carry[FU.CLASE])?carry[FU.CLASE]:(activeClase()==='oferta'?'Oferta a cliente':'Demanda');
     rows.push(rd);
