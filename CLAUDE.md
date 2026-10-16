@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.46.0**
+**Versión actual: 4.47.0**
 
 ---
 
@@ -299,6 +299,20 @@ desde la app.
 
 ## Historial
 
+- **4.47.0** — Velocidad en llamada (resultado de la crítica de diseño, paso 1).
+  - **Matcher**: Split pasa de dos interruptores que se pisaban ("Incluir Split" / "Solo Split")
+    a una sola elección de tres con explicación: "Solo el rango de calibre", "Rango +
+    clientes de Split", "Solo clientes de Split" (`splitMode`/`setSplitMode`; siguen siendo
+    `withSplit`/`soloSplit`). Europa y Birdfood quedan en "Más filtros" con contador
+    (`toggleMatchFilters`, se abre solo si hay alguno activo). El botón "Buscar matches" queda
+    fijo abajo (sobre la barra de pestañas en celular) y repite lo que se busca
+    (`matchSummary`). Marcas del slider: 5 en pantallas angostas (antes se pisaban).
+  - **Modal de pedido**: visibles solo empresa, calibres (cada uno con su estado) y, con 2+
+    calibres, el atajo de estado. El resto (13 campos) va en "Más datos" agrupado en
+    Producto / Envío / Contactos / Notas, con contador (`fuMoreCount`, `toggleFuMore`); se
+    abre solo al editar un pedido que ya tiene datos ahí. Mismos ids, el guardado no cambió.
+  - Chips de tipo y opciones: con `role`/`aria-*` y operables con teclado. Test nuevo:
+    `tools/tests/matcher-split.js`. Copia previa de seguridad: `C:\pm-backup-v4.46.0`.
 - **4.46.0** — Fix: demandas "Inactivas" que volvían a activas solas.
   - **Causa**: los pedidos nuevos se insertan ARRIBA (fila 2) de Follow up y cada sesión
     guarda el `_sheetRow` de cuando sincronizó. Si otra persona cargaba un pedido, las

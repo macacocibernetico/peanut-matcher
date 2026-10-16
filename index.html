@@ -885,6 +885,27 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 .crow .cdot.sem-click{width:12px;height:12px;}
 #sem-opts .sem-opt{justify-content:flex-start;width:100%;padding:12px 16px;font-size:14px;}
 
+
+/* 4.47.0 · velocidad en llamada: matcher con opciones de split, "Más filtros"/"Más datos" y CTA fijo */
+.rad{width:100%;text-align:left;font:inherit;color:var(--text);margin-top:0;}
+.rad+.rad{margin-top:8px;}
+.rad.on{border-color:var(--accent);background:var(--accent-light);}
+.rad-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--bg2);}
+.rad.on .rad-dot{border-color:var(--accent);}
+.rad.on .rad-dot:after{content:'';width:10px;height:10px;border-radius:50%;background:var(--accent);}
+.rad-grp{display:grid;gap:0;}
+.acc{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-top:16px;font:inherit;font-weight:700;font-size:14px;color:var(--text);min-height:48px;cursor:pointer;text-align:left;}
+.acc .n{background:var(--accent);color:var(--bg2);border-radius:20px;font-size:12px;padding:1px 9px;margin-left:8px;}
+.acc .car{transition:transform .15s;}
+.acc[aria-expanded="true"]{border-radius:var(--r) var(--r) 0 0;}
+.acc[aria-expanded="true"] .car{transform:rotate(180deg);}
+.accbody{border:1.5px solid var(--border);border-top:0;border-radius:0 0 var(--r) var(--r);padding:4px 12px 14px;}
+.acc-sec{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin:14px 0 4px;padding-top:10px;border-top:1px dashed var(--border2);}
+.acc-sec:first-child{border-top:0;margin-top:6px;padding-top:0;}
+.form-actions.sticky{position:sticky;bottom:0;background:linear-gradient(to top,var(--bg2) 70%,transparent);padding:14px 0 2px;margin-top:10px;z-index:5;}
+.btn-search.has-sub{flex-direction:column;gap:1px;}
+.btn-search small{font-size:12px;font-weight:600;opacity:.92;}
+@media(max-width:768px){.form-actions.sticky{bottom:calc(58px + env(safe-area-inset-bottom,0px));}} /* arriba de la barra de pestañas */
 </style>
 </head>
 <body>
@@ -900,7 +921,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       <span class="modal-title" id="fu-modal-title">Agregar Follow Up</span>
       <span class="modal-close" onclick="closeFUModal()">&#215;</span>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" oninput="updateFuMore()" onchange="updateFuMore()" onclick="deferFuMore()">
       <div class="mfield company-field">
         <label class="mfield-label">Empresa</label>
         <input class="minput" id="fu-company" placeholder="Escribi para buscar..." autocomplete="off"
@@ -908,11 +929,18 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
         <div class="ac-list hidden" id="ac-list"></div>
       </div>
       <div class="mfield">
-        <label class="mfield-label">Calibres del pedido <span class="mfield-opt">un renglón por calibre: tipo, cantidad y precio</span></label>
+        <label class="mfield-label">Calibres del pedido <span class="mfield-opt">un renglón por calibre: tipo, cantidad, precio y estado</span></label>
         <div id="fu-lines"></div>
         <button type="button" class="btn fu-add-line" onclick="addFuLine()">+ Agregar calibre</button>
       </div>
-      <div class="mform-grid">
+      <div class="mfield" id="fu-sem-wrap">
+        <label class="mfield-label">Estado de todos los calibres <span class="mfield-opt">atajo: cada calibre tiene su propio estado arriba</span></label>
+        <div class="sem-pick" id="fu-sem-pick"></div>
+      </div>
+      <button type="button" class="acc" id="fu-more-btn" aria-expanded="false" aria-controls="fu-more" onclick="toggleFuMore()"><span>Más datos <span class="n" id="fu-more-n">0 de 13</span></span><span class="car" aria-hidden="true">▾</span></button>
+      <div class="accbody hidden" id="fu-more">
+        <div class="acc-sec">Producto</div>
+        <div class="mform-grid">
         <div class="mfield">
           <label class="mfield-label">Grado <span class="mfield-opt">opcional</span></label>
           <input class="minput" id="fu-grado" placeholder="ej: A, B, G1">
@@ -928,6 +956,41 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
           <label class="mfield-label">Crop <span class="mfield-opt">año de cosecha pedido</span></label>
           <select class="mselect" id="fu-crop"><option value=""></option></select>
         </div>
+        <div class="mfield" style="grid-column:1/-1">
+          <label class="mfield-label">Packaging <span class="mfield-opt">elegí uno o varios, o agregá uno nuevo abajo</span></label>
+          <div class="chip-group" id="fu-pkg-chips" style="margin-bottom:8px;"></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input class="minput" id="fu-pkg-new" placeholder="Nuevo packaging (ej: 1000kg bags)">
+            <button type="button" class="btn" onclick="addFuPkgNew()">+ Agregar</button>
+          </div>
+          <div style="margin-top:12px;">
+            <label class="mfield-label" style="margin-bottom:6px;">Pallet?</label>
+            <div class="chip-group" id="fu-pallet-chips"></div>
+          </div>
+        </div>
+        </div>
+        <div class="acc-sec">Envío</div>
+        <div class="mform-grid">
+        <div class="mfield">
+          <label class="mfield-label">Puerto <span class="mfield-opt">opcional</span></label>
+          <select class="mselect" id="fu-port" onchange="onFuNewOpt(this,'puerto')"><option value=""></option></select>
+        </div>
+        <div class="mfield">
+          <label class="mfield-label">Pais <span class="mfield-opt">opcional</span></label>
+          <select class="mselect" id="fu-country" onchange="onFuNewOpt(this,'país')"><option value=""></option></select>
+        </div>
+        <div class="mfield">
+          <label class="mfield-label">Incoterm <span class="mfield-opt">opcional</span></label>
+          <select class="mselect" id="fu-incoterm"><option value=""></option></select>
+        </div>
+        <div class="mfield" style="grid-column:1/-1">
+          <label class="mfield-label">Shipment period <span class="mfield-opt">elegí uno o varios meses (podés cambiar de año), o escribí abajo</span></label>
+          <div id="fu-ship-cal" style="border:1.5px solid var(--border);border-radius:var(--r);padding:10px;margin-bottom:8px;background:var(--bg3);"></div>
+          <input class="minput" id="fu-shipment" placeholder="Texto libre (ej: ASAP, Q1, a confirmar...)">
+        </div>
+        </div>
+        <div class="acc-sec">Contactos</div>
+        <div class="mform-grid">
         <div class="mfield">
           <label class="mfield-label">Proveedor (Supplier) <span class="mfield-opt">opcional · uno o varios, de la lista</span></label>
           <div class="fu-sup-chips" id="fu-sup-chips"></div>
@@ -950,43 +1013,12 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
           <label class="mfield-label">Team member <span class="mfield-opt">opcional</span></label>
           <input class="minput" id="fu-teamm" placeholder="ej: M, F">
         </div>
-        <div class="mfield">
-          <label class="mfield-label">Puerto <span class="mfield-opt">opcional</span></label>
-          <select class="mselect" id="fu-port" onchange="onFuNewOpt(this,'puerto')"><option value=""></option></select>
         </div>
-        <div class="mfield">
-          <label class="mfield-label">Pais <span class="mfield-opt">opcional</span></label>
-          <select class="mselect" id="fu-country" onchange="onFuNewOpt(this,'país')"><option value=""></option></select>
-        </div>
-        <div class="mfield">
-          <label class="mfield-label">Incoterm <span class="mfield-opt">opcional</span></label>
-          <select class="mselect" id="fu-incoterm"><option value=""></option></select>
-        </div>
-        <div class="mfield" style="grid-column:1/-1">
-          <label class="mfield-label">Shipment period <span class="mfield-opt">elegí uno o varios meses (podés cambiar de año), o escribí abajo</span></label>
-          <div id="fu-ship-cal" style="border:1.5px solid var(--border);border-radius:var(--r);padding:10px;margin-bottom:8px;background:var(--bg3);"></div>
-          <input class="minput" id="fu-shipment" placeholder="Texto libre (ej: ASAP, Q1, a confirmar...)">
-        </div>
-        <div class="mfield" style="grid-column:1/-1">
-          <label class="mfield-label">Packaging <span class="mfield-opt">elegí uno o varios, o agregá uno nuevo abajo</span></label>
-          <div class="chip-group" id="fu-pkg-chips" style="margin-bottom:8px;"></div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="minput" id="fu-pkg-new" placeholder="Nuevo packaging (ej: 1000kg bags)">
-            <button type="button" class="btn" onclick="addFuPkgNew()">+ Agregar</button>
-          </div>
-          <div style="margin-top:12px;">
-            <label class="mfield-label" style="margin-bottom:6px;">Pallet?</label>
-            <div class="chip-group" id="fu-pallet-chips"></div>
-          </div>
-        </div>
-      </div>
-      <div class="mfield">
-        <label class="mfield-label">Estado de todos los calibres <span class="mfield-opt">atajo: cada calibre tiene su propio estado arriba</span></label>
-        <div class="sem-pick" id="fu-sem-pick"></div>
-      </div>
+        <div class="acc-sec">Notas</div>
       <div class="mfield">
         <label class="mfield-label">Comentario <span class="mfield-opt">opcional</span></label>
         <textarea class="mtextarea" id="fu-comment" placeholder="Observaciones, proximos pasos, contexto..."></textarea>
+      </div>
       </div>
       <div id="fu-date-display" style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:4px;"></div>
     </div>
@@ -1300,7 +1332,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.46.0</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.47.0</span>
     </div>
   </div>
 </aside>
@@ -1394,7 +1426,7 @@ function initTheme(){
 initTheme(); // se aplica ya, antes de pintar, para que no haya destello
 
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='4.46.0';
+var APP_VERSION='4.47.0';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -4736,7 +4768,7 @@ function renderFuLines(){
 }
 function addFuLine(){fuLines.push(blankLine(fuLines.length?fuLines[fuLines.length-1].sem:fuSemaforo));renderFuLines();renderSemPick();}
 function setLineSem(i,v){fuLines[i].sem=(fuLines[i].sem===v?'':v);renderFuLines();renderSemPick();}
-function removeFuLine(i){fuLines.splice(i,1);if(!fuLines.length)fuLines.push(blankLine());renderFuLines();}
+function removeFuLine(i){fuLines.splice(i,1);if(!fuLines.length)fuLines.push(blankLine());renderFuLines();renderSemPick();}
 function toggleLineType(i,t){var a=fuLines[i].types,j=a.indexOf(t);if(j>=0)a.splice(j,1);else a.push(t);renderFuLines();}
 function toggleLineSplit(i){fuLines[i].split=!fuLines[i].split;renderFuLines();}
 // Build a line object from an existing Follow up row (edit mode)
@@ -4933,6 +4965,7 @@ function palletFromStr(s){
 var fuSemaforo=''; // selected semáforo value (SEMAFORO[i].val) or ''
 function renderSemPick(){
   var box=document.getElementById('fu-sem-pick');if(!box)return;
+  var sw=document.getElementById('fu-sem-wrap');if(sw)sw.classList.toggle('hidden',fuLines.length<2); // el atajo solo sirve con 2+ calibres
   // "todos" queda marcado solo si todos los calibres comparten estado
   fuSemaforo=fuLines.length&&fuLines.every(function(l){return l.sem===fuLines[0].sem;})?fuLines[0].sem:'';
   box.innerHTML=semOpts().map(function(s){
@@ -5003,6 +5036,9 @@ function openFUModal(prefill,editIdx){
   } else {
     fillFuDropdowns('','','');
   }
+  // al editar, si ya hay datos cargados en "Más datos" se muestran abiertos para que no queden ocultos
+  updateFuMore();
+  toggleFuMore(fuMode==='edit'&&fuMoreCount()>0);
   document.getElementById('fu-modal').classList.remove('hidden');
   if(!fuPrefill)setTimeout(function(){inp.focus();},100);
 }
@@ -5019,6 +5055,29 @@ function onFuNewOpt(sel,que){
     sel.insertBefore(ex,sel.options[sel.options.length-1]);
   }
   sel.value=ex.value;sel.dataset.prev=ex.value;
+}
+// "Más datos": los campos que no hacen falta para cargar un pedido rápido
+var FU_MORE_TOTAL=13;
+function fuMoreCount(){
+  var n=0;
+  function v(id){var e=document.getElementById(id);return e&&((e.value||'')+'').trim();}
+  ['fu-grado','fu-alfa','fu-crop','fu-contact','fu-origin','fu-teamm','fu-port','fu-country','fu-incoterm','fu-comment'].forEach(function(id){if(v(id))n++;});
+  if(v('fu-shipment')||fuShipSel.length||fuShipPrompt)n++;
+  if(fuSupSel.length||v('fu-supplier'))n++;
+  if(fuPkgSel.length||fuPallet)n++;
+  return n;
+}
+function deferFuMore(){setTimeout(updateFuMore,0);}
+function updateFuMore(){
+  var e=document.getElementById('fu-more-n');if(!e)return;
+  var n=fuMoreCount();e.textContent=n+' de '+FU_MORE_TOTAL;
+  // el atajo "estado de todos" solo sirve con más de un calibre
+  var w=document.getElementById('fu-sem-wrap');if(w)w.classList.toggle('hidden',fuLines.length<2);
+}
+function toggleFuMore(open){
+  var bt=document.getElementById('fu-more-btn'),bx=document.getElementById('fu-more');if(!bt||!bx)return;
+  var o=(typeof open==='boolean')?open:(bt.getAttribute('aria-expanded')!=='true');
+  bt.setAttribute('aria-expanded',o?'true':'false');bx.classList.toggle('hidden',!o);
 }
 function closeFUModal(){document.getElementById('fu-modal').classList.add('hidden');}
 
@@ -5223,6 +5282,7 @@ function updateSlider(){
   var f=document.getElementById('sl-fill');if(f){f.style.left=pm+'%';f.style.width=(px-pm)+'%';}
   var bm=document.getElementById('badge-min'),bx=document.getElementById('badge-max');
   if(bm)bm.textContent=mn;if(bx)bx.textContent=mx;
+  updateMatchSummary();
 }
 
 // ── VIEWS ─────────────────────────────────────────────────────────────────────
@@ -5251,15 +5311,41 @@ function showView(v){
 
 function toggleType(t){
   if(selTypes.has(t))selTypes.delete(t);else selTypes.add(t);
-  document.querySelectorAll('.type-chip').forEach(function(el){el.classList.toggle('selected',selTypes.has(el.dataset.v));});
+  document.querySelectorAll('.type-chip').forEach(function(el){el.classList.toggle('selected',selTypes.has(el.dataset.v));el.setAttribute('aria-pressed',selTypes.has(el.dataset.v)?'true':'false');});
+  updateMatchSummary();
 }
 var CHK='<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-function toggleSplit(){
-  withSplit=!withSplit;
-  var el=document.getElementById('tog-split'),ck=document.getElementById('ck-split'),sb=document.getElementById('sub-split');
-  if(!el)return;
-  el.classList.toggle('split-on',withSplit);ck.innerHTML=withSplit?CHK:'';
-  sb.textContent=withSplit?'Incluye clientes que compran Split':'No incluye clientes de Split';
+// Split: una sola elección de tres (antes eran dos interruptores que se pisaban).
+//   sin  = solo el rango de calibre         (withSplit=false, soloSplit=false)
+//   con  = rango + clientes de Split        (withSplit=true,  soloSplit=false)
+//   solo = solo clientes de Split           (withSplit=true,  soloSplit=true)
+function splitMode(){return soloSplit?'solo':(withSplit?'con':'sin');}
+function setSplitMode(m){
+  withSplit=(m!=='sin');soloSplit=(m==='solo');
+  ['sin','con','solo'].forEach(function(k){
+    var el=document.getElementById('rad-'+k);if(!el)return;
+    el.classList.toggle('on',k===m);el.setAttribute('aria-checked',k===m?'true':'false');
+  });
+  var hn=document.getElementById('sl-hint');if(hn)hn.textContent=soloSplit?'calibres en rango (se ignoran con Solo Split)':'calibres en rango';
+  updateMatchSummary();
+}
+// Resumen de lo que se va a buscar, dentro del botón (se ve sin scrollear)
+function matchSummary(){
+  var t=selTypes.size?Array.from(selTypes).join(' + '):'Elegí un tipo';
+  var c=soloSplit?'solo Split':(rMin+'/'+rMax+(withSplit?' + Split':''));
+  return t+' · '+c+(withEU?' · Europa':'')+(withBF?' · Birdfood':'');
+}
+function updateMatchSummary(){
+  var el=document.getElementById('match-sum');if(el)el.textContent=matchSummary();
+  var nf=(withEU?1:0)+(withBF?1:0),bd=document.getElementById('filters-n');
+  if(bd){bd.textContent=nf;bd.style.display=nf?'':'none';}
+}
+var matchFiltersOpen=false;
+function toggleMatchFilters(){
+  matchFiltersOpen=!matchFiltersOpen;
+  var bt=document.getElementById('filters-btn'),bx=document.getElementById('filters-body');
+  if(bt)bt.setAttribute('aria-expanded',matchFiltersOpen?'true':'false');
+  if(bx)bx.classList.toggle('hidden',!matchFiltersOpen);
 }
 function toggleEU(){
   withEU=!withEU;
@@ -5267,14 +5353,7 @@ function toggleEU(){
   if(!el)return;
   el.classList.toggle('eu-on',withEU);ck.innerHTML=withEU?CHK:'';
   sb.textContent=withEU?'Incluye clientes europeos en el resultado':'Excluye clientes europeos del resultado';
-}
-function toggleSoloSplit(){
-  soloSplit=!soloSplit;
-  if(soloSplit)withSplit=true;
-  var el=document.getElementById('tog-solo'),ck=document.getElementById('ck-solo'),sb=document.getElementById('sub-solo');
-  if(el){el.classList.toggle('split-on',soloSplit);ck.innerHTML=soloSplit?CHK:'';sb.textContent=soloSplit?'Ignora el rango de calibre, solo clientes de Split':'Usa el rango de calibre del slider';}
-  var el2=document.getElementById('tog-split'),ck2=document.getElementById('ck-split');
-  if(soloSplit&&el2){el2.classList.add('split-on');if(ck2)ck2.innerHTML=CHK;}
+  el.setAttribute('aria-pressed',withEU?'true':'false');updateMatchSummary();
 }
 function toggleBF(){
   withBF=!withBF;
@@ -5282,6 +5361,7 @@ function toggleBF(){
   if(!el)return;
   el.classList.toggle('eu-on',withBF);ck.innerHTML=withBF?CHK:'';
   sb.textContent=withBF?'Muestra solo clientes aptos BF':'Muestra todos los clientes';
+  el.setAttribute('aria-pressed',withBF?'true':'false');updateMatchSummary();
 }
 var ofertaCtx=''; // when the search came from an offer, describe it
 function runSearch(ctx){
@@ -5300,10 +5380,20 @@ function clearF(){rf={region:'',country:'',type:''};renderResults();}
 // ── RENDER MATCHER ────────────────────────────────────────────────────────────
 function renderMatcher(){
   var TYPES=['Raw','Blanched','Roasted','In shell'];
-  var chips=TYPES.map(function(t){return '<span class="chip type-chip'+(selTypes.has(t)?' selected':'')+'" data-v="'+t+'" onclick="toggleType(\''+t+'\')">'+t+'</span>';}).join('');
+  var chips=TYPES.map(function(t){return '<span class="chip type-chip'+(selTypes.has(t)?' selected':'')+'" data-v="'+t+'" role="button" tabindex="0" aria-pressed="'+selTypes.has(t)+'" onclick="toggleType(\''+t+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();toggleType(\''+t+'\');}">'+t+'</span>';}).join('');
   var pm=(rMin-SL)/(SH-SL)*100,px=(rMax-SL)/(SH-SL)*100;
-  var ticks=[30,38,40,42,50,60,70,100];
-  var ticksHtml=ticks.map(function(t){var p=(t-SL)/(SH-SL)*100;return '<span style="position:absolute;left:'+p+'%;transform:translateX(-50%);font-size:9px;color:var(--text3);font-family:var(--mono);">'+t+'</span>';}).join('');
+  // En pantallas angostas las marcas se pisaban ("3840 42"): se muestran menos
+  var ticks=(window.innerWidth<=480)?[30,40,50,70,100]:[30,38,40,42,50,60,70,100];
+  var ticksHtml=ticks.map(function(t){var p=(t-SL)/(SH-SL)*100;return '<span style="position:absolute;left:'+p+'%;transform:translateX(-50%);font-size:11px;color:var(--text3);font-family:var(--mono);">'+t+'</span>';}).join('');
+  var sm=splitMode();
+  var radios=[['sin','Solo el rango de calibre','Clientes que compran entre '+rMin+' y '+rMax+'.'],['con','Rango + clientes de Split','El rango de calibre y, además, los que compran Split.'],['solo','Solo clientes de Split','Ignora el rango: únicamente los que compran Split.']].map(function(o){
+    var on=(sm===o[0]);
+    return '<button type="button" role="radio" aria-checked="'+on+'" id="rad-'+o[0]+'" class="tog rad'+(on?' on':'')+'" onclick="setSplitMode(\''+o[0]+'\')">'+
+      '<span class="rad-dot" aria-hidden="true"></span>'+
+      '<span><span class="tog-main" style="display:block;font-weight:600;">'+o[1]+'</span><span class="tog-sub" id="rad-sub-'+o[0]+'">'+o[2]+'</span></span></button>';
+  }).join('');
+  var nf=(withEU?1:0)+(withBF?1:0);
+  if(nf)matchFiltersOpen=true;
   var banner='';
   if(!tok)banner='<div class="info-banner">🔐 <strong>Conectate con Google</strong> desde la barra lateral para cargar los clientes.</div>';
   else if(!allRows.length)banner='<div class="info-banner">📋 Conectado. Haz click en <strong>↻ Sincronizar</strong> para cargar los clientes.</div>';
@@ -5312,39 +5402,34 @@ function renderMatcher(){
     banner+
     '<div class="card">'+
       '<div class="card-title">🥜 Nueva Oferta</div>'+
-      '<div class="card-sub">Selecciona tipo, rango de calibre y si incluye Split.</div>'+
+      '<div class="card-sub">Elegí tipo y calibre. Lo demás es opcional.</div>'+
       '<label class="form-label">Tipo de mani</label>'+
       '<div class="chip-group">'+chips+'</div>'+
       '<hr class="form-divider">'+
-      '<label class="form-label">Rango de calibre</label>'+
-      '<div class="sl-vals"><span class="sl-badge" id="badge-min">'+rMin+'</span><span style="color:var(--text3)">→</span><span class="sl-badge" id="badge-max">'+rMax+'</span><span style="font-size:11px;color:var(--text3);margin-left:4px;">calibres en rango</span></div>'+
+      '<label class="form-label" for="sl-min">Rango de calibre</label>'+
+      '<div class="sl-vals"><span class="sl-badge" id="badge-min">'+rMin+'</span><span style="color:var(--text3)">→</span><span class="sl-badge" id="badge-max">'+rMax+'</span><span id="sl-hint" style="font-size:12px;color:var(--text3);margin-left:4px;">'+(soloSplit?'calibres en rango (se ignoran con Solo Split)':'calibres en rango')+'</span></div>'+
       '<div class="sl-wrap"><div class="sl-track">'+
         '<div id="sl-fill" class="sl-fill" style="left:'+pm+'%;width:'+(px-pm)+'%;"></div>'+
-        '<input type="range" class="sl-inp" id="sl-min" min="'+SL+'" max="'+SH+'" value="'+rMin+'" step="1" style="z-index:3;" oninput="updateSlider()">'+
-        '<input type="range" class="sl-inp" id="sl-max" min="'+SL+'" max="'+SH+'" value="'+rMax+'" step="1" style="z-index:4;" oninput="updateSlider()">'+
+        '<input type="range" class="sl-inp" id="sl-min" aria-label="Calibre mínimo" min="'+SL+'" max="'+SH+'" value="'+rMin+'" step="1" style="z-index:3;" oninput="updateSlider()">'+
+        '<input type="range" class="sl-inp" id="sl-max" aria-label="Calibre máximo" min="'+SL+'" max="'+SH+'" value="'+rMax+'" step="1" style="z-index:4;" oninput="updateSlider()">'+
       '</div><div style="position:relative;height:16px;margin-top:8px;">'+ticksHtml+'</div></div>'+
-      '<div class="tog'+(withSplit?' split-on':'')+'" id="tog-split" onclick="toggleSplit()">'+
-        '<div class="tog-check" id="ck-split">'+(withSplit?CHK:'')+'</div>'+
-        '<span style="font-size:16px;">✂️</span>'+
-        '<div><div class="tog-main">Incluir Split</div><div class="tog-sub" id="sub-split">'+(withSplit?'Incluye clientes que compran Split':'No incluye clientes de Split')+'</div></div>'+
+      '<label class="form-label" id="split-lbl" style="margin-top:18px;">¿A quién le ofrezco?</label>'+
+      '<div class="rad-grp" role="radiogroup" aria-labelledby="split-lbl">'+radios+'</div>'+
+      '<button type="button" class="acc" id="filters-btn" aria-expanded="'+matchFiltersOpen+'" aria-controls="filters-body" onclick="toggleMatchFilters()"><span>Más filtros <span class="n" id="filters-n" style="'+(nf?'':'display:none;')+'">'+nf+'</span></span><span class="car" aria-hidden="true">▾</span></button>'+
+      '<div class="accbody'+(matchFiltersOpen?'':' hidden')+'" id="filters-body">'+
+        '<div class="tog'+(withEU?' eu-on':'')+'" id="tog-eu" role="button" tabindex="0" aria-pressed="'+withEU+'" onclick="toggleEU()" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();toggleEU();}">'+
+          '<div class="tog-check" id="ck-eu">'+(withEU?CHK:'')+'</div>'+
+          '<span style="font-size:18px;">🇪🇺</span>'+
+          '<div><div class="tog-main">Apto Europa</div><div class="tog-sub" id="sub-eu">'+(withEU?'Incluye clientes europeos en el resultado':'Excluye clientes europeos del resultado')+'</div></div>'+
+        '</div>'+
+        '<div class="tog'+(withBF?' eu-on':'')+'" id="tog-bf" role="button" tabindex="0" aria-pressed="'+withBF+'" onclick="toggleBF()" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();toggleBF();}">'+
+          '<div class="tog-check" id="ck-bf">'+(withBF?CHK:'')+'</div>'+
+          '<span style="font-size:18px;">🐦</span>'+
+          '<div><div class="tog-main">Solo Apto Birdfood</div><div class="tog-sub" id="sub-bf">'+(withBF?'Muestra solo clientes aptos BF':'Muestra todos los clientes')+'</div></div>'+
+        '</div>'+
       '</div>'+
-      '<div class="tog'+(soloSplit?' split-on':'')+'" id="tog-solo" onclick="toggleSoloSplit()">'+
-        '<div class="tog-check" id="ck-solo">'+(soloSplit?CHK:'')+'</div>'+
-        '<span style="font-size:16px;">🔒</span>'+
-        '<div><div class="tog-main">Solo Split</div><div class="tog-sub" id="sub-solo">'+(soloSplit?'Ignora el rango de calibre, solo clientes de Split':'Usa el rango de calibre del slider')+'</div></div>'+
-      '</div>'+
-      '<div class="tog'+(withEU?' eu-on':'')+'" id="tog-eu" onclick="toggleEU()">'+
-        '<div class="tog-check" id="ck-eu">'+(withEU?CHK:'')+'</div>'+
-        '<span style="font-size:18px;">🇪🇺</span>'+
-        '<div><div class="tog-main">Apto Europa</div><div class="tog-sub" id="sub-eu">'+(withEU?'Incluye clientes europeos en el resultado':'Excluye clientes europeos del resultado')+'</div></div>'+
-      '</div>'+
-      '<div class="tog'+(withBF?' eu-on':'')+'" id="tog-bf" onclick="toggleBF()">'+
-        '<div class="tog-check" id="ck-bf">'+(withBF?CHK:'')+'</div>'+
-        '<span style="font-size:18px;">🐦</span>'+
-        '<div><div class="tog-main">Solo Apto Birdfood</div><div class="tog-sub" id="sub-bf">'+(withBF?'Muestra solo clientes aptos BF':'Muestra todos los clientes')+'</div></div>'+
-      '</div>'+
-      '<div class="form-actions">'+
-        '<button class="btn-search" onclick="runSearch()">🔍 Buscar matches</button>'+
+      '<div class="form-actions sticky">'+
+        '<button class="btn-search has-sub" onclick="runSearch()"><span>🔍 Buscar matches</span><small id="match-sum">'+esc(matchSummary())+'</small></button>'+
         (lastSearch?'<button class="btn-reset" onclick="clearSearch()">Limpiar</button>':'')+
       '</div>'+
     '</div>'+
