@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.50.0**
+**Versión actual: 4.51.0**
 
 ---
 
@@ -299,6 +299,15 @@ desde la app.
 
 ## Historial
 
+- **4.51.0** — Botón "Buscar matches" más liviano.
+  - Se sacó la barra fija de 4.47/4.50 (era alta y ocupaba mucha pantalla). Ahora el botón es normal
+    (≈41px de alto), va en el flujo al final de "Nueva Oferta" y no queda fijo. En escritorio es de
+    ancho normal (≈200px); en celular ocupa todo el ancho. El resumen de lo que se busca
+    ("Raw · 38/50 + Split", `matchSummary`) pasó a una línea chica arriba del botón (`.match-sum`,
+    `aria-live`). Se borraron las reglas `.form-actions.sticky`, `.btn-search.has-sub` y
+    `.btn-search small`. El ancho compacto aplica solo al matcher (`.match-sum + .form-actions`);
+    "+ Cargar disponibilidad" y "+ Agregar pedido" siguen a todo el ancho.
+    Copia previa de seguridad: `C:\pm-backup-v4.50.0`.
 - **4.50.0** — Celular: formulario de pedido sin cortes y barra inferior completa (segunda crítica, 2 P1).
   - **Renglón de calibre** (modal de pedido): a ≤560px, desde/hasta van en una fila (`1fr auto 1fr`),
     Split en su propia línea y Tns/Precio en dos columnas iguales (`.fu-line-r1`/`.fu-line-r2`,
