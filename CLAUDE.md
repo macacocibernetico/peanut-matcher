@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.47.0**
+**Versión actual: 4.48.0**
 
 ---
 
@@ -299,6 +299,25 @@ desde la app.
 
 ## Historial
 
+- **4.48.0** — Accesibilidad y teclado (crítica de diseño, paso 2).
+  - **Capa de accesibilidad** (`a11yInit`/`a11yScan`, bloque "ACCESIBILIDAD" antes de
+    `window.onload`): todo `div`/`span` con `onclick` pasa a `role="button"` + `tabindex="0"` y
+    se activa con Enter/Espacio; los contenedores con controles adentro se saltean. Un
+    `MutationObserver` aplica lo mismo a lo que se renderiza después. Mantiene `aria-pressed`
+    en chips/toggles (`chip`, `sem-opt`, `tog`) y `aria-current` en el menú según las clases que
+    ya usa la app. Nombre accesible: `title`, "Cerrar" en los ×, "Abrir menú" en la hamburguesa.
+  - **Campos**: los inputs/selects/textarea sin etiqueta la toman de su `.mfield-label` (se asocia
+    con `for`/`id` si hay un solo campo) o del placeholder.
+  - **Modales**: `role="dialog"` + `aria-modal` + `aria-labelledby`; Esc cierra (en un campo con
+    texto el primer Esc solo sale del campo, para no perder lo escrito); Tab queda dentro del
+    modal; el foco va al primer campo al abrir y vuelve al botón que lo abrió al cerrar.
+  - **Foco visible** global (`:focus-visible`, naranja de marca); `#toast`/`#undo-bar` con
+    `aria-live`; landmarks con nombre (aside/nav). **Zoom permitido** (se sacó
+    `maximum-scale`/`user-scalable=no`); en celular los campos de texto van a 16px para que iOS no
+    haga auto-zoom al tocarlos. Se quitaron los `onkeydown` inline que dejó 4.47 en chips/toggles
+    (los resuelve la capa global). Contador "Más datos" ahora con `addEventListener`.
+  - Medido en el navegador: 0 clickeables sin teclado, 0 botones sin nombre, 0 campos sin etiqueta
+    (antes: 45 / 3 / 47); 13/13 modales con `role="dialog"`.
 - **4.47.0** — Velocidad en llamada (resultado de la crítica de diseño, paso 1).
   - **Matcher**: Split pasa de dos interruptores que se pisaban ("Incluir Split" / "Solo Split")
     a una sola elección de tres con explicación: "Solo el rango de calibre", "Rango +
