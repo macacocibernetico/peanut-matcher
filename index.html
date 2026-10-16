@@ -913,6 +913,30 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 @media(max-width:768px){
   input:not([type=range]):not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px !important;}
 }
+
+/* 4.50.0 · celular: renglón de calibre sin cortes, barra inferior de 5, botón fijo como barra, controles a 44px */
+@media(max-width:560px){
+  .fu-line-r1{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;}
+  .fu-line-r1 .fu-line-cal{width:100%;min-width:0;}
+  .fu-line-r1 .fu-split-tog{grid-column:1/-1;min-height:36px;}
+  .fu-line-r2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .fu-line-r2 .fu-line-num{width:100%;min-width:0;display:block;}
+  .fu-line-r2 .fu-line-price input{width:100%;min-width:0;}
+}
+.form-actions.sticky{background:var(--bg2);border-top:1px solid var(--border);padding:12px 0 2px;margin-top:14px;}
+@media(max-width:768px){
+  .tabbar-item{flex:1 1 0;min-width:0;font-size:11px;}
+  .ham{width:44px;height:44px;}
+  .topbar .btn,.topbar .icon-btn{min-height:44px;min-width:44px;}
+  .type-chip{min-height:44px;}
+  .modal-close,.modal-x{width:44px;height:44px;}
+  .fu-line-del{width:44px;height:44px;}
+  .fu-line-head{min-height:44px;}
+}
+@media(pointer:coarse){
+  .chip-est{font-size:12px;padding:10px 12px;}
+  .chip-del{padding:10px 12px;}
+}
 </style>
 </head>
 <body>
@@ -1339,7 +1363,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.49.0</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.50.0</span>
     </div>
   </div>
 </aside>
@@ -1363,12 +1387,10 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Secciones (celular)">
   <div class="tabbar-item active" id="tab-matcher" onclick="showView('matcher')"><span class="ti">🔍</span><span>Matches</span></div>
-  <div class="tabbar-item" id="tab-empresas" onclick="showView('empresas')"><span class="ti">🏢</span><span>Empresas</span></div>
-  <div class="tabbar-item" id="tab-ofertas" onclick="showView('ofertas')"><span class="ti">📦</span><span>Disp.</span></div>
   <div class="tabbar-item" id="tab-demandas" onclick="showView('demandas')"><span class="ti">📋</span><span>Demandas</span></div>
-  <div class="tabbar-item" id="tab-ofcli" onclick="showView('ofcli')"><span class="ti">📣</span><span>Ofertas</span></div>
+  <div class="tabbar-item" id="tab-ofertas" onclick="showView('ofertas')"><span class="ti">📦</span><span>Disponib.</span></div>
   <div class="tabbar-item" id="tab-agenda" onclick="showView('agenda')"><span class="ti">📅</span><span>Agenda</span></div>
-  <div class="tabbar-item" id="tab-calc" onclick="showView('calc')"><span class="ti">🧮</span><span>Calc</span></div>
+  <div class="tabbar-item" id="tab-mas" onclick="toggleSidebar()" aria-label="Más secciones: Empresas, Ofertas a clientes, Calculadora y Configuración"><span class="ti">☰</span><span>Más</span></div>
 </nav>
 
 <div class="modal-overlay hidden" id="desc-modal" onclick="if(event.target===this)closeDescModal()">
@@ -1433,7 +1455,7 @@ function initTheme(){
 initTheme(); // se aplica ya, antes de pintar, para que no haya destello
 
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='4.49.0';
+var APP_VERSION='4.50.0';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -4750,7 +4772,7 @@ function renderFuLines(){
         '<span class="fu-line-title">Calibre '+(i+1)+'</span>'+
         (fuLines.length>1?'<span class="fu-line-del" onclick="removeFuLine('+i+')" title="Quitar">🗑</span>':'')+
       '</div>'+
-      '<div class="fu-line-row">'+
+      '<div class="fu-line-row fu-line-r1">'+
         '<input class="minput fu-line-cal" type="number" inputmode="numeric" placeholder="desde" value="'+(l.min||'')+'"'+dis+' oninput="fuLines['+i+'].min=this.value">'+
         '<span style="color:var(--text3);font-weight:600;">/</span>'+
         '<input class="minput fu-line-cal" type="number" inputmode="numeric" placeholder="hasta" value="'+(l.max||'')+'"'+dis+' oninput="fuLines['+i+'].max=this.value">'+
@@ -4763,7 +4785,7 @@ function renderFuLines(){
         return '<span class="sem-opt'+(on?' on':'')+'" style="padding:5px 11px;font-size:12px;'+(on?'border-color:'+s.color+';color:'+s.color+';':'')+'" data-v="'+s.val+'" onclick="setLineSem('+i+',this.dataset.v)"><span class="sem-dot" style="background:'+s.color+';"></span>'+s.label+'</span>';
       }).join('')+'</div>'+
       '<div class="fu-line-sub">Cantidad y precio <b>de este calibre</b></div>'+
-      '<div class="fu-line-row">'+
+      '<div class="fu-line-row fu-line-r2">'+
         '<input class="minput fu-line-num" type="number" inputmode="numeric" placeholder="Tns" value="'+(l.tns||'')+'" oninput="fuLines['+i+'].tns=this.value">'+
         '<span class="fu-line-price fu-line-num" style="display:block;">'+
           '<span class="cur">USD</span>'+
@@ -5301,7 +5323,7 @@ function showView(v){
   document.querySelectorAll('.nav-item').forEach(function(el){el.classList.remove('active');});
   var el=document.getElementById('nav-'+v);if(el)el.classList.add('active');
   document.querySelectorAll('.tabbar-item').forEach(function(t){t.classList.remove('active');});
-  var tb=document.getElementById('tab-'+v);if(tb)tb.classList.add('active');
+  var tb=document.getElementById('tab-'+v)||document.getElementById('tab-mas');if(tb)tb.classList.add('active');
   var titles={matcher:'Buscar Matches',empresas:'Empresas',ofertas:'Disponibilidades',demandas:'Demandas',ofcli:'Ofertas a clientes',oport:'Oportunidades',agenda:'Agenda',calc:'Calculadora',config:'Configuracion'};
   document.getElementById('view-title').textContent=titles[v]||v;
   if(v==='matcher')renderMatcher();

@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.49.0**
+**Versión actual: 4.50.0**
 
 ---
 
@@ -299,6 +299,21 @@ desde la app.
 
 ## Historial
 
+- **4.50.0** — Celular: formulario de pedido sin cortes y barra inferior completa (segunda crítica, 2 P1).
+  - **Renglón de calibre** (modal de pedido): a ≤560px, desde/hasta van en una fila (`1fr auto 1fr`),
+    Split en su propia línea y Tns/Precio en dos columnas iguales (`.fu-line-r1`/`.fu-line-r2`,
+    `min-width:0`). Antes "Precio por tn" se salía del modal a 375px.
+  - **Barra inferior de 5**: Matches, Demandas, Disponib., Agenda y **Más** (abre el menú lateral con
+    Empresas, Ofertas a clientes, Calculadora y Configuración). Antes eran 7 y Calc quedaba cortada
+    (`scrollWidth` 420 contra 375). "Más" se resalta cuando la vista actual no tiene pestaña propia
+    (`showView`). Etiquetas de 9.5px → 11px.
+  - **Botón fijo "Buscar matches"** como barra propia (fondo sólido + borde superior) para que no
+    parezca un render roto cuando tapa opciones al scrollear.
+  - **Controles a 44px** en celular: hamburguesa, tema, Sincronizar, chips de tipo, × de los modales y
+    borrar calibre; con `pointer:coarse`, `chip-est`/`chip-del` de proveedores con más área.
+    El thumb del slider sigue en 26px a propósito (uno de 44px sería enorme).
+  - Medido a 375px: 0 campos fuera del modal, tabbar `scrollWidth`=`clientWidth`=375.
+    Copia previa de seguridad: `C:\pm-backup-v4.49.0`.
 - **4.49.0** — Contraste de colores (crítica de diseño, paso 3).
   - **Token `--on-accent`** (claro `#fff`, oscuro `#1b120a`): el texto sobre fondos de acento ya no es
     blanco fijo. En el tema oscuro "Buscar matches", el menú activo, las etiquetas de calibre y los
