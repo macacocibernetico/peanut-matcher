@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.48.0**
+**Versión actual: 4.49.0**
 
 ---
 
@@ -299,6 +299,22 @@ desde la app.
 
 ## Historial
 
+- **4.49.0** — Contraste de colores (crítica de diseño, paso 3).
+  - **Token `--on-accent`** (claro `#fff`, oscuro `#1b120a`): el texto sobre fondos de acento ya no es
+    blanco fijo. En el tema oscuro "Buscar matches", el menú activo, las etiquetas de calibre y los
+    chips seleccionados pasan de 2.53:1 a 7.29:1. Se reemplazó en `.btn-search`, `.nav-item.active`,
+    `.btn.primary`, `.chip.selected`, `.sl-badge`, `.shipcal-m.on`, `.fu-badge`, `.agenda-subtab.on`,
+    `.cal-cell.hoy`, `.viewtog`, `.rpill.dk`, `#update-gate .ug-btn`, `#undo-bar button`, etc., y en los
+    chips de estado de proveedor (JS, `setChipEstado`).
+  - **`--text3`** (texto secundario) claro `#7f7060`→`#6b5d4e` (era 4.12:1 sobre `--bg3`, ahora 5.47)
+    y oscuro `#938473`→`#a89988`. **`--accent`** claro `#a85d17`→`#9d5514` (4.40→4.99 sobre
+    `--accent-light`; blanco sobre acento 4.95→5.61); `--accent-dim` `#7d420e`; la flecha SVG de los
+    selects usa el mismo color.
+  - **`--warn-fg`** (texto de aviso, claro `#9a5a0e`, 2.65→4.98) y **`--on-warn`** para los globitos
+    sobre `--warn`. `--warn` sigue igual para rellenos y bordes.
+  - Medido en el navegador: 0 de 66 textos visibles bajo 4.5:1 en claro; en oscuro los textos
+    sobre acento 7.29:1. OJO al medir en oscuro: las transiciones de tema dan falsos positivos
+    si no se espera o se desactivan (`*{transition:none!important}`).
 - **4.48.0** — Accesibilidad y teclado (crítica de diseño, paso 2).
   - **Capa de accesibilidad** (`a11yInit`/`a11yScan`, bloque "ACCESIBILIDAD" antes de
     `window.onload`): todo `div`/`span` con `onclick` pasa a `role="button"` + `tabindex="0"` y
