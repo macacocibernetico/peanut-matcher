@@ -935,6 +935,14 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
   .chip-est{font-size:12px;padding:10px 12px;}
   .chip-del{padding:10px 12px;}
 }
+
+/* 4.52.0 · precio de cada proveedor ofrecido, por calibre */
+.chip-pr{font-weight:700;font-variant-numeric:tabular-nums;color:var(--text);}
+.chip-prices{flex:1 0 100%;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;padding:2px 0 4px;}
+.chip-pi{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--text2);}
+.chip-pi-l{flex:0 1 auto;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.chip-pi-u{font-size:11px;color:var(--text3);}
+.chip-pi input{flex:1;min-width:0;width:100%;border:1.5px solid var(--border2);background:var(--bg2);color:var(--text);border-radius:var(--r);padding:6px 8px;font:inherit;font-size:13px;min-height:36px;}
 </style>
 </head>
 <body>
@@ -1361,7 +1369,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.51.0</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.52.0</span>
     </div>
   </div>
 </aside>
@@ -1453,7 +1461,7 @@ function initTheme(){
 initTheme(); // se aplica ya, antes de pintar, para que no haya destello
 
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='4.51.0';
+var APP_VERSION='4.52.0';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -2455,17 +2463,17 @@ function chipsDe(g){
 }
 function chipsRowHtml(g,realIdx){
   if(!(FU.CHIPS>=0))return '';
-  var chips=parseChips(chipsDe(g));
+  var chips=parseChips(chipsDe(g)),keys=chipCalKeys(g);
   var pills=chips.map(function(c){
-    var info=chipEstadoInfo(c.estado);
-    return '<span class="chip-pill" style="border-color:'+info.color+';color:'+info.color+';"><span class="sem-dot" style="background:'+info.color+';"></span>'+esc(c.name)+'</span>';
+    var info=chipEstadoInfo(c.estado),pt=chipPrecioTxt(c,keys),tip=chipPrecioTip(c,keys);
+    return '<span class="chip-pill"'+(tip?' title="'+attrEsc(tip)+'"':'')+' style="border-color:'+info.color+';color:'+info.color+';"><span class="sem-dot" style="background:'+info.color+';"></span>'+esc(c.name)+(pt?' <span class="chip-pr">· '+esc(pt)+'</span>':'')+'</span>';
   }).join('');
   return '<div class="chips-wrap">'+
     (pills||'<span class="nota-add" style="cursor:default;">Sin proveedores ofrecidos</span>')+
     '<span class="nota-add" data-idx="'+realIdx+'" onclick="openChips(this.dataset.idx)">👥 + Gestionar proveedores</span>'+
   '</div>';
 }
-var chipsIdx=null,chipsBuf=[];
+var chipsIdx=null,chipsBuf=[],chipsKeys=[];
 var provAcIdx=-1;
 // Proveedores "reales" = SOLO los de la Database suppliers, con el nombre tal cual
 // está escrito ahí (mayúsculas incluidas). Availability no cuenta: ahí puede haber
@@ -2481,9 +2489,9 @@ function openChips(idx){
   if(!r){toast('No encontré la demanda');return;}
   if(!(FU.CHIPS>=0)){toast('No encuentro la columna "Proveedores ofrecidos" en Follow up — agregala y tocá ↻ Sincronizar');return;}
   var g=groupOf(r);if(!g.length)g=[r];
-  chipsBuf=parseChips(chipsDe(g));
+  chipsBuf=parseChips(chipsDe(g));chipsKeys=chipCalKeys(g);
   document.getElementById('chips-title').textContent='Proveedores ofrecidos · '+(((r[FU.CUSTOMER]||'')+'').trim()||'Demanda');
-  document.getElementById('chips-sub').textContent=g.length>1?'Se guarda en los '+g.length+' calibres de este pedido.':'Se guarda en la fila de esta demanda.';
+  document.getElementById('chips-sub').textContent='Anotá el precio (USD por tn) al que te la vende cada proveedor'+(g.length>1?', calibre por calibre. Se guarda en los '+g.length+' calibres de este pedido.':'. Se guarda en la fila de esta demanda.');
   document.getElementById('chips-new').value='';
   document.getElementById('chips-prov-list').innerHTML=provNamesList().map(function(n){return '<option value="'+attrEsc(n)+'">';}).join('');
   renderChipsModal();
@@ -2502,8 +2510,18 @@ function renderChipsModal(){
         return '<span class="chip-est'+(on?' on':'')+'" data-i="'+i+'" data-v="'+e.val+'" onclick="setChipEstado('+i+',\''+e.val+'\')" style="'+(on?'background:'+e.color+';border-color:'+e.color+';color:var(--on-accent);':'border-color:'+e.color+';color:'+e.color+';')+'">'+e.label+'</span>';
       }).join('')+
       '<span class="chip-del" data-i="'+i+'" onclick="removeChip('+i+')" title="Quitar">✕</span>'+
+      '<div class="chip-prices">'+chipsKeys.map(function(k){
+        return '<label class="chip-pi"><span class="chip-pi-l" title="'+attrEsc(k.key)+'">'+esc(k.key)+'</span><span class="chip-pi-u">USD</span>'+
+          '<input type="number" inputmode="decimal" step="any" min="0" placeholder="precio" value="'+attrEsc((c.precios||{})[k.key]||'')+'" data-i="'+i+'" data-k="'+attrEsc(k.key)+'" oninput="setChipPrecio(this.dataset.i,this.dataset.k,this.value)"></label>';
+      }).join('')+'</div>'+
     '</div>';
   }).join(''):'<div style="color:var(--text3);font-size:13px;padding:8px 0;">Todavía no le ofreciste este pedido a nadie.</div>';
+}
+function setChipPrecio(i,k,v){
+  var c=chipsBuf[parseInt(i)];if(!c)return;
+  if(!c.precios)c.precios={};
+  var n=chipPrecioClean(v);
+  if(n)c.precios[k]=n;else delete c.precios[k];
 }
 function setChipEstado(i,v){if(chipsBuf[i]){chipsBuf[i].estado=v;renderChipsModal();}}
 function removeChip(i){chipsBuf.splice(i,1);renderChipsModal();}
@@ -2512,7 +2530,7 @@ function addChipFromInput(){
   var name=inp.value.trim();
   if(!name)return;
   if(chipsBuf.some(function(c){return normHdr(c.name)===normHdr(name);})){toast('Ya está agregado');return;}
-  chipsBuf.push({name:name,estado:'pendiente'});
+  chipsBuf.push({name:name,estado:'pendiente',precios:{}});
   inp.value='';
   renderChipsModal();
   inp.focus();
@@ -4221,17 +4239,64 @@ var CHIP_ESTADOS=[
   {val:'interesado',label:'Interesado',color:'var(--sem-ok)'}
 ];
 function chipEstadoInfo(v){for(var i=0;i<CHIP_ESTADOS.length;i++){if(CHIP_ESTADOS[i].val===v)return CHIP_ESTADOS[i];}return CHIP_ESTADOS[0];}
+// Formato en la celda "Proveedores ofrecidos":  NOMBRE:estado#calibre=precio;calibre=precio||OTRO:estado
+// La parte "#..." es opcional: las celdas viejas (NOMBRE:estado) se siguen leyendo igual.
+function chipKeySafe(t){return ((t||'')+'').replace(/[#;=|:]+/g,' ').replace(/\s+/g,' ').trim();}
+function chipPrecioClean(v){
+  var n=parseFloat(((v||'')+'').replace(',','.'));
+  return (isFinite(n)&&n>=0)?(Math.round(n*100)/100)+'':'';
+}
 function parseChips(str){
   return ((str||'')+'').split('||').map(function(s){return s.trim();}).filter(Boolean).map(function(s){
+    var precios={},h=s.indexOf('#');
+    if(h>=0){
+      s.slice(h+1).split(';').forEach(function(p){
+        var e=p.lastIndexOf('=');if(e<0)return;
+        var k=p.slice(0,e).trim(),v=chipPrecioClean(p.slice(e+1));
+        if(k&&v)precios[k]=v;
+      });
+      s=s.slice(0,h).trim();
+    }
     var i=s.lastIndexOf(':');
-    if(i<0)return {name:s.trim(),estado:'pendiente'};
+    if(i<0)return {name:s.trim(),estado:'pendiente',precios:precios};
     var nm=s.slice(0,i).trim(),es=s.slice(i+1).trim().toLowerCase();
     if(es==='cerrado')es='interesado'; // se llamaba "Cerrado" hasta 4.43.0
     var ok=CHIP_ESTADOS.some(function(e){return e.val===es;});
-    return {name:nm,estado:ok?es:'pendiente'};
+    return {name:nm,estado:ok?es:'pendiente',precios:precios};
   }).filter(function(c){return c.name;});
 }
-function serializeChips(arr){return arr.map(function(c){return c.name+':'+c.estado;}).join('||');}
+function serializeChips(arr){
+  return arr.map(function(c){
+    var ks=Object.keys(c.precios||{}).filter(function(k){return c.precios[k];});
+    return c.name+':'+c.estado+(ks.length?'#'+ks.map(function(k){return k+'='+c.precios[k];}).join(';'):'');
+  }).join('||');
+}
+// Un renglón de precio por cada calibre del pedido: "40/50 Raw", y si se repite, "40/50 Raw (2)"
+function chipCalKeys(g){
+  var out=[],seen={};
+  for(var i=0;i<g.length;i++){
+    var sz=normSize(((g[i][FU.SIZE]||'')+'').trim()),ty=((g[i][FU.TYPE]||'')+'').trim();
+    var base=chipKeySafe((sz&&sz!=='—'?sz:'')+(ty?' '+ty:''))||'Pedido';
+    seen[base]=(seen[base]||0)+1;
+    out.push({key:seen[base]>1?base+' ('+seen[base]+')':base});
+  }
+  return out;
+}
+// Resumen para el chip de la tarjeta: "USD 1.150", "USD 1.150–1.320" o "USD 1.150 (1/2)" si faltan calibres
+function chipPrecioTxt(c,keys){
+  var v=[];
+  keys.forEach(function(k){var n=parseFloat((c.precios||{})[k.key]);if(isFinite(n))v.push(n);});
+  if(!v.length)return '';
+  var mn=Math.min.apply(null,v),mx=Math.max.apply(null,v);
+  var t='USD '+fmtPrice(mn)+(mn===mx?'':'–'+fmtPrice(mx));
+  if(v.length<keys.length)t+=' ('+v.length+'/'+keys.length+')';
+  return t;
+}
+function chipPrecioTip(c,keys){
+  var l=[];
+  keys.forEach(function(k){var n=parseFloat((c.precios||{})[k.key]);if(isFinite(n))l.push(k.key+': USD '+fmtPrice(n));});
+  return l.join('\n');
+}
 // Clase de una fila de Follow up. 'oferta' si la col dice "oferta", si no 'demanda'.
 function claseDe(r){
   if(!(FU.CLASE>=0))return 'demanda';

@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.51.0**
+**Versión actual: 4.52.0**
 
 ---
 
@@ -299,6 +299,17 @@ desde la app.
 
 ## Historial
 
+- **4.52.0** — Precio de cada proveedor ofrecido, por calibre.
+  - En "Proveedores ofrecidos" (modal `chips-modal`), cada proveedor tiene un campo **USD por tn por cada
+    calibre del pedido** (`chipCalKeys`, `setChipPrecio`). Cambiar el estado no pierde los precios.
+  - **Formato en la celda "Proveedores ofrecidos"** (retrocompatible): `NOMBRE:estado#calibre=precio;calibre=precio||OTRO:estado`.
+    La parte `#…` es opcional: las celdas viejas (`NOMBRE:estado`) se leen y se reescriben idénticas
+    (`parseChips`/`serializeChips`). La clave del calibre es `normSize + tipo` ("40/50 Raw"; si se repite,
+    "40/50 Raw (2)"; sin calibre, "Pedido"). OJO: si después se edita el calibre de un pedido, los precios
+    guardados bajo la clave vieja dejan de mostrarse (siguen en la celda).
+  - **Chip de la tarjeta**: `GRUPO CKOOS · USD 1.150`, `USD 1.150–1.180` si cotiza distinto por calibre, o
+    `USD 1.300 (1/2)` si falta algún calibre; el tooltip lista el precio de cada calibre.
+  - Test nuevo: `tools/tests/chips-precios.js` (22). Copia previa: `C:\pm-backup-v4.51.0`.
 - **4.51.0** — Botón "Buscar matches" más liviano.
   - Se sacó la barra fija de 4.47/4.50 (era alta y ocupaba mucha pantalla). Ahora el botón es normal
     (≈41px de alto), va en el flujo al final de "Nueva Oferta" y no queda fijo. En escritorio es de
