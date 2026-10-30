@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.52.0**
+**Versión actual: 4.53.0**
 
 ---
 
@@ -299,6 +299,13 @@ desde la app.
 
 ## Historial
 
+- **4.53.0** — El texto del pedido (WhatsApp, "Generar pedido") ahora incluye el **Grado**.
+  - `gradoPedido(g)`: línea `Grado: X` justo antes de Crop/Incoterm. Sin grado cargado = **A**;
+    con grado, sale A, B o C. **1, 2, 3 equivalen a A, B, C** (también "G1", "Grado 2", "grado b",
+    "Grade C"). Si el pedido trae varios ("A, B", "1/2") salen juntos ordenados: `A / B`. Si el texto
+    no se entiende ("Premium") sale tal cual en vez de inventar un grado. Si la planilla no tiene la
+    columna Grado, también A. Aplica a Demandas y a Ofertas a clientes (misma función).
+  - Test nuevo: `tools/tests/pedido-grado.js` (25). Copia previa: `C:\pm-backup-v4.52.0`.
 - **4.52.0** — Precio de cada proveedor ofrecido, por calibre.
   - En "Proveedores ofrecidos" (modal `chips-modal`), cada proveedor tiene un campo **USD por tn por cada
     calibre del pedido** (`chipCalKeys`, `setChipPrecio`). Cambiar el estado no pierde los precios.

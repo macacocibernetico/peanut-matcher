@@ -1369,7 +1369,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.52.0</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.53.0</span>
     </div>
   </div>
 </aside>
@@ -1461,7 +1461,7 @@ function initTheme(){
 initTheme(); // se aplica ya, antes de pintar, para que no haya destello
 
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='4.52.0';
+var APP_VERSION='4.53.0';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -2225,6 +2225,28 @@ function fmtShipmentRange(monthsStr){
   });
   return out.join(' · ');
 }
+// Grado pedido para el texto de WhatsApp: A, B o C. Sin grado cargado = A.
+// 1, 2 y 3 equivalen a A, B y C ("G1", "Grado 2" y "grado b" también se entienden).
+// Si el pedido tiene varios (ej: "A, B") salen todos: "A / B". Si el texto no se entiende, sale tal cual.
+function gradoPedido(g){
+  var set={},raw=[];
+  for(var i=0;i<g.length;i++){
+    var v=(FU.GRADO>=0?((g[i][FU.GRADO]||'')+''):'').trim();
+    if(!v)continue;
+    var toks=v.replace(/\b(grado|grade|gr)\b\.?/gi,' ').split(/[\s,;\/+&\-]+|\by\b|\band\b/i);
+    var ok=false;
+    toks.forEach(function(t){
+      t=t.trim();if(!t)return;
+      var m=t.match(/^g?\s*([abc123])$/i);
+      if(m){var c=m[1].toUpperCase();set[({'1':'A','2':'B','3':'C'})[c]||c]=true;ok=true;}
+    });
+    if(!ok&&raw.indexOf(v)<0)raw.push(v);
+  }
+  var letras=['A','B','C'].filter(function(x){return set[x];});
+  if(letras.length)return letras.join(' / ');
+  if(raw.length)return raw.join(' / ');
+  return 'A';
+}
 function generarPedido(idx){
   var r=fuRows[idx];
   if(!r){toast('No se encontro la demanda');return;}
@@ -2267,6 +2289,7 @@ function generarPedido(idx){
   if(FU.CROP>=0){
     for(var ci=0;ci<g.length;ci++){var cv=((g[ci][FU.CROP]||'')+'').trim();if(cv){cropP=cv;break;}}
   }
+  lines.push('Grado: '+gradoPedido(g));
   if(cropP)lines.push('Crop: '+cropP);
   lines.push('Incoterm: '+incoterm);
   if(!hayPrecio)lines.push('Precio: A cotizar');
