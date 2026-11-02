@@ -970,6 +970,10 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
         <div id="fu-lines"></div>
         <button type="button" class="btn fu-add-line" onclick="addFuLine()">+ Agregar calibre</button>
       </div>
+      <div class="mfield hidden" id="fu-motivo-wrap">
+        <label class="mfield-label" for="fu-motivo">¿Por qué pasa a inactiva? <span class="mfield-opt">opcional · se suma a la nota del pedido, con la fecha de hoy</span></label>
+        <textarea class="mtextarea" id="fu-motivo" rows="2" placeholder="Ej: compró a otro proveedor, sin stock, no responde…"></textarea>
+      </div>
       <div class="mfield" id="fu-sem-wrap">
         <label class="mfield-label">Estado de todos los calibres <span class="mfield-opt">atajo: cada calibre tiene su propio estado arriba</span></label>
         <div class="sem-pick" id="fu-sem-pick"></div>
@@ -1192,6 +1196,15 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     </div>
     <div class="modal-body">
       <div class="sem-pick" id="sem-opts" style="flex-direction:column;"></div>
+      <div id="sem-motivo-box" class="hidden">
+        <label class="mfield-label" for="sem-motivo">¿Por qué pasa a inactiva? <span class="mfield-opt">opcional</span></label>
+        <textarea class="mtextarea" id="sem-motivo" rows="3" placeholder="Ej: compró a otro proveedor, sin stock, no responde…"></textarea>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Se guarda en la nota del pedido, con la fecha de hoy. Podés dejarlo vacío.</div>
+        <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;">
+          <button type="button" class="btn" onclick="semMotivoAtras()">Atrás</button>
+          <button type="button" class="btn primary" onclick="semMotivoConfirmar()">Pasar a Inactivo</button>
+        </div>
+      </div>
       <div style="font-size:11px;color:var(--text3);margin-top:12px;" id="sem-sub"></div>
     </div>
   </div>
@@ -1369,7 +1382,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.53.0</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.54.0</span>
     </div>
   </div>
 </aside>
@@ -1461,7 +1474,7 @@ function initTheme(){
 initTheme(); // se aplica ya, antes de pintar, para que no haya destello
 
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='4.53.0';
+var APP_VERSION='4.54.0';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -2423,34 +2436,61 @@ function semsDe(g){
   }
   return out;
 }
-var semIdx=null,semSolo=false;
+// Motivo de inactividad: se agrega a la nota del pedido, con fecha. Vacío = la nota queda igual.
+function motivoNota(actual,motivo,fecha){
+  var m=((motivo||'')+'').replace(/\s+/g,' ').trim(),a=((actual||'')+'').trim();
+  if(!m)return a;
+  return (a?a+'\n':'')+'Inactivo ('+fecha+'): '+m;
+}
+var semIdx=null,semSolo=false,semAct='';
 function openSem(idx,solo){
   semIdx=parseInt(idx);semSolo=!!solo;
   var r=fuRows[semIdx];
   if(!r){toast('No encontré la demanda');return;}
   var g=semSolo?[r]:groupOf(r);if(!g.length)g=[r];
   var act=semDe(g);
+  semAct=act?act.val:'';
+  document.getElementById('sem-opts').classList.remove('hidden');document.getElementById('sem-motivo-box').classList.add('hidden');document.getElementById('sem-motivo').value='';
   var cal=semSolo?normSize(((r[FU.SIZE]||'')+'').trim()):'';
   document.getElementById('sem-title').textContent='Estado · '+(((r[FU.CUSTOMER]||'')+'').trim()||'Demanda')+(cal?' · calibre '+cal:'');
   document.getElementById('sem-sub').textContent=semSolo?'Solo cambia este calibre. No modifica la fecha del pedido.':'Cambia el estado de TODOS los calibres del pedido. No modifica la fecha.';
   document.getElementById('sem-opts').innerHTML=
     semOpts().map(function(s){
       var on=act&&act.val===s.val;
-      return '<span class="sem-opt'+(on?' on':'')+'" data-v="'+s.val+'" onclick="saveSem(this.dataset.v)" style="'+(on?'border-color:'+s.color+';color:'+s.color+';':'')+'"><span class="sem-dot" style="background:'+s.color+';"></span>'+s.label+'</span>';
+      return '<span class="sem-opt'+(on?' on':'')+'" data-v="'+s.val+'" onclick="pickSem(this.dataset.v)" style="'+(on?'border-color:'+s.color+';color:'+s.color+';':'')+'"><span class="sem-dot" style="background:'+s.color+';"></span>'+s.label+'</span>';
     }).join('')+
     '<span class="sem-opt'+(!act?' on':'')+'" onclick="saveSem(\'\')"><span class="sem-dot" style="background:var(--border2);"></span>Sin estado</span>';
   document.getElementById('sem-modal').classList.remove('hidden');
 }
+// Si el estado nuevo es Inactivo (y antes no lo era) se ofrece anotar el motivo (opcional).
+function pickSem(v){
+  if(v==='Inactivo'&&semAct!=='Inactivo'){
+    document.getElementById('sem-opts').classList.add('hidden');
+    document.getElementById('sem-motivo-box').classList.remove('hidden');
+    document.getElementById('sem-sub').textContent='';
+    setTimeout(function(){document.getElementById('sem-motivo').focus();},60);
+    return;
+  }
+  return saveSem(v);
+}
+function semMotivoAtras(){
+  document.getElementById('sem-motivo-box').classList.add('hidden');
+  document.getElementById('sem-opts').classList.remove('hidden');
+}
+function semMotivoConfirmar(){return saveSem('Inactivo',document.getElementById('sem-motivo').value);}
 function closeSem(){document.getElementById('sem-modal').classList.add('hidden');}
-async function saveSem(val){
+async function saveSem(val,motivo){
   if(!(await guardToken()))return;
   var r=fuRows[semIdx];
   if(!r){toast('No encontré la demanda');return;}
   var _fh=await refreshHeaderRow('Follow up');
   if(_fh){FU=mapHeaders(_fh,FU_SPEC,FU);applyFuCropStrict(_fh);applyFuClaseStrict(_fh);applyFuChipsStrict(_fh);}
   if(FU.ESTADO<0){toast('No encuentro la columna Estado en Follow up');return;}
-  var g=semSolo?[r]:groupOf(r);if(!g.length)g=[r];
-  if(!(await fuResolve(g))){toast('El pedido cambió en la planilla (otra persona lo modificó o movió). Tocá Sync y probá de nuevo');return;}
+  var gAll=groupOf(r);if(!gAll.length)gAll=[r];
+  var g=semSolo?[r]:gAll;
+  motivo=((val==='Inactivo'?motivo:'')||'').trim();
+  // la nota es de todo el pedido: si hay motivo se verifica el pedido completo
+  if(!(await fuResolve(motivo&&FU.OBS>=0?gAll:g))){toast('El pedido cambió en la planilla (otra persona lo modificó o movió). Tocá Sync y probá de nuevo');return;}
   var nums=g.map(function(x){return x._sheetRow;}).filter(Boolean);
   if(!nums.length){toast('Sincronizá antes de cambiar el estado');return;}
   prog(true);
@@ -2458,12 +2498,23 @@ async function saveSem(val){
   for(var i=0;i<nums.length;i++){
     if(!(await updateFuCell(nums[i],letra,val))){todoOk=false;break;}
   }
+  var motivoOk=null; // null = no había motivo; true/false = se guardó o no
+  if(todoOk&&motivo){
+    if(FU.OBS<0){motivoOk=false;}
+    else{
+      var nuevaNota=motivoNota(notaDe(gAll),motivo,todayStr());
+      var numsAll=gAll.map(function(x){return x._sheetRow;}).filter(Boolean),letraO=colLetter(FU.OBS);
+      motivoOk=true;
+      for(var j=0;j<numsAll.length;j++){if(!(await updateFuCell(numsAll[j],letraO,nuevaNota))){motivoOk=false;break;}}
+      if(motivoOk)gAll.forEach(function(x){while(x.length<=FU.OBS)x.push('');x[FU.OBS]=nuevaNota;});
+    }
+  }
   prog(false);
   if(todoOk){
     g.forEach(function(x){while(x.length<=FU.ESTADO)x.push('');x[FU.ESTADO]=val;});
     closeSem();
     renderDemandasList();
-    toast(val?('✓ Estado: '+val):'✓ Estado borrado');
+    toast(motivoOk===false?'✓ Estado: Inactivo, pero no pude guardar el motivo (agregalo en la nota)':(motivoOk?'✓ Inactivo · motivo guardado en la nota':(val?('✓ Estado: '+val):'✓ Estado borrado')));
   } else {
     toast('No se pudo cambiar el estado');
   }
@@ -5077,10 +5128,13 @@ function palletFromStr(s){
   if(/sin/.test(t)||/:\s*no/.test(t)||/\bno\b/.test(t))return 'Pallet: No';
   return 'Pallet: Sí';
 }
+// Un calibre acaba de pasar a Inactivo (no lo estaba): se ofrece anotar el motivo
+function fuMotivoNeeded(){return fuLines.some(function(l){return l.sem==='Inactivo'&&l.sem0!=='Inactivo';});}
 var fuSemaforo=''; // selected semáforo value (SEMAFORO[i].val) or ''
 function renderSemPick(){
   var box=document.getElementById('fu-sem-pick');if(!box)return;
   var sw=document.getElementById('fu-sem-wrap');if(sw)sw.classList.toggle('hidden',fuLines.length<2); // el atajo solo sirve con 2+ calibres
+  var mw=document.getElementById('fu-motivo-wrap');if(mw)mw.classList.toggle('hidden',!fuMotivoNeeded());
   // "todos" queda marcado solo si todos los calibres comparten estado
   fuSemaforo=fuLines.length&&fuLines.every(function(l){return l.sem===fuLines[0].sem;})?fuLines[0].sem:'';
   box.innerHTML=semOpts().map(function(s){
@@ -5099,6 +5153,7 @@ function openFUModal(prefill,editIdx){
   inp.disabled=false;
   inp.value=fuPrefill;
   fuLines=[blankLine(semByVal('Demanda auténtica').val)];fuEditRows=[];
+  document.getElementById('fu-motivo').value='';
   document.getElementById('fu-shipment').value='';
   fuShipSel=[];fuShipYear=(new Date()).getFullYear();fuShipPrompt=false;
   document.getElementById('fu-pkg-new').value='';
@@ -5259,6 +5314,7 @@ async function saveFURecord(){
   var teamm=document.getElementById('fu-teamm').value.trim();
   var incoterm=document.getElementById('fu-incoterm').value.trim();
   var comment=document.getElementById('fu-comment').value.trim();
+  if(fuMotivoNeeded())comment=motivoNota(comment,document.getElementById('fu-motivo').value,todayStr());
   var port=document.getElementById('fu-port').value.trim();
   var country=document.getElementById('fu-country').value.trim();
   var shipment=buildShipmentValue();

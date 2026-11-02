@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.53.0**
+**Versión actual: 4.54.0**
 
 ---
 
@@ -299,6 +299,18 @@ desde la app.
 
 ## Historial
 
+- **4.54.0** — Motivo (opcional) al pasar una demanda a Inactiva.
+  - **Estado de la demanda** (`openSem`/`pickSem`/`saveSem`): al tocar "Inactivo" y antes no lo estaba, el
+    modal pasa a un paso con un campo "¿Por qué pasa a inactiva? (opcional)" y los botones Atrás / Pasar a
+    Inactivo. Vacío = se pasa igual, sin nada más. Con texto, se **suma a la nota del pedido**
+    (`FU.OBS`, la misma "🗒 nota" de la tarjeta) como `Inactivo (dd/mm/aaaa): motivo` en una línea nueva, sin
+    pisar la nota que ya hubiera (`motivoNota`). La nota es de todo el pedido: se escribe en todas sus
+    filas aunque el estado se cambie solo de un calibre (en ese caso se verifica el pedido completo con
+    `fuResolve`). Si falla guardar el motivo, el estado igual queda y se avisa.
+  - **Formulario del pedido** (editar/agregar): si un calibre pasa a Inactivo (y no lo estaba) aparece el
+    mismo campo (`#fu-motivo`, `fuMotivoNeeded`) y se suma al Comentario al guardar.
+  - No pregunta si ya estaba Inactivo ni al pasar a otros estados. Aplica a Demandas y a Ofertas a clientes.
+  - Test nuevo: `tools/tests/motivo-inactivo.js` (8). Copia previa: `C:\pm-backup-v4.53.0`.
 - **4.53.0** — El texto del pedido (WhatsApp, "Generar pedido") ahora incluye el **Grado**.
   - `gradoPedido(g)`: línea `Grado: X` justo antes de Crop/Incoterm. Sin grado cargado = **A**;
     con grado, sale A, B o C. **1, 2, 3 equivalen a A, B, C** (también "G1", "Grado 2", "grado b",
