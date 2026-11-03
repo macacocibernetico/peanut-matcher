@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.54.0**
+**Versión actual: 4.55.0**
 
 ---
 
@@ -299,6 +299,19 @@ desde la app.
 
 ## Historial
 
+- **4.55.0** — Los proveedores de una demanda se manejan SOLO en la ficha ("👥 Gestionar proveedores").
+  - **Se sacó el campo "Proveedor (Supplier)" del formulario de agregar/editar pedido** (y todo su código:
+    `fuSupInit`, `renderFuSup`, `addFuSup`…). En su lugar hay un aviso que manda a la ficha. Al guardar
+    un pedido ya no se toca la columna Supplier: al editar se conserva la de la planilla (sale del
+    `carry`, ya no está en `formIdx`), igual que Proveedores ofrecidos. "Más datos" pasa a 12 campos.
+  - **La ficha es el único lugar**: `chipsEfectivos(g)` = lista de "Proveedores ofrecidos" + los que solo
+    estaban en la columna Supplier (pedidos viejos), que aparecen como **Pendientes** (no se pierden). Al
+    guardar en el modal se escriben `Proveedores ofrecidos` **y** la columna Supplier como espejo
+    (`A; B`), que usan la vista compacta (ahora toma los proveedores de `chipsEfectivos`) y las búsquedas.
+  - **Solo proveedores que existan** (Database suppliers, con su escritura exacta) al agregar en
+    "Gestionar proveedores" (`addChipFromInput`); si todavía no hay lista cargada no se puede validar y se
+    deja pasar. La ficha ya no repite el campo "Proveedor" (lo muestran los chips con su estado y precio).
+  - Test nuevo: `tools/tests/proveedores-ficha.js` (10). Copia previa: `C:\pm-backup-v4.54.0`.
 - **4.54.0** — Motivo (opcional) al pasar una demanda a Inactiva.
   - **Estado de la demanda** (`openSem`/`pickSem`/`saveSem`): al tocar "Inactivo" y antes no lo estaba, el
     modal pasa a un paso con un campo "¿Por qué pasa a inactiva? (opcional)" y los botones Atrás / Pasar a

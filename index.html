@@ -719,13 +719,6 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
   border-radius:10px;padding:1px 8px;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;}
 .sup-pill.more{color:var(--text3);}
 .sup-pills{display:flex;flex-wrap:wrap;gap:4px;}
-.fu-sup-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
-.fu-sup-chips:empty{display:none;}
-.fu-sup-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2);background:var(--bg3);
-  border:1px solid var(--border2);border-radius:14px;padding:3px 6px 3px 10px;}
-.fu-sup-chip .x{cursor:pointer;color:var(--text3);font-size:11px;padding:0 3px;}
-.fu-sup-chip .x:hover{color:var(--sem-bad);}
-.fu-sup-chip.bad{border-color:var(--sem-bad);color:var(--sem-bad);}
 .crow .cprice{flex:0 0 auto;margin-left:6px;font-family:var(--mono);font-size:10px;color:var(--text3);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;}
 .crow .cprice b{font-size:13px;color:var(--accent);font-weight:800;letter-spacing:-.2px;margin-left:3px;}
 .crow .cprice.np{font-style:italic;}
@@ -1031,17 +1024,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
         </div>
         </div>
         <div class="acc-sec">Contactos</div>
+        <div class="agev-emp-hint" style="margin:0 0 8px;">Los proveedores y su estado se manejan desde la ficha: <b>👥 Gestionar proveedores</b>.</div>
         <div class="mform-grid">
-        <div class="mfield">
-          <label class="mfield-label">Proveedor (Supplier) <span class="mfield-opt">opcional · uno o varios, de la lista</span></label>
-          <div class="fu-sup-chips" id="fu-sup-chips"></div>
-          <div style="display:flex;gap:6px;">
-            <input class="minput" id="fu-supplier" list="fu-sup-list" autocomplete="off" placeholder="Buscá el proveedor en la lista" style="flex:1;" oninput="checkFuSup(event)" onkeydown="if(event.key==='Enter'){event.preventDefault();addFuSup();}">
-            <button type="button" class="btn" onclick="addFuSup()">+ Agregar</button>
-          </div>
-          <datalist id="fu-sup-list"></datalist>
-          <div class="agev-emp-hint" id="fu-sup-hint"></div>
-        </div>
         <div class="mfield">
           <label class="mfield-label">Contacto <span class="mfield-opt">opcional</span></label>
           <input class="minput" id="fu-contact" placeholder="ej: Juan Pérez">
@@ -1241,7 +1225,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       <div class="mfield">
         <label class="mfield-label">Agregar proveedor</label>
         <div style="display:flex;gap:6px;">
-          <input class="minput" id="chips-new" list="chips-prov-list" placeholder="ej: Grupo Ckoos" onkeydown="if(event.key==='Enter'){event.preventDefault();addChipFromInput();}" style="flex:1;">
+          <input class="minput" id="chips-new" list="chips-prov-list" placeholder="Buscá el proveedor en la lista" onkeydown="if(event.key==='Enter'){event.preventDefault();addChipFromInput();}" style="flex:1;">
           <button class="btn" onclick="addChipFromInput()">+ Agregar</button>
         </div>
         <datalist id="chips-prov-list"></datalist>
@@ -1382,7 +1366,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;">
       <span>Peanut Matcher</span>
-      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.54.0</span>
+      <span id="ver-pill" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">v4.55.0</span>
     </div>
   </div>
 </aside>
@@ -1474,7 +1458,7 @@ function initTheme(){
 initTheme(); // se aplica ya, antes de pintar, para que no haya destello
 
 // ── APP VERSION / UPDATE GATE ────────────────────────────────────────────────
-var APP_VERSION='4.54.0';
+var APP_VERSION='4.55.0';
 // Compares dotted versions: returns true if a < b
 function verLt(a,b){
   var pa=(''+a).split('.').map(Number),pb=(''+b).split('.').map(Number);
@@ -2535,9 +2519,24 @@ function chipsDe(g){
   }
   return '';
 }
+// Lista de proveedores del pedido: la de "Proveedores ofrecidos" + los que solo estaban en la columna
+// Supplier (pedidos viejos, cargados desde el formulario), que se muestran como Pendientes.
+function chipsEfectivos(g){
+  var cs=parseChips(chipsDe(g)),vistos={};
+  cs.forEach(function(c){vistos[normHdr(c.name)]=true;});
+  if(FU.SUPPLIER>=0){
+    for(var i=0;i<g.length;i++){
+      supSplit(g[i][FU.SUPPLIER]).forEach(function(n){
+        var k=normHdr(n);if(vistos[k])return;
+        vistos[k]=true;cs.push({name:n,estado:'pendiente',precios:{}});
+      });
+    }
+  }
+  return cs;
+}
 function chipsRowHtml(g,realIdx){
   if(!(FU.CHIPS>=0))return '';
-  var chips=parseChips(chipsDe(g)),keys=chipCalKeys(g);
+  var chips=chipsEfectivos(g),keys=chipCalKeys(g);
   var pills=chips.map(function(c){
     var info=chipEstadoInfo(c.estado),pt=chipPrecioTxt(c,keys),tip=chipPrecioTip(c,keys);
     return '<span class="chip-pill"'+(tip?' title="'+attrEsc(tip)+'"':'')+' style="border-color:'+info.color+';color:'+info.color+';"><span class="sem-dot" style="background:'+info.color+';"></span>'+esc(c.name)+(pt?' <span class="chip-pr">· '+esc(pt)+'</span>':'')+'</span>';
@@ -2563,7 +2562,7 @@ function openChips(idx){
   if(!r){toast('No encontré la demanda');return;}
   if(!(FU.CHIPS>=0)){toast('No encuentro la columna "Proveedores ofrecidos" en Follow up — agregala y tocá ↻ Sincronizar');return;}
   var g=groupOf(r);if(!g.length)g=[r];
-  chipsBuf=parseChips(chipsDe(g));chipsKeys=chipCalKeys(g);
+  chipsBuf=chipsEfectivos(g);chipsKeys=chipCalKeys(g);
   document.getElementById('chips-title').textContent='Proveedores ofrecidos · '+(((r[FU.CUSTOMER]||'')+'').trim()||'Demanda');
   document.getElementById('chips-sub').textContent='Anotá el precio (USD por tn) al que te la vende cada proveedor'+(g.length>1?', calibre por calibre. Se guarda en los '+g.length+' calibres de este pedido.':'. Se guarda en la fila de esta demanda.');
   document.getElementById('chips-new').value='';
@@ -2603,6 +2602,14 @@ function addChipFromInput(){
   var inp=document.getElementById('chips-new');
   var name=inp.value.trim();
   if(!name)return;
+  // Solo proveedores que existan en la Database de suppliers (con su escritura exacta). Sin lista cargada no se puede validar.
+  var lista=provNamesList();
+  if(lista.length){
+    var canon='';
+    for(var li=0;li<lista.length;li++){if(normHdr(lista[li])===normHdr(name)){canon=lista[li];break;}}
+    if(!canon){toast('✗ «'+name+'» no es un proveedor existente: elegilo de la lista');return;}
+    name=canon;
+  }
   if(chipsBuf.some(function(c){return normHdr(c.name)===normHdr(name);})){toast('Ya está agregado');return;}
   chipsBuf.push({name:name,estado:'pendiente',precios:{}});
   inp.value='';
@@ -2624,12 +2631,15 @@ async function saveChips(){
   var btn=document.getElementById('chips-save-btn');
   btn.textContent='Guardando...';btn.disabled=true;prog(true);
   var letra=colLetter(FU.CHIPS),todoOk=true;
+  var supTxt=chipsBuf.map(function(c){return c.name;}).join('; ');
   for(var i=0;i<nums.length;i++){
     if(!(await updateFuCell(nums[i],letra,txt))){todoOk=false;break;}
+    // la columna Supplier queda como espejo de la lista (la usan la vista compacta y las búsquedas)
+    if(FU.SUPPLIER>=0&&!(await updateFuCell(nums[i],colLetter(FU.SUPPLIER),supTxt))){todoOk=false;break;}
   }
   prog(false);btn.textContent='💾 Guardar';btn.disabled=false;
   if(todoOk){
-    g.forEach(function(x){while(x.length<=FU.CHIPS)x.push('');x[FU.CHIPS]=txt;});
+    g.forEach(function(x){while(x.length<=FU.CHIPS)x.push('');x[FU.CHIPS]=txt;if(FU.SUPPLIER>=0){while(x.length<=FU.SUPPLIER)x.push('');x[FU.SUPPLIER]=supTxt;}});
     closeChips();
     renderDemandasList();
     toast('✓ Proveedores actualizados');
@@ -2778,66 +2788,11 @@ function dField(lbl,val){
   if(!v)return '';
   return '<div class="dfield"><div class="dlabel">'+lbl+'</div><div class="dvalue">'+v+'</div></div>';
 }
-// ── Proveedor(es) del pedido (columna Supplier): varios, y todos tienen que existir ──
-// Se guardan separados por "; ". La lista válida es provNamesList (Availability +
-// Database suppliers). Al abrir el modal se arma un índice para no recalcularlo.
-var fuSupSel=[],fuSupIdx=Object.create(null),fuSupList=[];
+// ── Proveedor(es) del pedido ──
+// Desde 4.55.0 se manejan SOLO en la ficha ("Gestionar proveedores"), donde cada uno tiene estado y precio.
+// La columna Supplier queda como espejo de esa lista, separada por "; ".
 function supSplit(v){
   return ((v||'')+'').split(/\s*;\s*/).map(function(p){return p.trim();}).filter(Boolean);
-}
-function fuSupCanon(txt){return fuSupIdx[normHdr(txt)]||'';}
-function fuSupInit(valor){
-  fuSupList=provNamesList();
-  fuSupIdx=Object.create(null);
-  fuSupList.forEach(function(n){fuSupIdx[normHdr(n)]=n;});
-  document.getElementById('fu-sup-list').innerHTML=fuSupList.map(function(n){return '<option value="'+attrEsc(n)+'">';}).join('');
-  fuSupSel=[];
-  supSplit(valor).forEach(function(p){
-    var c=fuSupCanon(p);
-    if(c){fuSupPush(c,true);return;}
-    // "A, B" o "A / B" cargados a mano: si cada parte existe, los separamos
-    var partes=p.split(/\s*,\s*|\s+\/\s+/).filter(Boolean),todas=partes.length>1;
-    var canon=partes.map(function(x){var cc=fuSupCanon(x);if(!cc)todas=false;return cc;});
-    if(todas)canon.forEach(function(cc){fuSupPush(cc,true);});
-    else fuSupPush(p,!fuSupList.length); // sin lista cargada no se puede validar: se deja pasar
-  });
-  renderFuSup();
-}
-function fuSupPush(name,ok){
-  if(fuSupSel.some(function(c){return normHdr(c.name)===normHdr(name);}))return false;
-  fuSupSel.push({name:name,ok:ok});return true;
-}
-function renderFuSup(){
-  document.getElementById('fu-sup-chips').innerHTML=fuSupSel.map(function(c,i){
-    return '<span class="fu-sup-chip'+(c.ok?'':' bad')+'"'+(c.ok?'':' title="No existe en la lista de proveedores: quitalo o reemplazalo"')+'>'+esc(c.name)+
-      '<span class="x" data-i="'+i+'" onclick="removeFuSup(this.dataset.i)" title="Quitar">✕</span></span>';
-  }).join('');
-  checkFuSup();
-}
-function removeFuSup(i){fuSupSel.splice(parseInt(i),1);renderFuSup();}
-function checkFuSup(ev){
-  var inp=document.getElementById('fu-supplier'),hint=document.getElementById('fu-sup-hint');
-  var txt=inp.value.trim(),canon=txt?fuSupCanon(txt):'';
-  // Elegir una opción del desplegable dispara un "input" sin tecla: se agrega sola.
-  if(ev&&canon&&(ev.inputType==='insertReplacementText'||!ev.inputType)){addFuSup();return;}
-  var malos=fuSupSel.filter(function(c){return !c.ok;});
-  var msg='',cls='agev-emp-hint';
-  if(txt){
-    if(!fuSupList.length){msg='⚠ No hay proveedores cargados. Sincronizá (↻) y volvé a abrir.';cls+=' bad';}
-    else if(canon){msg='✓ '+canon+' — tocá Agregar o Enter';cls+=' ok';}
-    else{msg='✗ No existe ese proveedor. Elegilo de la lista.';cls+=' bad';}
-  } else if(malos.length){
-    msg='⚠ En rojo: no existen en la lista. Quitalos (✕) para poder guardar.';cls+=' bad';
-  }
-  hint.textContent=msg;hint.className=cls;
-}
-function addFuSup(){
-  var inp=document.getElementById('fu-supplier'),txt=inp.value.trim();
-  if(!txt)return;
-  var c=fuSupCanon(txt);
-  if(!c){checkFuSup();toast('✗ «'+txt+'» no es un proveedor existente: elegilo de la lista');return;}
-  if(!fuSupPush(c,true))toast('Ya está agregado');
-  inp.value='';renderFuSup();inp.focus();
 }
 // HTML de las pastillas para ficha y vista compacta (max = cuántas mostrar; el resto "+N").
 function supPillsHtml(valor,max){
@@ -2908,8 +2863,7 @@ function demFichaCard(g){
     dField('Afla / BF',r[FU.ALFA])+
     dField('Crop',crop)+
     dField('Packaging',pk.pkg)+
-    dField('Pallet',pk.pallet)+
-    dFieldHtml('Proveedor',supPillsHtml(((r[FU.SUPPLIER]||r[FU.BUYSFROM]||'')+'').trim()));
+    dField('Pallet',pk.pallet);
   var comment=esc(notaDe(g));
   var cliSt=statusDe(g);
   var cliBadge=cliSt==='activo'
@@ -2997,7 +2951,7 @@ function demCompactRow(g){
     '<span class="ctn num">'+(tn>0?(Math.round(tn*100)/100)+' tn':'—')+'</span>'+
     '<span class="cdest">'+(esc(r[FU.COUNTRY])||'—')+'</span>'+
     '<span class="cinco">'+(esc(incoWithPort(r[FU.INCOTERM],r[FU.PORT]))||'—')+'</span>'+
-    (function(){var sv=((r[FU.SUPPLIER]||r[FU.BUYSFROM]||'')+'').trim();
+    (function(){var sv=chipsEfectivos(g).map(function(c){return c.name;}).join('; ');
       return sv?'<span class="csup" title="'+attrEsc('Proveedor: '+supSplit(sv).join(', '))+'">'+supPillsHtml(sv,2)+'</span>':'';})()+
     '<span class="cdate">'+esc(r[FU.DATE])+'</span>'+
     (function(){
@@ -5159,8 +5113,6 @@ function openFUModal(prefill,editIdx){
   document.getElementById('fu-pkg-new').value='';
   fuPkgSel=[];fuPallet='';
   fuSemaforo=semByVal('Demanda auténtica').val; // arranca "Demanda auténtica" (en Ofertas a clientes: "En conversación")
-  document.getElementById('fu-supplier').value='';
-  fuSupInit('');
   document.getElementById('fu-contact').value='';
   document.getElementById('fu-origin').value='';
   document.getElementById('fu-teamm').value='';
@@ -5183,7 +5135,6 @@ function openFUModal(prefill,editIdx){
     var dud=fuEditRows.filter(function(x){return priceAmbiguo(x[FU.PRICE]);});
     if(dud.length)alert('⚠ Precio con más de un número\n\n'+dud.map(function(x){return '• '+(((x[FU.SIZE]||'')+'').trim()||'Calibre')+': «'+(((x[FU.PRICE]||'')+'').trim())+'»';}).join('\n')+
       '\n\nLa app usa solo el primer número. Cargá un solo precio en cada calibre antes de guardar.');
-    fuSupInit((row[FU.SUPPLIER]||row[FU.BUYSFROM]||'').trim());
     document.getElementById('fu-contact').value=(row[FU.CONTACT]||'').trim();
     document.getElementById('fu-origin').value=(row[FU.ORIGIN]||'').trim();
     document.getElementById('fu-teamm').value=(row[FU.TEAMM]||'').trim();
@@ -5227,13 +5178,12 @@ function onFuNewOpt(sel,que){
   sel.value=ex.value;sel.dataset.prev=ex.value;
 }
 // "Más datos": los campos que no hacen falta para cargar un pedido rápido
-var FU_MORE_TOTAL=13;
+var FU_MORE_TOTAL=12;
 function fuMoreCount(){
   var n=0;
   function v(id){var e=document.getElementById(id);return e&&((e.value||'')+'').trim();}
   ['fu-grado','fu-alfa','fu-crop','fu-contact','fu-origin','fu-teamm','fu-port','fu-country','fu-incoterm','fu-comment'].forEach(function(id){if(v(id))n++;});
   if(v('fu-shipment')||fuShipSel.length||fuShipPrompt)n++;
-  if(fuSupSel.length||v('fu-supplier'))n++;
   if(fuPkgSel.length||fuPallet)n++;
   return n;
 }
@@ -5299,16 +5249,6 @@ async function saveFURecord(){
   var company=document.getElementById('fu-company').value.trim();
   if(!company){toast('Ingresa el nombre de la empresa');return;}
   // Shared fields (apply to every caliber line of the order)
-  // Proveedores: si quedó texto sin agregar tiene que ser válido; los que no existen bloquean el guardado.
-  var pendSup=document.getElementById('fu-supplier').value.trim();
-  if(pendSup){
-    var cs=fuSupCanon(pendSup);
-    if(!cs){toast('✗ «'+pendSup+'» no es un proveedor existente: elegilo de la lista o borralo');document.getElementById('fu-supplier').focus();return;}
-    fuSupPush(cs,true);document.getElementById('fu-supplier').value='';renderFuSup();
-  }
-  var supMalos=fuSupSel.filter(function(c){return !c.ok;});
-  if(supMalos.length){toast('✗ Proveedor que no existe: '+supMalos.map(function(c){return c.name;}).join(', ')+'. Quitalo (✕) o reemplazalo por uno de la lista');return;}
-  var supplier=fuSupSel.map(function(c){return c.name;}).join('; ');
   var contact=document.getElementById('fu-contact').value.trim();
   var origin=document.getElementById('fu-origin').value.trim();
   var teamm=document.getElementById('fu-teamm').value.trim();
@@ -5342,7 +5282,7 @@ async function saveFURecord(){
     carry=fuRes.live[0];
   }
   if(carry){var fOrig=((carry[FU.DATE]||'')+'').trim();if(fOrig)fechaPedido=fOrig;}
-  var formIdx={};[FU.DATE,FU.CUSTOMER,FU.CONTACT,FU.SIZE,FU.TYPE,FU.ORIGIN,FU.PACKAGING,FU.TNS,FU.PRICE,FU.PORT,FU.COUNTRY,FU.SHIPMENT,FU.SUPPLIER,FU.INCOTERM,FU.OBS,FU.GRADO,FU.ALFA,FU.TEAMM,FU.ESTADO,FU.CROP].forEach(function(ix){formIdx[ix]=true;});
+  var formIdx={};[FU.DATE,FU.CUSTOMER,FU.CONTACT,FU.SIZE,FU.TYPE,FU.ORIGIN,FU.PACKAGING,FU.TNS,FU.PRICE,FU.PORT,FU.COUNTRY,FU.SHIPMENT,FU.INCOTERM,FU.OBS,FU.GRADO,FU.ALFA,FU.TEAMM,FU.ESTADO,FU.CROP].forEach(function(ix){formIdx[ix]=true;});
   // Build one sheet row per caliber line
   var rows=[];
   fuLines.forEach(function(l){
@@ -5359,7 +5299,6 @@ async function saveFURecord(){
     rd[FU.TYPE]=typeStr;
     rd[FU.TNS]=tns;
     rd[FU.PRICE]=price;
-    rd[FU.SUPPLIER]=supplier;
     rd[FU.CONTACT]=contact;
     rd[FU.ORIGIN]=origin;
     rd[FU.TEAMM]=teamm;
