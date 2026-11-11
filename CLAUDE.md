@@ -3,7 +3,7 @@
 App interna de un trader de maní (Córdoba, AR). Cruza demandas de clientes con
 ofertas de proveedores, gestiona empresas, agenda y cotizaciones.
 
-**Versión actual: 4.55.0**
+**Versión actual: 4.56.0**
 
 ---
 
@@ -299,6 +299,14 @@ desde la app.
 
 ## Historial
 
+- **4.56.0** — El grado del texto del pedido ya NO se asume: sin grado cargado, no hay línea de grado.
+  - Se revierte la parte de 4.53.0 que ponía `Grado: A` cuando el pedido no tenía grado. Ahora `gradoPedido(g)`
+    devuelve `''` si no hay grado y `generarPedido` **omite la línea**. Si hay grado, sigue igual: sale A, B o C
+    (1, 2, 3 = A, B, C; "G2" → `Grado: B`; varios → `A / B`; texto no reconocido sale tal cual).
+    Ej: "Split Blanched G2" → `Calibre: Split (Blanched)…` + `Grado: B`; "Split Blanched" sin grado → sin línea.
+    Aplica a Demandas y a Ofertas a clientes (misma función; es el único generador de texto oferta/demanda,
+    la calculadora tiene el suyo y no maneja grado). Test actualizado: `tools/tests/pedido-grado.js` (25).
+    Copia previa: `C:\pm-backup-v4.55.0`.
 - **4.55.0** — Los proveedores de una demanda se manejan SOLO en la ficha ("👥 Gestionar proveedores").
   - **Se sacó el campo "Proveedor (Supplier)" del formulario de agregar/editar pedido** (y todo su código:
     `fuSupInit`, `renderFuSup`, `addFuSup`…). En su lugar hay un aviso que manda a la ficha. Al guardar
